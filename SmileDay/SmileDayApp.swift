@@ -6,12 +6,21 @@
 //
 
 import SwiftUI
+import SwiftData
+import CoachingKit
 
 @main
 struct SmileDayApp: App {
+    var sharedModelContainer: ModelContainer = {
+        let schema = PersistenceSchema.schema
+        let configuration = ModelConfiguration(schema: schema)
+        return try! ModelContainer(for: schema, configurations: [configuration])
+    }()
+
     var body: some Scene {
         WindowGroup {
-            ContentView()
+            RootView()
         }
+        .modelContainer(sharedModelContainer)
     }
 }
