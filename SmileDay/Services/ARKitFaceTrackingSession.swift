@@ -9,6 +9,7 @@ enum FaceTrackingError: Error {
 final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
     var onUpdate: ((FaceMeasurement) -> Void)?
     var onError: ((Error) -> Void)?
+    var onLightingUpdate: ((Double) -> Void)?
 
     let previewView = ARSCNView()
     private var isRunning = false
@@ -63,5 +64,12 @@ extension ARKitFaceTrackingSession: ARSCNViewDelegate {
 extension ARKitFaceTrackingSession: ARSessionDelegate {
     func session(_ session: ARSession, didFailWithError error: Error) {
         onError?(error)
+    }
+
+    func session(_ session: ARSession, didUpdate frame: ARFrame) {
+        guard let intensity = frame.lightEstimate?.ambientIntensity else { return }
+        DispatchQueue.main.async { [weak self] in
+            self?.onLightingUpdate?(Double(intensity))
+        }
     }
 }
