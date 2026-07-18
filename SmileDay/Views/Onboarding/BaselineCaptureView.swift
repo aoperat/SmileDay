@@ -36,7 +36,7 @@ struct BaselineCaptureView: View {
                     saveBaseline()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel?.latestMeasurement == nil)
+                .disabled(viewModel?.latestMeasurement == nil || viewModel?.phase != .tracking)
             }
             .padding()
             .background(.black.opacity(0.4))
@@ -59,7 +59,7 @@ struct BaselineCaptureView: View {
         do {
             try viewModel.captureBaseline()
         } catch {
-            errorMessage = "저장에 실패했습니다. 다시 시도해주세요."
+            errorMessage = SharedStrings.saveFailed
             return
         }
         if case let .saved(baseline) = viewModel.phase {

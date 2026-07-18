@@ -32,7 +32,7 @@ struct CoachingSessionView: View {
                     complete()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel?.latestMeasurement == nil)
+                .disabled(viewModel?.latestMeasurement == nil || viewModel?.phase != .tracking)
             }
             .padding()
             .background(.ultraThinMaterial)
@@ -61,7 +61,7 @@ struct CoachingSessionView: View {
         do {
             try viewModel.complete()
         } catch {
-            errorMessage = "저장에 실패했습니다. 다시 시도해주세요."
+            errorMessage = SharedStrings.saveFailed
             return
         }
         isShowingSummary = true
