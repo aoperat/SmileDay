@@ -10,6 +10,13 @@ struct CoachingSessionView: View {
 
     let baseline: Baseline
     let onCompleted: (Int, Int?) -> Void
+    let onExit: () -> Void
+
+    private var liveDelta: Double? {
+        viewModel?.displayedMeasurement.map {
+            ScoreCalculator.delta(current: $0, baseline: baseline.measurement)
+        }
+    }
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -18,45 +25,79 @@ struct CoachingSessionView: View {
 
             FaceGuideOverlay()
 
+            // 게이지는 ZStack의 bottom 정렬과 무관하게 오른쪽 세로 중앙에 둔다.
             HStack {
                 Spacer()
-                if let measurement = viewModel?.latestMeasurement {
-                    let delta = ScoreCalculator.delta(current: measurement, baseline: baseline.measurement)
-                    VerticalGaugeView(value: min(max((delta + 1) / 2, 0), 1))
-                        .frame(width: 8, height: 220)
-                        .padding(.trailing, 20)
+                if let delta = liveDelta {
+                    VStack(spacing: 7) {
+                        Text(SDFormat.signedDegrees(delta * 10))
+                            .font(.system(size: 11, weight: .heavy, design: .rounded))
+                            .foregroundStyle(SDColor.coralDeep)
+                            .monospacedDigit()
+                            .padding(.horizontal, 9)
+                            .padding(.vertical, 3)
+                            .background(.white.opacity(0.92), in: Capsule())
+
+                        VerticalGaugeView(value: min(max((delta + 1) / 2, 0), 1))
+                            .frame(width: 10, height: 200)
+                    }
+                    .padding(.trailing, 20)
                 }
             }
+            .frame(maxHeight: .infinity)
 
             VStack {
+                HStack {
+                    SDCloseButton { onExit() }
+                    Spacer()
+                }
+                .padding(.horizontal)
+                .padding(.top, 4)
+
                 if viewModel?.isLightingPoor == true {
-                    Label("주변이 어둡습니다. 밝은 곳에서 측정해주세요", systemImage: "exclamationmark.triangle.fill")
+                    Label("조금 어두워요 · 밝은 곳에서 측정해 주세요", systemImage: "exclamationmark.circle.fill")
                         .font(.caption.bold())
+                        .foregroundStyle(Color(hex: 0x6B4E00))
                         .padding(10)
                         .frame(maxWidth: .infinity)
-                        .background(.yellow.opacity(0.9), in: RoundedRectangle(cornerRadius: 10))
+                        .background(Color(hex: 0xFFF0BE).opacity(0.95), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .padding(.horizontal)
                 }
                 Spacer()
             }
 
-            VStack(spacing: 16) {
+            VStack(spacing: 12) {
+                HStack(alignment: .firstTextBaseline) {
+                    Text("지금 입꼬리 각도")
+                        .font(.caption.weight(.bold))
+                        .foregroundStyle(SDColor.muted)
+                    Spacer()
+                    Text(liveDelta.map { SDFormat.signedDegrees($0 * 10) } ?? "—")
+                        .font(.system(size: 24, weight: .heavy, design: .rounded))
+                        .foregroundStyle(SDColor.coralDeep)
+                        .monospacedDigit()
+                }
+
                 if let errorMessage {
                     Text(errorMessage)
                         .font(.caption)
-                        .foregroundStyle(.red)
+                        .foregroundStyle(SDColor.coralDeep)
                 }
 
-                Button {
+                Button("측정 종료") {
                     complete()
-                } label: {
-                    Label("측정 종료", systemImage: "stop")
                 }
-                .buttonStyle(.borderedProminent)
-                .disabled(viewModel?.latestMeasurement == nil || viewModel?.phase != .tracking)
+                .buttonStyle(SDInkButtonStyle())
+                .disabled(viewModel?.displayedMeasurement == nil || viewModel?.phase != .tracking)
             }
-            .padding()
-            .background(.ultraThinMaterial)
+            .padding(.horizontal, 18)
+            .padding(.top, 16)
+            .padding(.bottom, 12)
+            .background {
+                UnevenRoundedRectangle(topLeadingRadius: 26, topTrailingRadius: 26)
+                    .fill(.white.opacity(0.94))
+                    .ignoresSafeArea(edges: .bottom)
+            }
         }
         .onAppear {
             let vm = CoachingViewModel(
@@ -93,8 +134,8 @@ struct VerticalGaugeView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottom) {
-                Capsule().fill(.white.opacity(0.3))
-                Capsule().fill(Color.accentColor)
+                Capsule().fill(.white.opacity(0.45))
+                Capsule().fill(SDColor.gaugeGradient)
                     .frame(height: geometry.size.height * min(max(value, 0), 1))
             }
         }

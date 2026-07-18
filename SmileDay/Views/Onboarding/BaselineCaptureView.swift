@@ -9,6 +9,8 @@ struct BaselineCaptureView: View {
     @State private var errorMessage: String?
 
     let onBaselineSaved: (Baseline) -> Void
+    /// 저장하지 않고 나가기. nil이면 나가기 버튼을 숨긴다.
+    var onCancel: (() -> Void)?
 
     var body: some View {
         ZStack(alignment: .bottom) {
@@ -16,6 +18,18 @@ struct BaselineCaptureView: View {
                 .ignoresSafeArea()
 
             FaceGuideOverlay()
+
+            if let onCancel {
+                VStack {
+                    HStack {
+                        SDCloseButton { onCancel() }
+                        Spacer()
+                    }
+                    .padding(.horizontal)
+                    .padding(.top, 4)
+                    Spacer()
+                }
+            }
 
             VStack(spacing: 16) {
                 Text("무표정으로 얼굴을 타원 안에 맞춰주세요")

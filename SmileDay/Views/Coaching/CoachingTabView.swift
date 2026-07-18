@@ -4,6 +4,7 @@ import CoachingKit
 struct CoachingTabView: View {
     let baseline: Baseline
     let onFinished: () -> Void
+    let onExit: () -> Void
     @State private var result: SessionResult?
 
     struct SessionResult {
@@ -18,9 +19,13 @@ struct CoachingTabView: View {
                 onFinished()
             }
         } else {
-            CoachingSessionView(baseline: baseline) { today, yesterday in
-                result = SessionResult(todayScore: today, yesterdayScore: yesterday)
-            }
+            CoachingSessionView(
+                baseline: baseline,
+                onCompleted: { today, yesterday in
+                    result = SessionResult(todayScore: today, yesterdayScore: yesterday)
+                },
+                onExit: onExit
+            )
         }
     }
 }

@@ -13,47 +13,59 @@ struct SettingsView: View {
         NavigationStack {
             List {
                 if let viewModel {
-                    NavigationLink {
-                        ReminderListView(viewModel: viewModel)
-                    } label: {
-                        HStack {
-                            Label("리마인더", systemImage: "bell")
-                            Spacer()
-                            Text("\(viewModel.reminders.count)개")
-                                .foregroundStyle(.secondary)
-                        }
-                    }
-
-                    Button {
-                        isResettingBaseline = true
-                    } label: {
-                        HStack {
-                            Label("기준선 재설정", systemImage: "arrow.clockwise")
-                            Spacer()
-                            if let weeks = viewModel.baselineAgeWeeks {
-                                Text("\(weeks)주 전")
-                                    .foregroundStyle(.secondary)
+                    Section {
+                        NavigationLink {
+                            ReminderListView(viewModel: viewModel)
+                        } label: {
+                            SettingsRow(icon: "bell.fill", chipColor: SDColor.apricot, title: "리마인더") {
+                                Text("\(viewModel.reminders.count)개")
+                                    .foregroundStyle(SDColor.muted)
                             }
                         }
-                    }
-                    .foregroundStyle(.primary)
 
-                    NavigationLink {
-                        DataLocationView()
-                    } label: {
-                        Label("데이터 저장 위치", systemImage: "lock")
+                        Button {
+                            isResettingBaseline = true
+                        } label: {
+                            SettingsRow(icon: "arrow.clockwise", chipColor: SDColor.coral, title: "기준선 재설정") {
+                                if let weeks = viewModel.baselineAgeWeeks {
+                                    Text("\(weeks)주 전")
+                                        .foregroundStyle(SDColor.muted)
+                                }
+                            }
+                        }
+                        .foregroundStyle(.primary)
                     }
+                    .listRowBackground(Color.white)
 
-                    HStack {
-                        Label("계정", systemImage: "person")
-                        Spacer()
-                        Text("준비 중")
-                            .foregroundStyle(.tertiary)
+                    Section {
+                        NavigationLink {
+                            DataLocationView()
+                        } label: {
+                            SettingsRow(icon: "lock.fill", chipColor: SDColor.mint, title: "데이터 저장 위치") {
+                                Text("기기에만 저장")
+                                    .foregroundStyle(SDColor.muted)
+                            }
+                        }
+
+                        SettingsRow(icon: "person.fill", chipColor: SDColor.lilac, title: "계정") {
+                            Text("준비 중")
+                                .foregroundStyle(.tertiary)
+                        }
+                    } footer: {
+                        Text("모든 측정 데이터는 회원가입 없이 이 기기 안에만 저장돼요.")
+                            .font(.caption)
+                            .foregroundStyle(SDColor.muted)
                     }
+                    .listRowBackground(Color.white)
                 }
             }
+            .scrollContentBackground(.hidden)
+            .background(SDColor.cream)
             .navigationTitle("설정")
+            // NavigationStack 내부에서도 네이티브 탭바가 다시 나타나지 않도록 명시한다.
+            .toolbar(.hidden, for: .tabBar)
         }
+        .tint(SDColor.coral)
         .onAppear {
             let vm = viewModel ?? SettingsViewModel(
                 reminderRepository: ReminderRepository(modelContext: modelContext),
@@ -64,11 +76,41 @@ struct SettingsView: View {
             try? vm.refresh()
         }
         .fullScreenCover(isPresented: $isResettingBaseline) {
-            BaselineCaptureView { newBaseline in
-                onBaselineUpdated(newBaseline)
-                isResettingBaseline = false
-                try? viewModel?.refresh()
-            }
+            BaselineCaptureView(
+                onBaselineSaved: { newBaseline in
+                    onBaselineUpdated(newBaseline)
+                    isResettingBaseline = false
+                    try? viewModel?.refresh()
+                },
+                onCancel: { isResettingBaseline = false }
+            )
         }
+    }
+}
+
+struct SettingsRow<Trailing: View>: View {
+    let icon: String
+    let chipColor: Color
+    let title: String
+    @ViewBuilder let trailing: Trailing
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: icon)
+                .font(.system(size: 13, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 30, height: 30)
+                .background(chipColor, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+
+            Text(title)
+                .font(.subheadline.weight(.semibold))
+                .foregroundStyle(SDColor.ink)
+
+            Spacer()
+
+            trailing
+                .font(.footnote.weight(.medium))
+        }
+        .padding(.vertical, 2)
     }
 }

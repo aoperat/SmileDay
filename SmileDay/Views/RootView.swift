@@ -15,9 +15,12 @@ struct RootView: View {
             } else if let baseline {
                 MainTabView(baseline: baseline, onBaselineUpdated: { self.baseline = $0 })
             } else if hasSeenIntro {
-                BaselineCaptureView { savedBaseline in
-                    baseline = savedBaseline
-                }
+                BaselineCaptureView(
+                    onBaselineSaved: { savedBaseline in
+                        baseline = savedBaseline
+                    },
+                    onCancel: { hasSeenIntro = false }
+                )
             } else {
                 OnboardingIntroView {
                     hasSeenIntro = true
@@ -26,6 +29,11 @@ struct RootView: View {
         }
         .task {
             let repository = SessionRepository(modelContext: modelContext)
+            #if DEBUG
+            if CommandLine.arguments.contains("-seedDemoData") {
+                try? DemoSeeder.seedIfNeeded(repository: repository)
+            }
+            #endif
             baseline = try? repository.fetchLatestBaseline()
             isLoading = false
         }
