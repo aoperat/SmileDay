@@ -29,7 +29,7 @@ public final class BaselineCaptureViewModel {
     }
 
     public func captureBaseline() throws {
-        guard let measurement = latestMeasurement else { return }
+        guard phase == .tracking, let measurement = latestMeasurement else { return }
         try repository.saveBaseline(measurement, capturedAt: now())
         session.stop()
         phase = .saved

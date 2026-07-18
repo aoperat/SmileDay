@@ -52,4 +52,29 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.phase, .tracking)
         XCTAssertNil(try repository.fetchLatestBaseline())
     }
+
+    func test_captureBaseline_secondCallAfterSaved_doesNotPersistDuplicate() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 5_000) })
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        try viewModel.captureBaseline()
+
+        XCTAssertEqual(viewModel.phase, .saved)
+        XCTAssertEqual(mockSession.stopCallCount, 1)
+
+        // Simulate a double-tap: a new measurement arrives and captureBaseline is called again.
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.99, mouthCornerRight: 0.98, browTension: 0.97))
+        try viewModel.captureBaseline()
+
+        XCTAssertEqual(viewModel.phase, .saved)
+        XCTAssertEqual(mockSession.stopCallCount, 1)
+
+        let allBaselines = try context.fetch(FetchDescriptor<Baseline>())
+        XCTAssertEqual(allBaselines.count, 1)
+        XCTAssertEqual(allBaselines.first?.mouthCornerLeft, 0.11)
+    }
 }
