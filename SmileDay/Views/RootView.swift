@@ -13,7 +13,7 @@ struct RootView: View {
             if isLoading {
                 ProgressView()
             } else if let baseline {
-                HomeView(baseline: baseline)
+                MainTabView(baseline: baseline, onBaselineUpdated: { self.baseline = $0 })
             } else if hasSeenIntro {
                 BaselineCaptureView { savedBaseline in
                     baseline = savedBaseline
