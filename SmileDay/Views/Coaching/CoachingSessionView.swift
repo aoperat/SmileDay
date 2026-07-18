@@ -32,6 +32,7 @@ struct CoachingSessionView: View {
                     complete()
                 }
                 .buttonStyle(.borderedProminent)
+                .disabled(viewModel?.latestMeasurement == nil)
             }
             .padding()
             .background(.ultraThinMaterial)
