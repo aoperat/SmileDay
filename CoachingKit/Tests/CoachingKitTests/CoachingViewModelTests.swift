@@ -86,6 +86,25 @@ final class CoachingViewModelTests: XCTestCase {
         XCTAssertEqual(allCheckIns.count, 1)
     }
 
+    func test_displayedMeasurement_updatesOnlyWhenDisplayScoreChanges() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.4, accuracy: 0.0001)
+
+        // 표시 점수(0.1° 단위)가 같은 미세 변화는 UI 관찰값을 갱신하지 않는다.
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4004, mouthCornerRight: 0.4, browTension: 0.4))
+        XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.4, accuracy: 0.0001)
+        // 원시 측정값은 항상 최신을 유지해 저장 시 정확한 값을 쓴다.
+        XCTAssertEqual(viewModel.latestMeasurement?.mouthCornerLeft ?? -1, 0.4004, accuracy: 0.0001)
+
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.5, browTension: 0.5))
+        XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.5, accuracy: 0.0001)
+    }
+
     func test_isLightingPoor_true_whenAmbientBelowThreshold() throws {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
         let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)

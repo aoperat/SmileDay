@@ -48,4 +48,16 @@ final class HistoryViewModelTests: XCTestCase {
 
         XCTAssertTrue(viewModel.monthCheckInDays.contains(calendar.component(.day, from: today)))
     }
+
+    func test_refresh_monthCheckInCount_countsSessionsNotDays() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        try saveCheckIn(repository, daysAgo: 0, scoreDelta: 0.1)
+        try saveCheckIn(repository, daysAgo: 0, scoreDelta: 0.2) // 같은 날 두 번째 체크인
+        let viewModel = HistoryViewModel(repository: repository)
+
+        try viewModel.refresh()
+
+        XCTAssertEqual(viewModel.monthCheckInCount, 2)
+        XCTAssertEqual(viewModel.monthCheckInDays.count, 1)
+    }
 }

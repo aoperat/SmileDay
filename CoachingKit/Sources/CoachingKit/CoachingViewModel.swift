@@ -9,9 +9,12 @@ public final class CoachingViewModel {
     }
 
     public private(set) var phase: Phase = .tracking
-    public private(set) var latestMeasurement: FaceMeasurement?
-    // 초당 수십 회 갱신되는 원시 조명값은 관찰 대상에서 제외하고,
-    // UI가 읽는 isLightingPoor는 상태가 실제로 바뀔 때만 갱신한다.
+    // 초당 수십 회 갱신되는 원시 측정값은 관찰 대상에서 제외하고,
+    // UI가 읽는 displayedMeasurement는 표시 점수(0.1° 단위)가 실제로 바뀔 때만 갱신한다.
+    @ObservationIgnored public private(set) var latestMeasurement: FaceMeasurement?
+    public private(set) var displayedMeasurement: FaceMeasurement?
+    @ObservationIgnored private var lastDisplayedCentiDelta: Int?
+    // 원시 조명값도 같은 이유로 관찰 대상에서 제외한다.
     @ObservationIgnored public private(set) var latestAmbientIntensity: Double?
     public private(set) var isLightingPoor: Bool = false
 
@@ -31,7 +34,14 @@ public final class CoachingViewModel {
         self.baseline = baseline
         self.now = now
         self.session.onUpdate = { [weak self] measurement in
-            self?.latestMeasurement = measurement
+            guard let self else { return }
+            self.latestMeasurement = measurement
+            let delta = ScoreCalculator.delta(current: measurement, baseline: baseline.measurement)
+            let centiDelta = Int((delta * 100).rounded())
+            if centiDelta != self.lastDisplayedCentiDelta {
+                self.lastDisplayedCentiDelta = centiDelta
+                self.displayedMeasurement = measurement
+            }
         }
         self.session.onLightingUpdate = { [weak self] intensity in
             guard let self else { return }
