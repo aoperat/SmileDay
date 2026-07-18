@@ -23,4 +23,11 @@ final class ScoreCalculatorTests: XCTestCase {
         // (0.3 + -0.1 + 0.0) / 3
         XCTAssertEqual(ScoreCalculator.delta(current: current, baseline: baseline), 0.2 / 3, accuracy: 0.0001)
     }
+
+    func test_displayScore_roundsDeltaTimesTen() {
+        XCTAssertEqual(ScoreCalculator.displayScore(0.31), 3)
+        XCTAssertEqual(ScoreCalculator.displayScore(0.35), 4)
+        XCTAssertEqual(ScoreCalculator.displayScore(-0.12), -1)
+        XCTAssertEqual(ScoreCalculator.displayScore(0.0), 0)
+    }
 }
