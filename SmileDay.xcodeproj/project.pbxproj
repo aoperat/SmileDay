@@ -6,6 +6,10 @@
 	objectVersion = 77;
 	objects = {
 
+/* Begin PBXBuildFile section */
+		73C8EB5BB682575EC87A171A /* CoachingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846A32C3BB81E3C29B621792 /* CoachingKit */; };
+/* End PBXBuildFile section */
+
 /* Begin PBXFileReference section */
 		717555D4300B120400854524 /* SmileDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmileDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
@@ -23,6 +27,7 @@
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
+				73C8EB5BB682575EC87A171A /* CoachingKit in Frameworks */,
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
@@ -65,6 +70,7 @@
 			);
 			name = SmileDay;
 			packageProductDependencies = (
+				846A32C3BB81E3C29B621792 /* CoachingKit */,
 			);
 			productName = SmileDay;
 			productReference = 717555D4300B120400854524 /* SmileDay.app */;
@@ -94,6 +100,9 @@
 			);
 			mainGroup = 717555CB300B120400854524;
 			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				30877432D1026706D7E805DA /* XCLocalSwiftPackageReference "CoachingKit" */,
+			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 717555D5300B120400854524 /* Products */;
 			projectDirPath = "";
@@ -332,6 +341,20 @@
 			defaultConfigurationName = Release;
 		};
 /* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		30877432D1026706D7E805DA /* XCLocalSwiftPackageReference "CoachingKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = CoachingKit;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		846A32C3BB81E3C29B621792 /* CoachingKit */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = CoachingKit;
+		};
+/* End XCSwiftPackageProductDependency section */
 	};
 	rootObject = 717555CC300B120400854524 /* Project object */;
 }
