@@ -18,7 +18,7 @@ final class CoachingViewModelTests: XCTestCase {
     }
 
     private func makeInMemoryContext() throws -> ModelContext {
-        let schema = Schema([Baseline.self, CheckInSession.self])
+        let schema = PersistenceSchema.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         return ModelContext(container)
