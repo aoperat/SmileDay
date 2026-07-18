@@ -15,10 +15,14 @@ struct BaselineCaptureView: View {
             ARFacePreviewRepresentable(session: trackingSession)
                 .ignoresSafeArea()
 
+            FaceGuideOverlay()
+
             VStack(spacing: 16) {
-                Text("무표정으로 카메라를 바라봐주세요")
+                Text("무표정으로 얼굴을 타원 안에 맞춰주세요")
                     .font(.headline)
                     .foregroundStyle(.white)
+
+                MeasurementTable(measurement: viewModel?.latestMeasurement)
 
                 if let errorMessage {
                     Text(errorMessage)
@@ -58,6 +62,67 @@ struct BaselineCaptureView: View {
         }
         if case let .saved(baseline) = viewModel.phase {
             onBaselineSaved(baseline)
+        }
+    }
+}
+
+private struct FaceGuideOverlay: View {
+    var body: some View {
+        GeometryReader { geometry in
+            let width = geometry.size.width * 0.62
+            let height = width * 1.35
+
+            Ellipse()
+                .stroke(style: StrokeStyle(lineWidth: 3, dash: [10, 8]))
+                .foregroundStyle(.white.opacity(0.8))
+                .frame(width: width, height: height)
+                .position(x: geometry.size.width / 2, y: geometry.size.height * 0.4)
+        }
+        .allowsHitTesting(false)
+    }
+}
+
+private struct MeasurementTable: View {
+    let measurement: FaceMeasurement?
+
+    var body: some View {
+        VStack(spacing: 8) {
+            HStack {
+                Image(systemName: measurement == nil ? "face.dashed" : "checkmark.circle.fill")
+                    .foregroundStyle(measurement == nil ? .yellow : .green)
+                Text(measurement == nil ? "얼굴을 찾는 중..." : "얼굴 인식됨")
+                    .font(.caption.bold())
+                    .foregroundStyle(.white)
+                Spacer()
+            }
+
+            MeasurementRow(label: "입꼬리 (왼쪽)", value: measurement?.mouthCornerLeft)
+            MeasurementRow(label: "입꼬리 (오른쪽)", value: measurement?.mouthCornerRight)
+            MeasurementRow(label: "미간 긴장", value: measurement?.browTension)
+        }
+        .padding(12)
+        .background(.black.opacity(0.35), in: RoundedRectangle(cornerRadius: 12))
+    }
+}
+
+private struct MeasurementRow: View {
+    let label: String
+    let value: Double?
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Text(label)
+                .font(.caption)
+                .foregroundStyle(.white.opacity(0.85))
+                .frame(width: 96, alignment: .leading)
+
+            ProgressView(value: min(max(value ?? 0, 0), 1))
+                .tint(.white)
+
+            Text(value.map { String(format: "%.2f", $0) } ?? "--")
+                .font(.caption.monospacedDigit())
+                .foregroundStyle(.white)
+                .frame(width: 36, alignment: .trailing)
         }
     }
 }
