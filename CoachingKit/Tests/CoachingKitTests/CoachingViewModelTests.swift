@@ -6,6 +6,7 @@ final class CoachingViewModelTests: XCTestCase {
     private final class MockFaceTrackingSession: FaceTrackingSession {
         var onUpdate: ((FaceMeasurement) -> Void)?
         var onError: ((Error) -> Void)?
+        var onLightingUpdate: ((Double) -> Void)?
         private(set) var startCallCount = 0
         private(set) var stopCallCount = 0
 
@@ -14,6 +15,10 @@ final class CoachingViewModelTests: XCTestCase {
 
         func emit(_ measurement: FaceMeasurement) {
             onUpdate?(measurement)
+        }
+
+        func emitLighting(_ intensity: Double) {
+            onLightingUpdate?(intensity)
         }
     }
 
@@ -79,5 +84,69 @@ final class CoachingViewModelTests: XCTestCase {
 
         let allCheckIns = try context.fetch(FetchDescriptor<CheckInSession>())
         XCTAssertEqual(allCheckIns.count, 1)
+    }
+
+    func test_isLightingPoor_true_whenAmbientBelowThreshold() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        XCTAssertFalse(viewModel.isLightingPoor)
+        mockSession.emitLighting(200)
+        XCTAssertTrue(viewModel.isLightingPoor)
+        mockSession.emitLighting(800)
+        XCTAssertFalse(viewModel.isLightingPoor)
+    }
+
+    func test_complete_persistsMeasuredLightingQuality() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        mockSession.emitLighting(500)
+        try viewModel.complete()
+
+        XCTAssertEqual(try XCTUnwrap(repository.fetchLatestCheckIn()).lightingQuality, 0.5, accuracy: 0.001)
+    }
+
+    func test_complete_persistsNeutralLighting_whenNoLightingReceived() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        try viewModel.complete()
+
+        XCTAssertEqual(try XCTUnwrap(repository.fetchLatestCheckIn()).lightingQuality, 1.0, accuracy: 0.001)
+    }
+
+    func test_yesterdayDelta_returnsYesterdaysLatestScoreDelta() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        XCTAssertNil(try viewModel.yesterdayDelta())
+
+        let calendar = Calendar.current
+        let yesterday = calendar.date(byAdding: .day, value: -1, to: Date())!
+        try repository.saveCheckIn(
+            measurement: FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+            date: yesterday,
+            lightingQuality: 1.0,
+            deviceAngleOK: true,
+            scoreDelta: 0.2
+        )
+
+        XCTAssertEqual(try XCTUnwrap(viewModel.yesterdayDelta()), 0.2, accuracy: 0.001)
     }
 }

@@ -10,11 +10,16 @@ public final class CoachingViewModel {
 
     public private(set) var phase: Phase = .tracking
     public private(set) var latestMeasurement: FaceMeasurement?
+    public private(set) var latestAmbientIntensity: Double?
 
     private let session: FaceTrackingSession
     private let repository: SessionRepository
     private let baseline: Baseline
     private let now: () -> Date
+
+    public var isLightingPoor: Bool {
+        latestAmbientIntensity.map(LightingEvaluator.isTooDark(ambientIntensity:)) ?? false
+    }
 
     public init(
         session: FaceTrackingSession,
@@ -29,6 +34,9 @@ public final class CoachingViewModel {
         self.session.onUpdate = { [weak self] measurement in
             self?.latestMeasurement = measurement
         }
+        self.session.onLightingUpdate = { [weak self] intensity in
+            self?.latestAmbientIntensity = intensity
+        }
     }
 
     public func start() {
@@ -41,11 +49,16 @@ public final class CoachingViewModel {
         try repository.saveCheckIn(
             measurement: measurement,
             date: now(),
-            lightingQuality: 1.0,
+            lightingQuality: latestAmbientIntensity.map(LightingEvaluator.quality(ambientIntensity:)) ?? 1.0,
             deviceAngleOK: true,
             scoreDelta: delta
         )
         session.stop()
         phase = .completed(scoreDelta: delta)
+    }
+
+    public func yesterdayDelta(calendar: Calendar = .current) throws -> Double? {
+        guard let yesterday = calendar.date(byAdding: .day, value: -1, to: now()) else { return nil }
+        return try repository.fetchLatestCheckIn(onDayOf: yesterday, calendar: calendar)?.scoreDelta
     }
 }

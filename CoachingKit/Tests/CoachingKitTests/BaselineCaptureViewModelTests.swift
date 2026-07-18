@@ -6,6 +6,7 @@ final class BaselineCaptureViewModelTests: XCTestCase {
     private final class MockFaceTrackingSession: FaceTrackingSession {
         var onUpdate: ((FaceMeasurement) -> Void)?
         var onError: ((Error) -> Void)?
+        var onLightingUpdate: ((Double) -> Void)?
         private(set) var startCallCount = 0
         private(set) var stopCallCount = 0
 
@@ -14,6 +15,10 @@ final class BaselineCaptureViewModelTests: XCTestCase {
 
         func emit(_ measurement: FaceMeasurement) {
             onUpdate?(measurement)
+        }
+
+        func emitLighting(_ intensity: Double) {
+            onLightingUpdate?(intensity)
         }
     }
 
