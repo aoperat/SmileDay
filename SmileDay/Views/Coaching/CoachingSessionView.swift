@@ -4,6 +4,7 @@ import CoachingKit
 
 struct CoachingSessionView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.dismiss) private var dismiss
     @State private var trackingSession = ARKitFaceTrackingSession()
     @State private var viewModel: CoachingViewModel?
     @State private var isShowingSummary = false
@@ -49,7 +50,9 @@ struct CoachingSessionView: View {
         .onDisappear {
             trackingSession.stop()
         }
-        .sheet(isPresented: $isShowingSummary) {
+        .sheet(isPresented: $isShowingSummary, onDismiss: {
+            dismiss()
+        }) {
             if let viewModel, case let .completed(scoreDelta) = viewModel.phase {
                 SessionSummarySheet(scoreDelta: scoreDelta)
             }
