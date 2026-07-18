@@ -6,6 +6,7 @@ struct BaselineCaptureView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var trackingSession = ARKitFaceTrackingSession()
     @State private var viewModel: BaselineCaptureViewModel?
+    @State private var errorMessage: String?
 
     let onBaselineSaved: (Baseline) -> Void
 
@@ -24,6 +25,12 @@ struct BaselineCaptureView: View {
                     .foregroundStyle(.white.opacity(0.85))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
+
+                if let errorMessage {
+                    Text(errorMessage)
+                        .font(.caption)
+                        .foregroundStyle(.red)
+                }
 
                 Button("기준선 저장") {
                     saveBaseline()
@@ -49,9 +56,14 @@ struct BaselineCaptureView: View {
 
     private func saveBaseline() {
         guard let viewModel else { return }
-        try? viewModel.captureBaseline()
-        if let saved = try? SessionRepository(modelContext: modelContext).fetchLatestBaseline() {
-            onBaselineSaved(saved)
+        do {
+            try viewModel.captureBaseline()
+        } catch {
+            errorMessage = "저장에 실패했습니다. 다시 시도해주세요."
+            return
+        }
+        if case let .saved(baseline) = viewModel.phase {
+            onBaselineSaved(baseline)
         }
     }
 }

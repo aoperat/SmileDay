@@ -8,7 +8,8 @@ public final class SessionRepository {
         self.modelContext = modelContext
     }
 
-    public func saveBaseline(_ measurement: FaceMeasurement, capturedAt: Date) throws {
+    @discardableResult
+    public func saveBaseline(_ measurement: FaceMeasurement, capturedAt: Date) throws -> Baseline {
         let baseline = Baseline(
             capturedAt: capturedAt,
             mouthCornerLeft: measurement.mouthCornerLeft,
@@ -17,6 +18,7 @@ public final class SessionRepository {
         )
         modelContext.insert(baseline)
         try modelContext.save()
+        return baseline
     }
 
     public func fetchLatestBaseline() throws -> Baseline? {

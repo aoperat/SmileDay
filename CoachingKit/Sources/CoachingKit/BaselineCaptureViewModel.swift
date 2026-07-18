@@ -5,7 +5,7 @@ import Observation
 public final class BaselineCaptureViewModel {
     public enum Phase: Equatable {
         case tracking
-        case saved
+        case saved(Baseline)
     }
 
     public private(set) var phase: Phase = .tracking
@@ -30,8 +30,8 @@ public final class BaselineCaptureViewModel {
 
     public func captureBaseline() throws {
         guard phase == .tracking, let measurement = latestMeasurement else { return }
-        try repository.saveBaseline(measurement, capturedAt: now())
+        let baseline = try repository.saveBaseline(measurement, capturedAt: now())
         session.stop()
-        phase = .saved
+        phase = .saved(baseline)
     }
 }

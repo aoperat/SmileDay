@@ -36,7 +36,10 @@ final class BaselineCaptureViewModelTests: XCTestCase {
 
         XCTAssertEqual(mockSession.startCallCount, 1)
         XCTAssertEqual(mockSession.stopCallCount, 1)
-        XCTAssertEqual(viewModel.phase, .saved)
+        guard case let .saved(baseline) = viewModel.phase else {
+            return XCTFail("Expected .saved phase, got \(viewModel.phase)")
+        }
+        XCTAssertEqual(baseline.mouthCornerLeft, 0.11)
         let saved = try repository.fetchLatestBaseline()
         XCTAssertEqual(saved?.mouthCornerLeft, 0.11)
     }
@@ -63,14 +66,19 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
         try viewModel.captureBaseline()
 
-        XCTAssertEqual(viewModel.phase, .saved)
+        guard case let .saved(firstBaseline) = viewModel.phase else {
+            return XCTFail("Expected .saved phase, got \(viewModel.phase)")
+        }
         XCTAssertEqual(mockSession.stopCallCount, 1)
 
         // Simulate a double-tap: a new measurement arrives and captureBaseline is called again.
         mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.99, mouthCornerRight: 0.98, browTension: 0.97))
         try viewModel.captureBaseline()
 
-        XCTAssertEqual(viewModel.phase, .saved)
+        guard case let .saved(secondBaseline) = viewModel.phase else {
+            return XCTFail("Expected .saved phase, got \(viewModel.phase)")
+        }
+        XCTAssertEqual(secondBaseline, firstBaseline)
         XCTAssertEqual(mockSession.stopCallCount, 1)
 
         let allBaselines = try context.fetch(FetchDescriptor<Baseline>())
