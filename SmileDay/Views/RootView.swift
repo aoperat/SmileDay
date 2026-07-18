@@ -6,6 +6,7 @@ struct RootView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var baseline: Baseline?
     @State private var isLoading = true
+    @State private var hasSeenIntro = false
 
     var body: some View {
         Group {
@@ -13,9 +14,13 @@ struct RootView: View {
                 ProgressView()
             } else if let baseline {
                 HomeView(baseline: baseline)
-            } else {
+            } else if hasSeenIntro {
                 BaselineCaptureView { savedBaseline in
                     baseline = savedBaseline
+                }
+            } else {
+                OnboardingIntroView {
+                    hasSeenIntro = true
                 }
             }
         }

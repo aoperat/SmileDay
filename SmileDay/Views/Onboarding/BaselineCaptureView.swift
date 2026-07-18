@@ -20,12 +20,6 @@ struct BaselineCaptureView: View {
                     .font(.headline)
                     .foregroundStyle(.white)
 
-                Text("이 앱은 의학적 효과를 보장하지 않습니다. 심한 비대칭이나 안면마비가 의심되면 전문의 상담을 권장합니다.")
-                    .font(.caption)
-                    .foregroundStyle(.white.opacity(0.85))
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal)
-
                 if let errorMessage {
                     Text(errorMessage)
                         .font(.caption)
