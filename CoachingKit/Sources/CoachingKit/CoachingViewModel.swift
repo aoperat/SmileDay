@@ -10,16 +10,15 @@ public final class CoachingViewModel {
 
     public private(set) var phase: Phase = .tracking
     public private(set) var latestMeasurement: FaceMeasurement?
-    public private(set) var latestAmbientIntensity: Double?
+    // 초당 수십 회 갱신되는 원시 조명값은 관찰 대상에서 제외하고,
+    // UI가 읽는 isLightingPoor는 상태가 실제로 바뀔 때만 갱신한다.
+    @ObservationIgnored public private(set) var latestAmbientIntensity: Double?
+    public private(set) var isLightingPoor: Bool = false
 
     private let session: FaceTrackingSession
     private let repository: SessionRepository
     private let baseline: Baseline
     private let now: () -> Date
-
-    public var isLightingPoor: Bool {
-        latestAmbientIntensity.map(LightingEvaluator.isTooDark(ambientIntensity:)) ?? false
-    }
 
     public init(
         session: FaceTrackingSession,
@@ -35,7 +34,12 @@ public final class CoachingViewModel {
             self?.latestMeasurement = measurement
         }
         self.session.onLightingUpdate = { [weak self] intensity in
-            self?.latestAmbientIntensity = intensity
+            guard let self else { return }
+            self.latestAmbientIntensity = intensity
+            let poor = LightingEvaluator.isTooDark(ambientIntensity: intensity)
+            if poor != self.isLightingPoor {
+                self.isLightingPoor = poor
+            }
         }
     }
 
