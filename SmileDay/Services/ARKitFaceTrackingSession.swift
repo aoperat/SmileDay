@@ -11,6 +11,7 @@ final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
     var onError: ((Error) -> Void)?
 
     let previewView = ARSCNView()
+    private var isRunning = false
 
     override init() {
         super.init()
@@ -19,16 +20,19 @@ final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
     }
 
     func start() {
+        guard !isRunning else { return }
         guard ARFaceTrackingConfiguration.isSupported else {
             onError?(FaceTrackingError.unsupportedDevice)
             return
         }
         let configuration = ARFaceTrackingConfiguration()
         previewView.session.run(configuration, options: [.resetTracking, .removeExistingAnchors])
+        isRunning = true
     }
 
     func stop() {
         previewView.session.pause()
+        isRunning = false
     }
 }
 
