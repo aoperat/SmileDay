@@ -63,10 +63,14 @@ struct CareView: View {
             #endif
         }
         .fullScreenCover(item: $playingRoutine) { routine in
-            CarePlayerView(routine: routine) { completed in
-                if completed, let viewModel {
+            CarePlayerView(routine: routine) { result in
+                if let viewModel {
                     do {
-                        try viewModel.completeRoutine(routine)
+                        if result.completed {
+                            try viewModel.completeRoutine(routine, startedAt: result.startedAt)
+                        } else {
+                            try viewModel.abandonRoutine(routine, startedAt: result.startedAt, completedSteps: result.completedSteps)
+                        }
                     } catch {
                         showSaveError = true
                     }

@@ -3,14 +3,21 @@ import AVKit
 import Combine
 import CoachingKit
 
+/// 플레이어 종료 시 CareView로 전달되는 재생 결과.
+struct CarePlayResult {
+    let completed: Bool
+    let completedSteps: Int
+    let startedAt: Date
+}
+
 struct CarePlayerView: View {
     let routine: CareRoutine
-    /// completed가 true면 루틴을 끝까지 마친 것.
-    let onClose: (_ completed: Bool) -> Void
+    let onClose: (CarePlayResult) -> Void
 
     @State private var currentStepIndex = 0
     @State private var remainingSeconds = 0
     @State private var player: AVPlayer?
+    @State private var startedAt = Date()
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
@@ -23,7 +30,9 @@ struct CarePlayerView: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
-                SDCloseButton { onClose(false) }
+                SDCloseButton {
+                    onClose(CarePlayResult(completed: false, completedSteps: currentStepIndex, startedAt: startedAt))
+                }
                 Text(routine.title)
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.ink)
@@ -79,6 +88,7 @@ struct CarePlayerView: View {
         .padding(18)
         .background(SDColor.cream)
         .onAppear {
+            startedAt = Date()
             resetTimer()
             if let url = Bundle.main.url(forResource: routine.videoFileName, withExtension: "mp4") {
                 let player = AVPlayer(url: url)
@@ -124,7 +134,7 @@ struct CarePlayerView: View {
 
     private func advance() {
         if isLastStep {
-            onClose(true)
+            onClose(CarePlayResult(completed: true, completedSteps: routine.steps.count, startedAt: startedAt))
         } else {
             currentStepIndex += 1
             resetTimer()
