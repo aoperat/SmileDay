@@ -1,9 +1,22 @@
 import SwiftUI
 
 struct SaveConfirmView: View {
+    /// 리마인더 제안 정보. nil이면 제안 섹션을 그리지 않는다.
+    struct ReminderOffer {
+        let hour: Int
+        let minute: Int
+        let onAccept: () async -> Void
+        let onDecline: () -> Void
+    }
+
+    enum OfferState { case showing, accepted, hidden }
+
     let todayScore: Double
     let yesterdayScore: Double?
+    var reminderOffer: ReminderOffer? = nil
     let onConfirm: () -> Void
+
+    @State private var offerState: OfferState = .showing
 
     var body: some View {
         ZStack {
@@ -44,6 +57,10 @@ struct SaveConfirmView: View {
                         .background(SDColor.mint, in: Capsule())
                 }
 
+                if let reminderOffer, offerState != .hidden {
+                    ReminderOfferCard(offer: reminderOffer, state: $offerState)
+                }
+
                 Button("확인") {
                     onConfirm()
                 }
@@ -54,6 +71,51 @@ struct SaveConfirmView: View {
                 Spacer()
             }
             .padding()
+        }
+    }
+}
+
+/// 체크인 직후 리마인더 설정 제안 카드.
+private struct ReminderOfferCard: View {
+    let offer: SaveConfirmView.ReminderOffer
+    @Binding var state: SaveConfirmView.OfferState
+
+    var body: some View {
+        Group {
+            if state == .accepted {
+                Label("리마인더가 설정되었어요", systemImage: "bell.badge.fill")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(SDColor.mint)
+            } else {
+                VStack(spacing: 10) {
+                    Text("내일도 이 시간(\(String(format: "%02d:%02d", offer.hour, offer.minute)))에 알려드릴까요?")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+
+                    HStack(spacing: 10) {
+                        Button("나중에") {
+                            offer.onDecline()
+                            withAnimation { state = .hidden }
+                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
+
+                        Button("알림 받기") {
+                            Task {
+                                await offer.onAccept()
+                                withAnimation { state = .accepted }
+                            }
+                        }
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white)
+                        .padding(.horizontal, 16)
+                        .padding(.vertical, 8)
+                        .background(SDColor.coral, in: Capsule())
+                    }
+                }
+                .padding(14)
+                .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+            }
         }
     }
 }
