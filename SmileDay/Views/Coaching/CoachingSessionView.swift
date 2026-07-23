@@ -9,7 +9,7 @@ struct CoachingSessionView: View {
     @State private var errorMessage: String?
 
     let baseline: Baseline
-    let onCompleted: (Int, Int?) -> Void
+    let onCompleted: (Double, Double?) -> Void
     let onExit: () -> Void
 
     private var liveDelta: Double? {
@@ -56,6 +56,15 @@ struct CoachingSessionView: View {
 
                 if viewModel?.isLightingPoor == true {
                     Label("조금 어두워요 · 밝은 곳에서 측정해 주세요", systemImage: "exclamationmark.circle.fill")
+                        .font(.caption.bold())
+                        .foregroundStyle(Color(hex: 0x6B4E00))
+                        .padding(10)
+                        .frame(maxWidth: .infinity)
+                        .background(Color(hex: 0xFFF0BE).opacity(0.95), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .padding(.horizontal)
+                }
+                if viewModel?.isAngleOK == false {
+                    Label("얼굴을 정면으로 비춰주세요", systemImage: "face.dashed")
                         .font(.caption.bold())
                         .foregroundStyle(Color(hex: 0x6B4E00))
                         .padding(10)
@@ -115,7 +124,7 @@ struct CoachingSessionView: View {
 
     private func complete() {
         guard let viewModel else { return }
-        let yesterday = (try? viewModel.yesterdayDelta())?.map(ScoreCalculator.displayScore) ?? nil
+        let yesterday = (try? viewModel.yesterdayDelta())?.map(ScoreCalculator.displayValue) ?? nil
         do {
             try viewModel.complete()
         } catch {
@@ -123,7 +132,7 @@ struct CoachingSessionView: View {
             return
         }
         if case let .completed(delta) = viewModel.phase {
-            onCompleted(ScoreCalculator.displayScore(delta), yesterday)
+            onCompleted(ScoreCalculator.displayValue(delta), yesterday)
         }
     }
 }

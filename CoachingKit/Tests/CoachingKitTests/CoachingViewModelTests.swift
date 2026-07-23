@@ -7,6 +7,7 @@ final class CoachingViewModelTests: XCTestCase {
         var onUpdate: ((FaceMeasurement) -> Void)?
         var onError: ((Error) -> Void)?
         var onLightingUpdate: ((Double) -> Void)?
+        var onTrackingQualityUpdate: ((Bool) -> Void)?
         private(set) var startCallCount = 0
         private(set) var stopCallCount = 0
 
@@ -19,6 +20,10 @@ final class CoachingViewModelTests: XCTestCase {
 
         func emitLighting(_ intensity: Double) {
             onLightingUpdate?(intensity)
+        }
+
+        func emitTrackingQuality(_ ok: Bool) {
+            onTrackingQualityUpdate?(ok)
         }
     }
 
@@ -116,6 +121,34 @@ final class CoachingViewModelTests: XCTestCase {
         XCTAssertTrue(viewModel.isLightingPoor)
         mockSession.emitLighting(800)
         XCTAssertFalse(viewModel.isLightingPoor)
+    }
+
+    func test_isAngleOK_defaultsTrue_andFollowsTrackingQualityUpdates() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        XCTAssertTrue(viewModel.isAngleOK)
+        mockSession.emitTrackingQuality(false)
+        XCTAssertFalse(viewModel.isAngleOK)
+        mockSession.emitTrackingQuality(true)
+        XCTAssertTrue(viewModel.isAngleOK)
+    }
+
+    func test_complete_persistsMeasuredDeviceAngleOK() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        mockSession.emitTrackingQuality(false)
+        try viewModel.complete()
+
+        XCTAssertFalse(try XCTUnwrap(repository.fetchLatestCheckIn()).deviceAngleOK)
     }
 
     func test_complete_persistsMeasuredLightingQuality() throws {

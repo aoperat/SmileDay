@@ -17,6 +17,7 @@ public final class CoachingViewModel {
     // 원시 조명값도 같은 이유로 관찰 대상에서 제외한다.
     @ObservationIgnored public private(set) var latestAmbientIntensity: Double?
     public private(set) var isLightingPoor: Bool = false
+    public private(set) var isAngleOK: Bool = true
 
     private let session: FaceTrackingSession
     private let repository: SessionRepository
@@ -51,6 +52,9 @@ public final class CoachingViewModel {
                 self.isLightingPoor = poor
             }
         }
+        self.session.onTrackingQualityUpdate = { [weak self] ok in
+            self?.isAngleOK = ok
+        }
     }
 
     public func start() {
@@ -64,7 +68,7 @@ public final class CoachingViewModel {
             measurement: measurement,
             date: now(),
             lightingQuality: latestAmbientIntensity.map(LightingEvaluator.quality(ambientIntensity:)) ?? 1.0,
-            deviceAngleOK: true,
+            deviceAngleOK: isAngleOK,
             scoreDelta: delta
         )
         session.stop()

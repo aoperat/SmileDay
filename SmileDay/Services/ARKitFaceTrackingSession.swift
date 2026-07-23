@@ -10,6 +10,7 @@ final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
     var onUpdate: ((FaceMeasurement) -> Void)?
     var onError: ((Error) -> Void)?
     var onLightingUpdate: ((Double) -> Void)?
+    var onTrackingQualityUpdate: ((Bool) -> Void)?
 
     let previewView = ARSCNView()
     private var isRunning = false
@@ -40,6 +41,8 @@ final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
 extension ARKitFaceTrackingSession: ARSCNViewDelegate {
     func renderer(_ renderer: SCNSceneRenderer, didUpdate node: SCNNode, for anchor: ARAnchor) {
         guard let faceAnchor = anchor as? ARFaceAnchor else { return }
+        // 트래킹이 유실된 프레임(손으로 가림/프레임 이탈)은 마지막 정상값을 덮어쓰지 않도록 무시한다.
+        guard faceAnchor.isTracked else { return }
         let blendShapes = faceAnchor.blendShapes
 
         let mouthCornerLeft = blendShapes[.mouthSmileLeft]?.doubleValue ?? 0
@@ -55,9 +58,32 @@ extension ARKitFaceTrackingSession: ARSCNViewDelegate {
             browTension: browTension
         )
 
+        let angleOK = Self.isAngleWithinTolerance(transform: faceAnchor.transform)
+
         DispatchQueue.main.async { [weak self] in
             self?.onUpdate?(measurement)
+            self?.onTrackingQualityUpdate?(angleOK)
         }
+    }
+
+    /// 얼굴 world-space transform에서 pitch(x축)/yaw(y축) 각도를 도 단위로 구해 허용 범위를 판정한다.
+    /// 쿼터니언 성분 순서는 simd_quatf.vector == (x, y, z, w).
+    private static func isAngleWithinTolerance(transform: simd_float4x4) -> Bool {
+        let q = simd_quatf(transform)
+        let x = Double(q.vector.x)
+        let y = Double(q.vector.y)
+        let z = Double(q.vector.z)
+        let w = Double(q.vector.w)
+
+        // pitch: x축 회전 (atan2), yaw: y축 회전 (asin). 정면 응시 시 항등 쿼터니언 → 0도.
+        let pitchRadians = atan2(2 * (w * x + y * z), 1 - 2 * (x * x + y * y))
+        let sinYaw = max(-1, min(1, 2 * (w * y - z * x)))
+        let yawRadians = asin(sinYaw)
+
+        let pitchDegrees = pitchRadians * 180 / .pi
+        let yawDegrees = yawRadians * 180 / .pi
+
+        return AngleEvaluator.isWithinTolerance(pitchDegrees: pitchDegrees, yawDegrees: yawDegrees)
     }
 }
 
