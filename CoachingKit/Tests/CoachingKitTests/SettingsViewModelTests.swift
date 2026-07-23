@@ -5,7 +5,7 @@ import SwiftData
 final class SettingsViewModelTests: XCTestCase {
     private final class MockScheduler: ReminderScheduling {
         private(set) var authorizationRequests = 0
-        private(set) var scheduled: [(id: String, hour: Int, minute: Int)] = []
+        private(set) var scheduled: [(id: String, hour: Int, minute: Int, days: Int)] = []
         private(set) var cancelled: [String] = []
 
         func requestAuthorization() async -> Bool {
@@ -13,8 +13,8 @@ final class SettingsViewModelTests: XCTestCase {
             return true
         }
 
-        func scheduleDaily(id: String, hour: Int, minute: Int) async {
-            scheduled.append((id, hour, minute))
+        func scheduleRollingWindow(id: String, hour: Int, minute: Int, days: Int) async {
+            scheduled.append((id, hour, minute, days))
         }
 
         func cancel(id: String) {
@@ -47,6 +47,7 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(scheduler.scheduled.count, 1)
         XCTAssertEqual(scheduler.scheduled.first?.hour, 9)
         XCTAssertEqual(scheduler.scheduled.first?.minute, 30)
+        XCTAssertEqual(scheduler.scheduled.first?.days, reminderRollingWindowDays)
     }
 
     func test_removeReminder_deletesAndCancels() async throws {
@@ -72,6 +73,21 @@ final class SettingsViewModelTests: XCTestCase {
         try await viewModel.toggleReminder(reminder)
         XCTAssertTrue(reminder.isEnabled)
         XCTAssertEqual(scheduler.scheduled.count, 2)
+    }
+
+    func test_refreshAllScheduledReminders_reschedulesOnlyEnabledReminders() async throws {
+        let (viewModel, _, scheduler) = try makeViewModel()
+        try await viewModel.addReminder(hour: 9, minute: 0)
+        try await viewModel.addReminder(hour: 20, minute: 30)
+        let morningReminder = try XCTUnwrap(viewModel.reminders.first { $0.hour == 9 })
+        try await viewModel.toggleReminder(morningReminder) // 끈다
+        let scheduledBeforeRefresh = scheduler.scheduled.count
+
+        try await viewModel.refreshAllScheduledReminders()
+
+        let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBeforeRefresh)
+        XCTAssertEqual(newlyScheduled.count, 1, "꺼진 리마인더는 다시 예약되면 안 된다")
+        XCTAssertEqual(newlyScheduled.first?.hour, 20)
     }
 
     func test_refresh_computesBaselineAgeWeeks() throws {

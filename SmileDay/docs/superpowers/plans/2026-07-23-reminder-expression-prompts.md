@@ -500,12 +500,13 @@ final class SettingsViewModelTests: XCTestCase {
         try await viewModel.addReminder(hour: 20, minute: 30)
         let morningReminder = try XCTUnwrap(viewModel.reminders.first { $0.hour == 9 })
         try await viewModel.toggleReminder(morningReminder) // 끈다
-        scheduler.scheduled.removeAll()
+        let scheduledBeforeRefresh = scheduler.scheduled.count
 
         try await viewModel.refreshAllScheduledReminders()
 
-        XCTAssertEqual(scheduler.scheduled.count, 1, "꺼진 리마인더는 다시 예약되면 안 된다")
-        XCTAssertEqual(scheduler.scheduled.first?.hour, 20)
+        let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBeforeRefresh)
+        XCTAssertEqual(newlyScheduled.count, 1, "꺼진 리마인더는 다시 예약되면 안 된다")
+        XCTAssertEqual(newlyScheduled.first?.hour, 20)
     }
 
     func test_refresh_computesBaselineAgeWeeks() throws {

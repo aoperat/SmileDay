@@ -39,7 +39,7 @@ public final class SettingsViewModel {
     public func addReminder(hour: Int, minute: Int) async throws {
         _ = await scheduler.requestAuthorization()
         let reminder = try reminderRepository.add(hour: hour, minute: minute)
-        await scheduler.scheduleDaily(id: reminder.notificationID, hour: hour, minute: minute)
+        await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: hour, minute: minute, days: reminderRollingWindowDays)
         try refresh()
     }
 
@@ -53,10 +53,18 @@ public final class SettingsViewModel {
         let newValue = !reminder.isEnabled
         try reminderRepository.setEnabled(reminder, newValue)
         if newValue {
-            await scheduler.scheduleDaily(id: reminder.notificationID, hour: reminder.hour, minute: reminder.minute)
+            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: reminder.hour, minute: reminder.minute, days: reminderRollingWindowDays)
         } else {
             scheduler.cancel(id: reminder.notificationID)
         }
         try refresh()
+    }
+
+    /// 앱이 포그라운드로 돌아올 때 호출. 활성화된 모든 리마인더의 향후 알림을 다시 채운다.
+    public func refreshAllScheduledReminders() async throws {
+        try refresh()
+        for reminder in reminders where reminder.isEnabled {
+            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: reminder.hour, minute: reminder.minute, days: reminderRollingWindowDays)
+        }
     }
 }
