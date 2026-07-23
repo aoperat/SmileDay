@@ -52,7 +52,7 @@ struct HistoryView: View {
                 Chart(viewModel.weeklyScores) { score in
                     BarMark(
                         x: .value("날짜", score.date, unit: .day),
-                        y: .value("점수", score.displayScore),
+                        y: .value("미소 크기", score.displayScore),
                         width: .fixed(12)
                     )
                     .foregroundStyle(

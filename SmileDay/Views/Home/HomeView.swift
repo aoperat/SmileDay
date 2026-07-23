@@ -142,13 +142,13 @@ struct HomeView: View {
     private var heroCard: some View {
         VStack(spacing: 0) {
             if viewModel?.hasCheckedInToday == true {
-                ArcGaugeView(score: viewModel?.todayScore, label: "오늘의 입꼬리 각도")
+                ArcGaugeView(score: viewModel?.todayScore, label: "오늘의 미소 크기")
                 Label("오늘 체크인을 완료했어요", systemImage: "checkmark.circle.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.mint)
                     .padding(.top, 12)
             } else {
-                ArcGaugeView(score: viewModel?.yesterdayScore, label: "어제의 입꼬리 각도")
+                ArcGaugeView(score: viewModel?.yesterdayScore, label: "어제의 미소 크기")
                 Button("오늘의 미소 기록하기") {
                     onStartCoaching()
                 }
