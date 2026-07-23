@@ -4,6 +4,7 @@ import CoachingKit
 
 struct RootView: View {
     @Environment(\.modelContext) private var modelContext
+    @Environment(\.scenePhase) private var scenePhase
     @State private var baseline: Baseline?
     @State private var isLoading = true
     @State private var hasSeenIntro = false
@@ -43,6 +44,17 @@ struct RootView: View {
             _ = await minimumSplashDuration
             baseline = fetchedBaseline
             isLoading = false
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            Task {
+                let viewModel = SettingsViewModel(
+                    reminderRepository: ReminderRepository(modelContext: modelContext),
+                    sessionRepository: SessionRepository(modelContext: modelContext),
+                    scheduler: UserNotificationReminderScheduler()
+                )
+                try? await viewModel.refreshAllScheduledReminders()
+            }
         }
     }
 }
