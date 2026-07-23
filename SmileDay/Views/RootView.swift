@@ -11,7 +11,8 @@ struct RootView: View {
     var body: some View {
         Group {
             if isLoading {
-                ProgressView()
+                SplashView()
+                    .transition(.opacity)
             } else if let baseline {
                 MainTabView(baseline: baseline, onBaselineUpdated: { self.baseline = $0 })
             } else if hasSeenIntro {
@@ -27,14 +28,20 @@ struct RootView: View {
                 }
             }
         }
+        .animation(.easeInOut(duration: 0.3), value: isLoading)
         .task {
+            async let minimumSplashDuration: Void? = try? Task.sleep(for: .seconds(1.3))
+
             let repository = SessionRepository(modelContext: modelContext)
             #if DEBUG
             if CommandLine.arguments.contains("-seedDemoData") {
                 try? DemoSeeder.seedIfNeeded(repository: repository)
             }
             #endif
-            baseline = try? repository.fetchLatestBaseline()
+            let fetchedBaseline = try? repository.fetchLatestBaseline()
+
+            _ = await minimumSplashDuration
+            baseline = fetchedBaseline
             isLoading = false
         }
     }
