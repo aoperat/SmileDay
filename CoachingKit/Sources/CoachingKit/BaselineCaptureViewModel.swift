@@ -50,6 +50,7 @@ public final class BaselineCaptureViewModel {
             lightingQuality: latestAmbientIntensity.map(LightingEvaluator.quality(ambientIntensity:)) ?? 1.0,
             deviceAngleOK: isAngleOK
         )
+        try repository.pruneOldBaselines()
         session.stop()
         phase = .saved(baseline)
     }

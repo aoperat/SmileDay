@@ -117,11 +117,76 @@ final class SessionRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.checkInStreak(), 2)
     }
 
+    func test_checkInStreak_isZero_whenNoCheckIns() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+
+        XCTAssertEqual(try repository.checkInStreak(), 0)
+    }
+
+    func test_checkInStreak_countsLongConsecutiveStreak() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        for offset in 0..<50 {
+            try saveCheckIn(repository, date: day(-offset))
+        }
+
+        XCTAssertEqual(try repository.checkInStreak(), 50)
+    }
+
+    func test_checkInStreak_ignoresOlderStreak_separatedByGap() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        try saveCheckIn(repository, date: day(0))
+        try saveCheckIn(repository, date: day(-1))
+        // gap at day(-2)
+        try saveCheckIn(repository, date: day(-5))
+        try saveCheckIn(repository, date: day(-6))
+        try saveCheckIn(repository, date: day(-7))
+
+        XCTAssertEqual(try repository.checkInStreak(), 2)
+    }
+
     func test_recentCheckInDays_returnsOldestToNewest() throws {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
         try saveCheckIn(repository, date: day(0))
         try saveCheckIn(repository, date: day(-2))
 
         XCTAssertEqual(try repository.recentCheckInDays(count: 3), [true, false, true])
+    }
+
+    func test_pruneOldBaselines_keepsOnlyMostRecentN() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        for offset in 0..<8 {
+            try repository.saveBaseline(
+                FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+                capturedAt: day(-offset),
+                lightingQuality: 1.0,
+                deviceAngleOK: true
+            )
+        }
+
+        try repository.pruneOldBaselines(keeping: 5)
+
+        let remaining = try context.fetch(FetchDescriptor<Baseline>(sortBy: [SortDescriptor(\.capturedAt, order: .reverse)]))
+        XCTAssertEqual(remaining.count, 5)
+        XCTAssertEqual(remaining.first?.capturedAt, day(0))
+        XCTAssertEqual(remaining.last?.capturedAt, day(-4))
+    }
+
+    func test_pruneOldBaselines_doesNothing_whenCountAtOrBelowLimit() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        for offset in 0..<3 {
+            try repository.saveBaseline(
+                FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+                capturedAt: day(-offset),
+                lightingQuality: 1.0,
+                deviceAngleOK: true
+            )
+        }
+
+        try repository.pruneOldBaselines(keeping: 5)
+
+        let remaining = try context.fetch(FetchDescriptor<Baseline>())
+        XCTAssertEqual(remaining.count, 3)
     }
 }

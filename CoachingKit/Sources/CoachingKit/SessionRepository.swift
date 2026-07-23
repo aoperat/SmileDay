@@ -83,14 +83,26 @@ public final class SessionRepository {
         try fetchLatestCheckIn(onDayOf: date, calendar: calendar) != nil
     }
 
+    private func fetchAllCheckIns(before end: Date) throws -> [CheckInSession] {
+        let descriptor = FetchDescriptor<CheckInSession>(
+            predicate: #Predicate { $0.date < end },
+            sortBy: [SortDescriptor(\.date, order: .reverse)]
+        )
+        return try modelContext.fetch(descriptor)
+    }
+
     public func checkInStreak(endingOn now: Date = Date(), calendar: Calendar = .current) throws -> Int {
-        var day = calendar.startOfDay(for: now)
-        if try !hasCheckIn(onDayOf: day, calendar: calendar) {
+        let today = calendar.startOfDay(for: now)
+        guard let end = calendar.date(byAdding: .day, value: 1, to: today) else { return 0 }
+        let checkInDays = Set(try fetchAllCheckIns(before: end).map { calendar.startOfDay(for: $0.date) })
+
+        var day = today
+        if !checkInDays.contains(day) {
             guard let yesterday = calendar.date(byAdding: .day, value: -1, to: day) else { return 0 }
             day = yesterday
         }
         var streak = 0
-        while try hasCheckIn(onDayOf: day, calendar: calendar) {
+        while checkInDays.contains(day) {
             streak += 1
             guard let previous = calendar.date(byAdding: .day, value: -1, to: day) else { break }
             day = previous
@@ -104,5 +116,15 @@ public final class SessionRepository {
             guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { return false }
             return try hasCheckIn(onDayOf: day, calendar: calendar)
         }
+    }
+
+    public func pruneOldBaselines(keeping: Int = 5) throws {
+        let descriptor = FetchDescriptor<Baseline>(sortBy: [SortDescriptor(\.capturedAt, order: .reverse)])
+        let all = try modelContext.fetch(descriptor)
+        guard all.count > keeping else { return }
+        for baseline in all.dropFirst(keeping) {
+            modelContext.delete(baseline)
+        }
+        try modelContext.save()
     }
 }

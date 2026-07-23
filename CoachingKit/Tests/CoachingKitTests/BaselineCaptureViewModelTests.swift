@@ -136,4 +136,26 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         XCTAssertEqual(saved.lightingQuality, 0.5, accuracy: 0.001)
         XCTAssertFalse(saved.deviceAngleOK)
     }
+
+    func test_captureBaseline_prunesOldBaselines_keepingMostRecentFive() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        for offset in 1...6 {
+            try repository.saveBaseline(
+                FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+                capturedAt: Date(timeIntervalSince1970: Double(offset) * 1_000),
+                lightingQuality: 1.0,
+                deviceAngleOK: true
+            )
+        }
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 10_000) })
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.5, browTension: 0.5))
+        try viewModel.captureBaseline()
+
+        let remaining = try context.fetch(FetchDescriptor<Baseline>())
+        XCTAssertEqual(remaining.count, 5)
+    }
 }
