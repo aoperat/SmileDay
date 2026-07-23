@@ -1,12 +1,11 @@
 import SwiftUI
-import ARKit
 
 struct ARFacePreviewRepresentable: UIViewRepresentable {
     let session: ARKitFaceTrackingSession
 
-    func makeUIView(context: Context) -> ARSCNView {
+    func makeUIView(context: Context) -> FilteredCameraPreviewView {
         session.previewView
     }
 
-    func updateUIView(_ uiView: ARSCNView, context: Context) {}
+    func updateUIView(_ uiView: FilteredCameraPreviewView, context: Context) {}
 }

@@ -17,8 +17,6 @@ struct BaselineCaptureView: View {
             ARFacePreviewRepresentable(session: trackingSession)
                 .ignoresSafeArea()
 
-            CameraWarmToneOverlay()
-
             FaceGuideOverlay()
 
             VStack(spacing: 8) {

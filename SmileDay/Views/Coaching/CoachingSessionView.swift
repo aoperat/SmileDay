@@ -23,8 +23,6 @@ struct CoachingSessionView: View {
             ARFacePreviewRepresentable(session: trackingSession)
                 .ignoresSafeArea()
 
-            CameraWarmToneOverlay()
-
             FaceGuideOverlay()
 
             // 게이지는 ZStack의 bottom 정렬과 무관하게 오른쪽 세로 중앙에 둔다.
