@@ -16,10 +16,10 @@ public struct DayCheckIn: Equatable {
 public final class HomeViewModel {
     public private(set) var hasCheckedInToday: Bool = false
     public private(set) var streakDays: Int = 0
-    /// 어제 체크인의 표시 점수(°). 어제 기록이 없으면 nil.
-    public private(set) var yesterdayScore: Int?
-    /// 오늘 체크인의 표시 점수(°). 오늘 기록이 없으면 nil.
-    public private(set) var todayScore: Int?
+    /// 어제 체크인의 표시 점수(0.1° 단위). 어제 기록이 없으면 nil.
+    public private(set) var yesterdayScore: Double?
+    /// 오늘 체크인의 표시 점수(0.1° 단위). 오늘 기록이 없으면 nil.
+    public private(set) var todayScore: Double?
     /// 오늘로 끝나는 최근 7일. 주 경계를 넘어도 최근 활동이 보이도록 롤링 윈도로 계산한다.
     public private(set) var recentWeek: [DayCheckIn] = []
     /// 이번 주(월요일~오늘) 체크인 횟수.
@@ -53,9 +53,9 @@ public final class HomeViewModel {
         }
 
         hasCheckedInToday = latestDeltaByDay[today] != nil
-        todayScore = latestDeltaByDay[today].map(ScoreCalculator.displayScore)
+        todayScore = latestDeltaByDay[today].map(ScoreCalculator.displayValue)
         if let yesterday = calendar.date(byAdding: .day, value: -1, to: today) {
-            yesterdayScore = latestDeltaByDay[yesterday].map(ScoreCalculator.displayScore)
+            yesterdayScore = latestDeltaByDay[yesterday].map(ScoreCalculator.displayValue)
         } else {
             yesterdayScore = nil
         }
@@ -70,8 +70,8 @@ public final class HomeViewModel {
             return count + (latestDeltaByDay[day] != nil ? 1 : 0)
         }
 
-        let recentScores = recentWeek.compactMap { latestDeltaByDay[$0.date].map(ScoreCalculator.displayScore) }
-        weeklyAverageScore = recentScores.isEmpty ? nil : Double(recentScores.reduce(0, +)) / Double(recentScores.count)
+        let recentScores = recentWeek.compactMap { latestDeltaByDay[$0.date].map(ScoreCalculator.displayValue) }
+        weeklyAverageScore = recentScores.isEmpty ? nil : recentScores.reduce(0, +) / Double(recentScores.count)
 
         streakDays = try repository.checkInStreak(endingOn: now(), calendar: calendar)
     }

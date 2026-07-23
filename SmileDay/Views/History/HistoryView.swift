@@ -64,7 +64,7 @@ struct HistoryView: View {
                     .cornerRadius(6)
                     .annotation(position: .top, spacing: 3) {
                         if Calendar.current.isDateInToday(score.date) {
-                            Text(SDFormat.signedDegrees(score.displayScore))
+                            Text(SDFormat.signedDegrees(score.displayScore, fractionDigits: 1))
                                 .font(.system(size: 10, weight: .heavy, design: .rounded))
                                 .foregroundStyle(SDColor.coralDeep)
                         }

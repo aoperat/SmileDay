@@ -33,7 +33,7 @@ final class HistoryViewModelTests: XCTestCase {
 
         try viewModel.refresh()
 
-        XCTAssertEqual(viewModel.weeklyScores.map(\.displayScore), [-1, 1, 3])
+        XCTAssertEqual(viewModel.weeklyScores.map(\.displayScore), [-0.5, 1.2, 3.1])
         XCTAssertEqual(viewModel.weeklyScores.count, 3)
     }
 

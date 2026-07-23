@@ -50,7 +50,7 @@ final class CareViewModelTests: XCTestCase {
         try viewModel.refresh()
 
         XCTAssertEqual(viewModel.recommendation?.routine.category, .lift)
-        XCTAssertEqual(viewModel.recommendation?.reason.contains("+2°"), true)
+        XCTAssertEqual(viewModel.recommendation?.reason.contains("+2.0°"), true)
     }
 
     func test_refresh_recommendationMentionsDrop_whenYesterdayNegative() throws {
@@ -60,7 +60,7 @@ final class CareViewModelTests: XCTestCase {
 
         try viewModel.refresh()
 
-        XCTAssertEqual(viewModel.recommendation?.reason.contains("-3°"), true)
+        XCTAssertEqual(viewModel.recommendation?.reason.contains("-3.0°"), true)
     }
 
     func test_refresh_recommendsFirstCare_whenNoYesterdayRecord() throws {

@@ -3,10 +3,10 @@ import Observation
 
 public struct DailyScore: Equatable, Identifiable {
     public let date: Date
-    public let displayScore: Int
+    public let displayScore: Double
     public var id: Date { date }
 
-    public init(date: Date, displayScore: Int) {
+    public init(date: Date, displayScore: Double) {
         self.date = date
         self.displayScore = displayScore
     }
@@ -38,11 +38,11 @@ public final class HistoryViewModel {
         for offset in (0..<7).reversed() {
             guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { continue }
             if let session = try repository.fetchLatestCheckIn(onDayOf: day, calendar: calendar) {
-                scores.append(DailyScore(date: day, displayScore: ScoreCalculator.displayScore(session.scoreDelta)))
+                scores.append(DailyScore(date: day, displayScore: ScoreCalculator.displayValue(session.scoreDelta)))
             }
         }
         weeklyScores = scores
-        weeklyAverageScore = scores.isEmpty ? nil : Double(scores.map(\.displayScore).reduce(0, +)) / Double(scores.count)
+        weeklyAverageScore = scores.isEmpty ? nil : scores.map(\.displayScore).reduce(0, +) / Double(scores.count)
         streakDays = try repository.checkInStreak(endingOn: now(), calendar: calendar)
 
         guard let monthRange = calendar.dateInterval(of: .month, for: now()) else { return }

@@ -1,8 +1,8 @@
 import SwiftUI
 
 struct SaveConfirmView: View {
-    let todayScore: Int
-    let yesterdayScore: Int?
+    let todayScore: Double
+    let yesterdayScore: Double?
     let onConfirm: () -> Void
 
     var body: some View {
@@ -36,7 +36,7 @@ struct SaveConfirmView: View {
                 .monospacedDigit()
 
                 if let yesterdayScore, todayScore > yesterdayScore {
-                    Text("어제보다 +\(todayScore - yesterdayScore)° 올라갔어요")
+                    Text("어제보다 \(SDFormat.signedDegrees(todayScore - yesterdayScore)) 올라갔어요")
                         .font(.caption.bold())
                         .foregroundStyle(.white)
                         .padding(.horizontal, 12)
@@ -115,5 +115,5 @@ struct ConfettiDots: View {
 }
 
 #Preview {
-    SaveConfirmView(todayScore: 3, yesterdayScore: 1, onConfirm: {})
+    SaveConfirmView(todayScore: 3.0, yesterdayScore: 1.0, onConfirm: {})
 }

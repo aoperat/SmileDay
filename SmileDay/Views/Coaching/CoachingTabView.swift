@@ -8,8 +8,8 @@ struct CoachingTabView: View {
     @State private var result: SessionResult?
 
     struct SessionResult {
-        let todayScore: Int
-        let yesterdayScore: Int?
+        let todayScore: Double
+        let yesterdayScore: Double?
     }
 
     var body: some View {

@@ -92,12 +92,12 @@ struct HomeView: View {
 
 /// 반원 아크 게이지. 점수(°)를 -10~+10 범위로 아크에 매핑한다.
 struct ArcGaugeView: View {
-    let score: Int?
+    let score: Double?
     let label: String
 
     private var progress: Double {
         guard let score else { return 0 }
-        return min(max((Double(score) + 10) / 20, 0), 1)
+        return min(max((score + 10) / 20, 0), 1)
     }
 
     var body: some View {
@@ -113,7 +113,7 @@ struct ArcGaugeView: View {
 
             VStack(spacing: 2) {
                 if let score {
-                    (Text("\(score >= 0 ? "+" : "")\(score)")
+                    (Text(SDFormat.signedNumber(score))
                         + Text("°").font(.subheadline.bold()).foregroundStyle(SDColor.apricot))
                         .font(.system(size: 30, weight: .heavy, design: .rounded))
                         .foregroundStyle(SDColor.ink)

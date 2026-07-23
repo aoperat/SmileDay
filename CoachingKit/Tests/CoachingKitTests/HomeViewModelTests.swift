@@ -94,8 +94,8 @@ final class HomeViewModelTests: XCTestCase {
 
         try viewModel.refresh()
 
-        XCTAssertEqual(viewModel.yesterdayScore, 3)
-        XCTAssertEqual(viewModel.todayScore, 1)
+        XCTAssertEqual(viewModel.yesterdayScore ?? 0, 3.2, accuracy: 0.0001)
+        XCTAssertEqual(viewModel.todayScore ?? 0, 1.1, accuracy: 0.0001)
     }
 
     func test_refresh_weekCheckInCount_countsMondayThroughTodayOnly() throws {
@@ -122,7 +122,7 @@ final class HomeViewModelTests: XCTestCase {
 
         try viewModel.refresh()
 
-        XCTAssertEqual(viewModel.weeklyAverageScore, 3.0)
+        XCTAssertEqual(viewModel.weeklyAverageScore ?? 0, 3.0, accuracy: 0.0001)
     }
 
     func test_refresh_weeklyAverageIsNil_whenNoRecords() throws {

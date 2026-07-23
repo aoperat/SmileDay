@@ -8,8 +8,8 @@ public enum ScoreCalculator {
         return (mouthLeftDelta + mouthRightDelta + browDelta) / 3
     }
 
-    /// 내부 delta 계수를 표시용 점수(°)로 변환. 실측 각도가 아닌 표시용 스케일이다.
-    public static func displayScore(_ delta: Double) -> Int {
-        Int((delta * 10).rounded())
+    /// 내부 delta 계수를 표시용 값(0.1° 단위)으로 변환. 실측 각도가 아닌 표시용 스케일이다.
+    public static func displayValue(_ delta: Double) -> Double {
+        (delta * 100).rounded() / 10
     }
 }
