@@ -20,6 +20,15 @@ public enum TimeBucket: String, CaseIterable, Equatable, Hashable, Sendable {
         case .evening: "저녁"
         }
     }
+
+    /// 빈 버킷을 원탭으로 채울 때 제시하는 기본 추천 시각(정시).
+    public var suggestedHour: Int {
+        switch self {
+        case .morning: 9
+        case .afternoon: 13
+        case .evening: 20
+        }
+    }
 }
 
 public struct ReminderPrompt: Equatable, Sendable {
