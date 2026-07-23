@@ -12,6 +12,14 @@ public enum TimeBucket: String, CaseIterable, Equatable, Hashable, Sendable {
         default: self = .evening
         }
     }
+
+    public var displayName: String {
+        switch self {
+        case .morning: "아침"
+        case .afternoon: "낮"
+        case .evening: "저녁"
+        }
+    }
 }
 
 public struct ReminderPrompt: Equatable, Sendable {

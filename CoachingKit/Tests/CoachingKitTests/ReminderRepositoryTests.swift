@@ -42,6 +42,15 @@ final class ReminderRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.fetchAll().count, 0)
     }
 
+    func test_registeredBuckets_mapsHoursToBuckets() throws {
+        let repository = ReminderRepository(modelContext: try makeInMemoryContext())
+        _ = try repository.add(hour: 8, minute: 0)   // morning
+        _ = try repository.add(hour: 20, minute: 0)  // evening
+        _ = try repository.add(hour: 21, minute: 30) // evening (중복 버킷)
+
+        XCTAssertEqual(try repository.registeredBuckets(), [.morning, .evening])
+    }
+
     func test_setEnabled_updatesFlag() throws {
         let repository = ReminderRepository(modelContext: try makeInMemoryContext())
         let reminder = try repository.add(hour: 9, minute: 0)

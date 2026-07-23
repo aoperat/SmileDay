@@ -13,6 +13,12 @@ final class ReminderPromptCatalogTests: XCTestCase {
         XCTAssertEqual(TimeBucket(hour: 23), .evening)
     }
 
+    func test_timeBucket_displayName() {
+        XCTAssertEqual(TimeBucket.morning.displayName, "아침")
+        XCTAssertEqual(TimeBucket.afternoon.displayName, "낮")
+        XCTAssertEqual(TimeBucket.evening.displayName, "저녁")
+    }
+
     func test_catalog_hasEightPromptsPerBucket() {
         for bucket in TimeBucket.allCases {
             XCTAssertEqual(ReminderPromptCatalog.prompts(for: bucket).count, 8, "\(bucket) should have 8 prompts")

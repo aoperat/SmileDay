@@ -23,6 +23,11 @@ public final class ReminderRepository {
         return try modelContext.fetch(descriptor)
     }
 
+    /// 등록된 리마인더들이 커버하는 시간대 집합.
+    public func registeredBuckets() throws -> Set<TimeBucket> {
+        Set(try fetchAll().map { TimeBucket(hour: $0.hour) })
+    }
+
     public func delete(_ reminder: ReminderSetting) throws {
         modelContext.delete(reminder)
         try modelContext.save()
