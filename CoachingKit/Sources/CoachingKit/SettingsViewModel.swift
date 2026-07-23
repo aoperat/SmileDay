@@ -59,6 +59,14 @@ public final class SettingsViewModel {
         try refresh()
     }
 
+    public func updateReminderTime(_ reminder: ReminderSetting, hour: Int, minute: Int) async throws {
+        try reminderRepository.updateTime(reminder, hour: hour, minute: minute)
+        if reminder.isEnabled {
+            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: hour, minute: minute, days: reminderRollingWindowDays)
+        }
+        try refresh()
+    }
+
     /// 앱이 포그라운드로 돌아올 때 호출. 활성화된 모든 리마인더의 향후 알림을 다시 채운다.
     public func refreshAllScheduledReminders() async throws {
         try refresh()

@@ -37,4 +37,10 @@ public final class ReminderRepository {
         reminder.isEnabled = enabled
         try modelContext.save()
     }
+
+    public func updateTime(_ reminder: ReminderSetting, hour: Int, minute: Int) throws {
+        reminder.hour = hour
+        reminder.minute = minute
+        try modelContext.save()
+    }
 }

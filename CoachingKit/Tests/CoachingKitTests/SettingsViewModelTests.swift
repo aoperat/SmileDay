@@ -90,6 +90,35 @@ final class SettingsViewModelTests: XCTestCase {
         XCTAssertEqual(newlyScheduled.first?.hour, 20)
     }
 
+    func test_updateReminderTime_enabledReminder_reschedules() async throws {
+        let (viewModel, _, scheduler) = try makeViewModel()
+        try await viewModel.addReminder(hour: 9, minute: 0)
+        let reminder = try XCTUnwrap(viewModel.reminders.first)
+        let scheduledBefore = scheduler.scheduled.count
+
+        try await viewModel.updateReminderTime(reminder, hour: 20, minute: 30)
+
+        XCTAssertEqual(viewModel.reminders.first?.hour, 20)
+        XCTAssertEqual(viewModel.reminders.first?.minute, 30)
+        let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBefore)
+        XCTAssertEqual(newlyScheduled.count, 1)
+        XCTAssertEqual(newlyScheduled.first?.hour, 20)
+        XCTAssertEqual(newlyScheduled.first?.minute, 30)
+    }
+
+    func test_updateReminderTime_disabledReminder_doesNotReschedule() async throws {
+        let (viewModel, _, scheduler) = try makeViewModel()
+        try await viewModel.addReminder(hour: 9, minute: 0)
+        let reminder = try XCTUnwrap(viewModel.reminders.first)
+        try await viewModel.toggleReminder(reminder) // 끈다
+        let scheduledBefore = scheduler.scheduled.count
+
+        try await viewModel.updateReminderTime(reminder, hour: 20, minute: 30)
+
+        XCTAssertEqual(viewModel.reminders.first?.hour, 20)
+        XCTAssertEqual(scheduler.scheduled.count, scheduledBefore, "꺼진 리마인더는 시간만 바뀌고 재예약되면 안 된다")
+    }
+
     func test_refresh_computesBaselineAgeWeeks() throws {
         let (viewModel, sessionRepository, _) = try makeViewModel()
         let sixWeeksAgo = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: Date())!
