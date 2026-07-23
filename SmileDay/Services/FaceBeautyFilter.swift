@@ -6,8 +6,8 @@ import CoreVideo
 /// 측정은 TrueDepth 데이터 기반이라 이 보정의 영향을 받지 않는다.
 enum FaceBeautyFilter {
     static func apply(to pixelBuffer: CVPixelBuffer) -> CIImage {
-        // 전면 카메라 세로 화면: 회전 + 셀피 미러링 (기존 ARSCNView 프리뷰와 동일한 방향)
-        let base = CIImage(cvPixelBuffer: pixelBuffer).oriented(.leftMirrored)
+        // 전면 카메라 세로 화면: 90도 회전만. 기존 ARSCNView 프리뷰처럼 미러링 없이 그대로 보여준다.
+        let base = CIImage(cvPixelBuffer: pixelBuffer).oriented(.right)
 
         // 1) 웜톤: 기준 색온도를 살짝 올려 따뜻하게
         let warm = CIFilter.temperatureAndTint()
