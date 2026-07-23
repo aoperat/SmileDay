@@ -5,6 +5,9 @@ import Observation
 public final class SettingsViewModel {
     public private(set) var reminders: [ReminderSetting] = []
     public private(set) var baselineAgeWeeks: Int?
+    public var shouldRecommendReset: Bool {
+        (baselineAgeWeeks ?? 0) >= 4
+    }
 
     private let reminderRepository: ReminderRepository
     private let sessionRepository: SessionRepository

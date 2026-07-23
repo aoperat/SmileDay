@@ -96,4 +96,42 @@ final class SettingsViewModelTests: XCTestCase {
 
         XCTAssertNil(viewModel.baselineAgeWeeks)
     }
+
+    func test_shouldRecommendReset_falseUnderFourWeeks() throws {
+        let (viewModel, sessionRepository, _) = try makeViewModel()
+        let threeWeeksAgo = Calendar.current.date(byAdding: .weekOfYear, value: -3, to: Date())!
+        try sessionRepository.saveBaseline(
+            FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+            capturedAt: threeWeeksAgo,
+            lightingQuality: 1.0,
+            deviceAngleOK: true
+        )
+
+        try viewModel.refresh()
+
+        XCTAssertFalse(viewModel.shouldRecommendReset)
+    }
+
+    func test_shouldRecommendReset_trueAtFourWeeksOrMore() throws {
+        let (viewModel, sessionRepository, _) = try makeViewModel()
+        let fourWeeksAgo = Calendar.current.date(byAdding: .weekOfYear, value: -4, to: Date())!
+        try sessionRepository.saveBaseline(
+            FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+            capturedAt: fourWeeksAgo,
+            lightingQuality: 1.0,
+            deviceAngleOK: true
+        )
+
+        try viewModel.refresh()
+
+        XCTAssertTrue(viewModel.shouldRecommendReset)
+    }
+
+    func test_shouldRecommendReset_falseWhenNoBaseline() throws {
+        let (viewModel, _, _) = try makeViewModel()
+
+        try viewModel.refresh()
+
+        XCTAssertFalse(viewModel.shouldRecommendReset)
+    }
 }
