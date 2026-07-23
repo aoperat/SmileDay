@@ -36,7 +36,10 @@ struct CoachingTabView: View {
                     onDecline: {
                         ReminderNudge(store: UserDefaultsReminderNudgeState()).declineCheckInPrompt(forHour: result.completedHour)
                     }
-                ) : nil
+                ) : nil,
+                onMoodSelected: { mood in
+                    try? SessionRepository(modelContext: modelContext).updateMoodOnLatestCheckIn(mood)
+                }
             ) {
                 self.result = nil
                 onFinished()

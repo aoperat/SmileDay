@@ -14,9 +14,13 @@ struct SaveConfirmView: View {
     let todayScore: Double
     let yesterdayScore: Double?
     var reminderOffer: ReminderOffer? = nil
+    /// 기분 이모지 선택 콜백. nil이면 무드 섹션을 그리지 않는다.
+    var onMoodSelected: ((String) -> Void)? = nil
     let onConfirm: () -> Void
 
     @State private var offerState: OfferState = .showing
+    @State private var selectedMood: String?
+    private static let moods = ["😊", "🙂", "😐", "😞", "😫"]
 
     var body: some View {
         ZStack {
@@ -55,6 +59,30 @@ struct SaveConfirmView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(SDColor.mint, in: Capsule())
+                }
+
+                if onMoodSelected != nil {
+                    VStack(spacing: 8) {
+                        Text("지금 기분은 어때요?")
+                            .font(.caption.weight(.bold))
+                            .foregroundStyle(SDColor.muted)
+                        HStack(spacing: 12) {
+                            ForEach(Self.moods, id: \.self) { mood in
+                                Button {
+                                    selectedMood = mood
+                                    onMoodSelected?(mood)
+                                } label: {
+                                    Text(mood)
+                                        .font(.system(size: 28))
+                                        .opacity(selectedMood == nil || selectedMood == mood ? 1 : 0.35)
+                                        .scaleEffect(selectedMood == mood ? 1.15 : 1)
+                                }
+                                .buttonStyle(.plain)
+                            }
+                        }
+                        .animation(.spring(duration: 0.25), value: selectedMood)
+                    }
+                    .padding(.top, 4)
                 }
 
                 if let reminderOffer, offerState != .hidden {
