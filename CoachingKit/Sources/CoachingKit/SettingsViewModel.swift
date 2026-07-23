@@ -6,7 +6,7 @@ public final class SettingsViewModel {
     public private(set) var reminders: [ReminderSetting] = []
     public private(set) var baselineAgeWeeks: Int?
     public var shouldRecommendReset: Bool {
-        (baselineAgeWeeks ?? 0) >= 4
+        (baselineAgeWeeks ?? 0) >= Baseline.recommendResetThresholdWeeks
     }
 
     private let reminderRepository: ReminderRepository
@@ -29,8 +29,7 @@ public final class SettingsViewModel {
     public func refresh() throws {
         reminders = try reminderRepository.fetchAll()
         if let baseline = try sessionRepository.fetchLatestBaseline() {
-            let weeks = Calendar.current.dateComponents([.weekOfYear], from: baseline.capturedAt, to: now()).weekOfYear ?? 0
-            baselineAgeWeeks = max(weeks, 0)
+            baselineAgeWeeks = baseline.ageWeeks(now: now())
         } else {
             baselineAgeWeeks = nil
         }
