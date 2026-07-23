@@ -1,3 +1,4 @@
 CoachingKit/.build/
 *.xcuserstate
 xcuserdata/
+.superpowers/
