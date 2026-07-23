@@ -16,6 +16,10 @@ struct CarePlayerView: View {
 
     private var isLastStep: Bool { currentStepIndex >= routine.steps.count - 1 }
 
+    private var currentStep: CareStep? {
+        routine.steps.indices.contains(currentStepIndex) ? routine.steps[currentStepIndex] : nil
+    }
+
     var body: some View {
         VStack(alignment: .leading, spacing: 14) {
             HStack(spacing: 10) {
@@ -98,21 +102,17 @@ struct CarePlayerView: View {
             VideoPlayer(player: player)
                 .frame(height: 210)
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        } else if let currentStep {
+            StepHeroView(
+                category: routine.category,
+                step: currentStep,
+                remainingSeconds: remainingSeconds,
+                totalSeconds: currentStep.seconds * currentStep.reps
+            )
         } else {
-            ZStack {
-                RoundedRectangle(cornerRadius: 20, style: .continuous)
-                    .fill(routine.category.thumbnailGradient)
-                    .frame(height: 210)
-
-                VStack(spacing: 8) {
-                    Image(systemName: "play.circle.fill")
-                        .font(.system(size: 44))
-                        .foregroundStyle(.white.opacity(0.95))
-                    Text("영상 준비 중 · 아래 단계를 따라 해보세요")
-                        .font(.caption2.bold())
-                        .foregroundStyle(.white.opacity(0.9))
-                }
-            }
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(routine.category.thumbnailGradient)
+                .frame(height: 210)
         }
     }
 
@@ -138,6 +138,55 @@ struct CarePlayerView: View {
         }
         let step = routine.steps[currentStepIndex]
         remainingSeconds = step.seconds * step.reps
+    }
+}
+
+private struct StepHeroView: View {
+    let category: CareCategory
+    let step: CareStep
+    let remainingSeconds: Int
+    let totalSeconds: Int
+
+    private var progress: Double {
+        guard totalSeconds > 0 else { return 0 }
+        return Double(remainingSeconds) / Double(totalSeconds)
+    }
+
+    var body: some View {
+        ZStack {
+            RoundedRectangle(cornerRadius: 20, style: .continuous)
+                .fill(category.thumbnailGradient)
+                .frame(height: 210)
+
+            VStack(spacing: 10) {
+                ZStack {
+                    Circle()
+                        .stroke(.white.opacity(0.3), lineWidth: 6)
+                    Circle()
+                        .trim(from: 0, to: progress)
+                        .stroke(.white, style: StrokeStyle(lineWidth: 6, lineCap: .round))
+                        .rotationEffect(.degrees(-90))
+                    Image(systemName: step.systemImage)
+                        .font(.system(size: 34))
+                        .foregroundStyle(.white)
+                }
+                .frame(width: 88, height: 88)
+                .animation(.linear(duration: 1), value: progress)
+
+                VStack(spacing: 2) {
+                    Text(step.title)
+                        .font(.subheadline.bold())
+                        .foregroundStyle(.white)
+                        .multilineTextAlignment(.center)
+                    if step.reps > 1 {
+                        Text("×\(step.reps)")
+                            .font(.system(size: 11, weight: .heavy))
+                            .foregroundStyle(.white.opacity(0.85))
+                    }
+                }
+                .padding(.horizontal, 20)
+            }
+        }
     }
 }
 
