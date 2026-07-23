@@ -7,6 +7,7 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         var onUpdate: ((FaceMeasurement) -> Void)?
         var onError: ((Error) -> Void)?
         var onLightingUpdate: ((Double) -> Void)?
+        var onTrackingQualityUpdate: ((Bool) -> Void)?
         private(set) var startCallCount = 0
         private(set) var stopCallCount = 0
 
@@ -19,6 +20,10 @@ final class BaselineCaptureViewModelTests: XCTestCase {
 
         func emitLighting(_ intensity: Double) {
             onLightingUpdate?(intensity)
+        }
+
+        func emitTrackingQuality(_ ok: Bool) {
+            onTrackingQualityUpdate?(ok)
         }
     }
 
@@ -89,5 +94,46 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         let allBaselines = try context.fetch(FetchDescriptor<Baseline>())
         XCTAssertEqual(allBaselines.count, 1)
         XCTAssertEqual(allBaselines.first?.mouthCornerLeft, 0.11)
+    }
+
+    func test_isLightingPoor_true_whenAmbientBelowThreshold() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository)
+
+        XCTAssertFalse(viewModel.isLightingPoor)
+        mockSession.emitLighting(200)
+        XCTAssertTrue(viewModel.isLightingPoor)
+        mockSession.emitLighting(800)
+        XCTAssertFalse(viewModel.isLightingPoor)
+    }
+
+    func test_isAngleOK_defaultsTrue_andFollowsTrackingQualityUpdates() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository)
+
+        XCTAssertTrue(viewModel.isAngleOK)
+        mockSession.emitTrackingQuality(false)
+        XCTAssertFalse(viewModel.isAngleOK)
+        mockSession.emitTrackingQuality(true)
+        XCTAssertTrue(viewModel.isAngleOK)
+    }
+
+    func test_captureBaseline_persistsMeasuredLightingAndAngle() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 5_000) })
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        mockSession.emitLighting(500)
+        mockSession.emitTrackingQuality(false)
+        try viewModel.captureBaseline()
+
+        let saved = try XCTUnwrap(try repository.fetchLatestBaseline())
+        XCTAssertEqual(saved.lightingQuality, 0.5, accuracy: 0.001)
+        XCTAssertFalse(saved.deviceAngleOK)
     }
 }

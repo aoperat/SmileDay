@@ -12,7 +12,9 @@ enum DemoSeeder {
         let now = Date()
         try repository.saveBaseline(
             FaceMeasurement(mouthCornerLeft: 0.3, mouthCornerRight: 0.3, browTension: 0.2),
-            capturedAt: calendar.date(byAdding: .weekOfYear, value: -3, to: now) ?? now
+            capturedAt: calendar.date(byAdding: .weekOfYear, value: -3, to: now) ?? now,
+            lightingQuality: 1.0,
+            deviceAngleOK: true
         )
 
         let deltasByDaysAgo: [Int: Double] = [1: 0.2, 2: 0.15, 3: 0.3, 4: 0.1, 5: 0.25, 7: 0.1, 9: 0.3, 11: 0.2]

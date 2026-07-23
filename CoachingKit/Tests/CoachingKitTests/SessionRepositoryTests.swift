@@ -14,7 +14,7 @@ final class SessionRepositoryTests: XCTestCase {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
         let measurement = FaceMeasurement(mouthCornerLeft: 0.12, mouthCornerRight: 0.14, browTension: 0.2)
 
-        try repository.saveBaseline(measurement, capturedAt: Date(timeIntervalSince1970: 1_000))
+        try repository.saveBaseline(measurement, capturedAt: Date(timeIntervalSince1970: 1_000), lightingQuality: 1.0, deviceAngleOK: true)
 
         let fetched = try repository.fetchLatestBaseline()
         XCTAssertEqual(fetched?.mouthCornerLeft, 0.12)

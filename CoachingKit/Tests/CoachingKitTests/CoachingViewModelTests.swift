@@ -32,7 +32,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_complete_savesCheckIn_andTransitionsToCompletedPhase() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline, now: { Date(timeIntervalSince1970: 5_000) })
 
@@ -55,7 +55,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_complete_doesNothing_whenNoMeasurementReceivedYet() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
@@ -68,7 +68,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_complete_secondCallAfterCompleted_doesNotPersistDuplicate() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline, now: { Date(timeIntervalSince1970: 5_000) })
 
@@ -88,7 +88,7 @@ final class CoachingViewModelTests: XCTestCase {
 
     func test_displayedMeasurement_updatesOnlyWhenDisplayScoreChanges() throws {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
@@ -107,7 +107,7 @@ final class CoachingViewModelTests: XCTestCase {
 
     func test_isLightingPoor_true_whenAmbientBelowThreshold() throws {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
@@ -121,7 +121,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_complete_persistsMeasuredLightingQuality() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
@@ -136,7 +136,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_complete_persistsNeutralLighting_whenNoLightingReceived() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
@@ -150,7 +150,7 @@ final class CoachingViewModelTests: XCTestCase {
     func test_yesterdayDelta_returnsYesterdaysLatestScoreDelta() throws {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
-        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 

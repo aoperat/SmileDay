@@ -9,12 +9,19 @@ public final class SessionRepository {
     }
 
     @discardableResult
-    public func saveBaseline(_ measurement: FaceMeasurement, capturedAt: Date) throws -> Baseline {
+    public func saveBaseline(
+        _ measurement: FaceMeasurement,
+        capturedAt: Date,
+        lightingQuality: Double,
+        deviceAngleOK: Bool
+    ) throws -> Baseline {
         let baseline = Baseline(
             capturedAt: capturedAt,
             mouthCornerLeft: measurement.mouthCornerLeft,
             mouthCornerRight: measurement.mouthCornerRight,
-            browTension: measurement.browTension
+            browTension: measurement.browTension,
+            lightingQuality: lightingQuality,
+            deviceAngleOK: deviceAngleOK
         )
         modelContext.insert(baseline)
         try modelContext.save()

@@ -79,7 +79,9 @@ final class SettingsViewModelTests: XCTestCase {
         let sixWeeksAgo = Calendar.current.date(byAdding: .weekOfYear, value: -6, to: Date())!
         try sessionRepository.saveBaseline(
             FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
-            capturedAt: sixWeeksAgo
+            capturedAt: sixWeeksAgo,
+            lightingQuality: 1.0,
+            deviceAngleOK: true
         )
 
         try viewModel.refresh()
