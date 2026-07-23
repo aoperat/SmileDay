@@ -34,7 +34,7 @@ struct CoachingTabView: View {
                         try? await viewModel.addReminder(hour: result.completedHour, minute: result.completedMinute)
                     },
                     onDecline: {
-                        ReminderNudge(store: UserDefaultsReminderNudgeState()).declineCheckInPrompt()
+                        ReminderNudge(store: UserDefaultsReminderNudgeState()).declineCheckInPrompt(forHour: result.completedHour)
                     }
                 ) : nil
             ) {
@@ -46,14 +46,15 @@ struct CoachingTabView: View {
                 baseline: baseline,
                 onCompleted: { today, yesterday in
                     let components = Calendar.current.dateComponents([.hour, .minute], from: .now)
-                    let reminderCount = (try? ReminderRepository(modelContext: modelContext).fetchAll().count) ?? 0
+                    let hour = components.hour ?? 9
+                    let registered = (try? ReminderRepository(modelContext: modelContext).registeredBuckets()) ?? []
                     let nudge = ReminderNudge(store: UserDefaultsReminderNudgeState())
                     result = SessionResult(
                         todayScore: today,
                         yesterdayScore: yesterday,
-                        completedHour: components.hour ?? 9,
+                        completedHour: hour,
                         completedMinute: components.minute ?? 0,
-                        offerReminder: nudge.shouldOfferAfterCheckIn(reminderCount: reminderCount)
+                        offerReminder: nudge.shouldOfferAfterCheckIn(registeredBuckets: registered, checkInHour: hour)
                     )
                 },
                 onExit: onExit

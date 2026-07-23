@@ -6,6 +6,8 @@ struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: HomeViewModel?
     @State private var showReminderNudgeCard = false
+    @State private var reminderNudgeTitle = ""
+    @State private var reminderNudgeSubtitle = ""
     @State private var isReminderSheetPresented = false
 
     let baseline: Baseline
@@ -35,9 +37,12 @@ struct HomeView: View {
 
                 if showReminderNudgeCard {
                     ReminderNudgeCard(
+                        title: reminderNudgeTitle,
+                        subtitle: reminderNudgeSubtitle,
                         onTap: { isReminderSheetPresented = true },
                         onDismiss: {
-                            ReminderNudge(store: UserDefaultsReminderNudgeState()).dismissHomeCard()
+                            let registered = (try? ReminderRepository(modelContext: modelContext).registeredBuckets()) ?? []
+                            ReminderNudge(store: UserDefaultsReminderNudgeState()).dismissHomeCard(registeredBuckets: registered)
                             withAnimation { showReminderNudgeCard = false }
                         }
                     )
@@ -59,10 +64,19 @@ struct HomeView: View {
     }
 
     private func refreshReminderNudge() {
-        let reminderCount = (try? ReminderRepository(modelContext: modelContext).fetchAll().count) ?? 0
+        let registered = (try? ReminderRepository(modelContext: modelContext).registeredBuckets()) ?? []
         let hasAnyCheckIn = viewModel?.recentWeek.contains(where: \.checkedIn) ?? false
         let nudge = ReminderNudge(store: UserDefaultsReminderNudgeState())
-        showReminderNudgeCard = nudge.shouldShowHomeCard(reminderCount: reminderCount, hasAnyCheckIn: hasAnyCheckIn)
+        let missing = nudge.missingBuckets(registeredBuckets: registered)
+
+        if missing.count == TimeBucket.allCases.count {
+            reminderNudgeTitle = "매일 잊지 않게 알려드릴까요?"
+            reminderNudgeSubtitle = "원하는 시간에 표정 질문을 보내드려요"
+        } else {
+            reminderNudgeTitle = "\(missing.map(\.displayName).joined(separator: "·")) 리마인더도 설정해볼까요?"
+            reminderNudgeSubtitle = "하루 세 번이면 표정 습관이 더 잘 자리 잡아요"
+        }
+        showReminderNudgeCard = nudge.shouldShowHomeCard(registeredBuckets: registered, hasAnyCheckIn: hasAnyCheckIn)
     }
 
     private var greeting: some View {
@@ -235,8 +249,10 @@ struct WeekStreakCard: View {
     }
 }
 
-/// 리마인더 미설정 사용자를 설정으로 유도하는 카드.
+/// 리마인더 미설정 시간대를 채우도록 유도하는 카드.
 struct ReminderNudgeCard: View {
+    let title: String
+    let subtitle: String
     let onTap: () -> Void
     let onDismiss: () -> Void
 
@@ -249,10 +265,10 @@ struct ReminderNudgeCard: View {
                 .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
-                Text("매일 잊지 않게 알려드릴까요?")
+                Text(title)
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.ink)
-                Text("원하는 시간에 표정 질문을 보내드려요")
+                Text(subtitle)
                     .font(.caption)
                     .foregroundStyle(SDColor.muted)
             }
