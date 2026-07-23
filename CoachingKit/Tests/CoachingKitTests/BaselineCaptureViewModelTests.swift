@@ -27,6 +27,12 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         }
     }
 
+    private final class MutableClock {
+        var current: Date
+        init(_ current: Date) { self.current = current }
+        func advance(by seconds: TimeInterval) { current.addTimeInterval(seconds) }
+    }
+
     private func makeInMemoryContext() throws -> ModelContext {
         let schema = PersistenceSchema.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -38,10 +44,14 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
         let mockSession = MockFaceTrackingSession()
-        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 5_000) })
+        let clock = MutableClock(Date(timeIntervalSince1970: 5_000))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+        let measurement = FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05)
 
         viewModel.start()
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        mockSession.emit(measurement)
+        clock.advance(by: 1.1)
+        mockSession.emit(measurement)
         try viewModel.captureBaseline()
 
         XCTAssertEqual(mockSession.startCallCount, 1)
@@ -70,10 +80,14 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
         let mockSession = MockFaceTrackingSession()
-        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 5_000) })
+        let clock = MutableClock(Date(timeIntervalSince1970: 5_000))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+        let measurement = FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05)
 
         viewModel.start()
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        mockSession.emit(measurement)
+        clock.advance(by: 1.1)
+        mockSession.emit(measurement)
         try viewModel.captureBaseline()
 
         guard case let .saved(firstBaseline) = viewModel.phase else {
@@ -124,10 +138,14 @@ final class BaselineCaptureViewModelTests: XCTestCase {
         let context = try makeInMemoryContext()
         let repository = SessionRepository(modelContext: context)
         let mockSession = MockFaceTrackingSession()
-        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 5_000) })
+        let clock = MutableClock(Date(timeIntervalSince1970: 5_000))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+        let measurement = FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05)
 
         viewModel.start()
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        mockSession.emit(measurement)
+        clock.advance(by: 1.1)
+        mockSession.emit(measurement)
         mockSession.emitLighting(500)
         mockSession.emitTrackingQuality(false)
         try viewModel.captureBaseline()
@@ -149,13 +167,68 @@ final class BaselineCaptureViewModelTests: XCTestCase {
             )
         }
         let mockSession = MockFaceTrackingSession()
-        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { Date(timeIntervalSince1970: 10_000) })
+        let clock = MutableClock(Date(timeIntervalSince1970: 10_000))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+        let measurement = FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.5, browTension: 0.5)
 
         viewModel.start()
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.5, browTension: 0.5))
+        mockSession.emit(measurement)
+        clock.advance(by: 1.1)
+        mockSession.emit(measurement)
         try viewModel.captureBaseline()
 
         let remaining = try context.fetch(FetchDescriptor<Baseline>())
         XCTAssertEqual(remaining.count, 5)
+    }
+
+    func test_isStable_requiresOneSecondWithinTolerance() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let mockSession = MockFaceTrackingSession()
+        let clock = MutableClock(Date(timeIntervalSince1970: 0))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+        let measurement = FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05)
+
+        mockSession.emit(measurement)
+        XCTAssertFalse(viewModel.isStable)
+
+        clock.advance(by: 0.5)
+        mockSession.emit(measurement)
+        XCTAssertFalse(viewModel.isStable, "0.5초 경과는 아직 1초 미만")
+
+        clock.advance(by: 0.6)
+        mockSession.emit(measurement)
+        XCTAssertTrue(viewModel.isStable, "1.1초 경과 후엔 안정화됨")
+    }
+
+    func test_isStable_resetsWhenMeasurementDrifts() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let mockSession = MockFaceTrackingSession()
+        let clock = MutableClock(Date(timeIntervalSince1970: 0))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        clock.advance(by: 1.1)
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        XCTAssertTrue(viewModel.isStable)
+
+        // 허용 오차(0.02)를 넘는 변화 — 안정화 타이머가 리셋되어야 한다.
+        clock.advance(by: 0.1)
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.13, browTension: 0.05))
+        XCTAssertFalse(viewModel.isStable)
+    }
+
+    func test_captureBaseline_doesNothing_whenNotStable() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let mockSession = MockFaceTrackingSession()
+        let clock = MutableClock(Date(timeIntervalSince1970: 0))
+        let viewModel = BaselineCaptureViewModel(session: mockSession, repository: repository, now: { clock.current })
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.11, mouthCornerRight: 0.13, browTension: 0.05))
+        try viewModel.captureBaseline()
+
+        XCTAssertEqual(viewModel.phase, .tracking)
+        XCTAssertNil(try repository.fetchLatestBaseline())
     }
 }
