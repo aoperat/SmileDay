@@ -9,9 +9,12 @@ struct HomeView: View {
     @State private var reminderNudgeTitle = ""
     @State private var reminderNudgeSubtitle = ""
     @State private var isReminderSheetPresented = false
+    @State private var showBaselineResetNudgeCard = false
+    @State private var isRecapturingBaseline = false
 
     let baseline: Baseline
     let onStartCoaching: () -> Void
+    let onBaselineUpdated: (Baseline) -> Void
 
     var body: some View {
         ScrollView {
@@ -47,6 +50,20 @@ struct HomeView: View {
                         }
                     )
                 }
+
+                if showBaselineResetNudgeCard {
+                    ReminderNudgeCard(
+                        title: "기준 얼굴을 다시 찍을 때가 됐어요",
+                        subtitle: "지난 촬영 후 4주가 지났어요. 다시 찍으면 오늘의 미소 크기가 더 정확해져요.",
+                        icon: "arrow.clockwise",
+                        iconColor: SDColor.coral,
+                        onTap: { isRecapturingBaseline = true },
+                        onDismiss: {
+                            BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState()).snooze(now: Date())
+                            withAnimation { showBaselineResetNudgeCard = false }
+                        }
+                    )
+                }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
@@ -57,9 +74,21 @@ struct HomeView: View {
             viewModel = vm
             try? vm.refresh()
             refreshReminderNudge()
+            refreshBaselineResetNudge()
         }
         .sheet(isPresented: $isReminderSheetPresented, onDismiss: { refreshReminderNudge() }) {
             ReminderSheet()
+        }
+        .fullScreenCover(isPresented: $isRecapturingBaseline) {
+            BaselineCaptureView(
+                onBaselineSaved: { newBaseline in
+                    onBaselineUpdated(newBaseline)
+                    BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState()).clearSnooze()
+                    isRecapturingBaseline = false
+                    showBaselineResetNudgeCard = false
+                },
+                onCancel: { isRecapturingBaseline = false }
+            )
         }
     }
 
@@ -77,6 +106,11 @@ struct HomeView: View {
             reminderNudgeSubtitle = "하루 세 번이면 표정 습관이 더 잘 자리 잡아요"
         }
         showReminderNudgeCard = nudge.shouldShowHomeCard(registeredBuckets: registered, hasAnyCheckIn: hasAnyCheckIn)
+    }
+
+    private func refreshBaselineResetNudge() {
+        showBaselineResetNudgeCard = BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState())
+            .shouldShowHomeCard(shouldRecommendReset: baseline.isOverdueForReset(), now: Date())
     }
 
     private var greeting: some View {
@@ -253,16 +287,18 @@ struct WeekStreakCard: View {
 struct ReminderNudgeCard: View {
     let title: String
     let subtitle: String
+    var icon: String = "bell.badge.fill"
+    var iconColor: Color = SDColor.apricot
     let onTap: () -> Void
     let onDismiss: () -> Void
 
     var body: some View {
         HStack(spacing: 12) {
-            Image(systemName: "bell.badge.fill")
+            Image(systemName: icon)
                 .font(.system(size: 15, weight: .semibold))
                 .foregroundStyle(.white)
                 .frame(width: 34, height: 34)
-                .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+                .background(iconColor, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
 
             VStack(alignment: .leading, spacing: 2) {
                 Text(title)

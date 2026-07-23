@@ -51,7 +51,11 @@ struct MainTabView: View {
         // 탭별 상태(내비게이션 스택, 필터, 스크롤 위치)를 보존하기 위해 네이티브 TabView를 쓰고,
         // 기본 탭바만 숨긴 채 커스텀 필 탭바를 올린다.
         TabView(selection: $selection) {
-            HomeView(baseline: baseline, onStartCoaching: { selection = .coaching })
+            HomeView(
+                baseline: baseline,
+                onStartCoaching: { selection = .coaching },
+                onBaselineUpdated: onBaselineUpdated
+            )
                 .toolbar(.hidden, for: .tabBar)
                 .tag(AppTab.home)
 
