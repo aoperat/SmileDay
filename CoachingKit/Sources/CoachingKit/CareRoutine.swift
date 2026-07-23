@@ -32,11 +32,14 @@ public struct CareStep: Equatable, Sendable {
     public let title: String
     public let seconds: Int
     public let reps: Int
+    /// 히어로 영역에 표시할 SF Symbol 이름.
+    public let systemImage: String
 
-    public init(title: String, seconds: Int, reps: Int = 1) {
+    public init(title: String, seconds: Int, reps: Int = 1, systemImage: String) {
         self.title = title
         self.seconds = seconds
         self.reps = reps
+        self.systemImage = systemImage
     }
 }
 
@@ -46,7 +49,7 @@ public struct CareRoutine: Identifiable, Equatable, Sendable {
     public let category: CareCategory
     public let difficulty: CareDifficulty
     public let steps: [CareStep]
-    /// 번들 내 영상 파일 이름(확장자 제외). 파일이 없으면 플레이어가 플레이스홀더를 보여준다.
+    /// 번들 내 영상 파일 이름(확장자 제외). 파일이 없으면 플레이어가 아이콘 히어로를 보여준다.
     public let videoFileName: String
 
     public init(
@@ -84,10 +87,10 @@ public extension CareRoutine {
             category: .lift,
             difficulty: .beginner,
             steps: [
-                CareStep(title: "손바닥 비벼 데우기", seconds: 30),
-                CareStep(title: "입꼬리 올려 10초 유지", seconds: 10, reps: 3),
-                CareStep(title: "광대 쓸어올리기", seconds: 30),
-                CareStep(title: "입꼬리 옆 지그시 원 그리기", seconds: 60),
+                CareStep(title: "손바닥 비벼 데우기", seconds: 30, systemImage: "hands.and.sparkles.fill"),
+                CareStep(title: "입꼬리 올려 10초 유지", seconds: 10, reps: 3, systemImage: "mouth.fill"),
+                CareStep(title: "광대 쓸어올리기", seconds: 30, systemImage: "hand.draw.fill"),
+                CareStep(title: "입꼬리 옆 지그시 원 그리기", seconds: 60, systemImage: "arrow.triangle.2.circlepath"),
             ],
             videoFileName: "care_lift_smile"
         ),
@@ -97,10 +100,10 @@ public extension CareRoutine {
             category: .lift,
             difficulty: .beginner,
             steps: [
-                CareStep(title: "손바닥 비벼 데우기", seconds: 30),
-                CareStep(title: "광대뼈 아래 눌러 풀기", seconds: 60),
-                CareStep(title: "광대 바깥으로 쓸어올리기", seconds: 60),
-                CareStep(title: "관자놀이 지그시 누르기", seconds: 30, reps: 2),
+                CareStep(title: "손바닥 비벼 데우기", seconds: 30, systemImage: "hands.and.sparkles.fill"),
+                CareStep(title: "광대뼈 아래 눌러 풀기", seconds: 60, systemImage: "hand.point.down.fill"),
+                CareStep(title: "광대 바깥으로 쓸어올리기", seconds: 60, systemImage: "hand.draw.fill"),
+                CareStep(title: "관자놀이 지그시 누르기", seconds: 30, reps: 2, systemImage: "hand.point.down.fill"),
             ],
             videoFileName: "care_lift_cheek"
         ),
@@ -110,9 +113,9 @@ public extension CareRoutine {
             category: .relax,
             difficulty: .beginner,
             steps: [
-                CareStep(title: "눈썹 위 지그시 누르기", seconds: 30),
-                CareStep(title: "미간 바깥으로 쓸어내기", seconds: 60),
-                CareStep(title: "눈 감고 깊게 호흡", seconds: 30),
+                CareStep(title: "눈썹 위 지그시 누르기", seconds: 30, systemImage: "hand.point.down.fill"),
+                CareStep(title: "미간 바깥으로 쓸어내기", seconds: 60, systemImage: "hand.draw.fill"),
+                CareStep(title: "눈 감고 깊게 호흡", seconds: 30, systemImage: "lungs.fill"),
             ],
             videoFileName: "care_relax_brow"
         ),
@@ -122,10 +125,10 @@ public extension CareRoutine {
             category: .depuff,
             difficulty: .intermediate,
             steps: [
-                CareStep(title: "목 옆 림프 쓸어내리기", seconds: 60),
-                CareStep(title: "턱선 따라 쓸어올리기", seconds: 60),
-                CareStep(title: "눈 밑 가볍게 두드리기", seconds: 60),
-                CareStep(title: "얼굴 전체 바깥으로 쓸기", seconds: 60, reps: 2),
+                CareStep(title: "목 옆 림프 쓸어내리기", seconds: 60, systemImage: "hand.draw.fill"),
+                CareStep(title: "턱선 따라 쓸어올리기", seconds: 60, systemImage: "hand.draw.fill"),
+                CareStep(title: "눈 밑 가볍게 두드리기", seconds: 60, systemImage: "hand.tap.fill"),
+                CareStep(title: "얼굴 전체 바깥으로 쓸기", seconds: 60, reps: 2, systemImage: "hand.draw.fill"),
             ],
             videoFileName: "care_depuff_morning"
         ),
@@ -135,8 +138,8 @@ public extension CareRoutine {
             category: .morning,
             difficulty: .beginner,
             steps: [
-                CareStep(title: "입 크게 벌려 아·에·이·오·우", seconds: 30),
-                CareStep(title: "입꼬리 올려 10초 유지", seconds: 10, reps: 3),
+                CareStep(title: "입 크게 벌려 아·에·이·오·우", seconds: 30, systemImage: "mouth.fill"),
+                CareStep(title: "입꼬리 올려 10초 유지", seconds: 10, reps: 3, systemImage: "mouth.fill"),
             ],
             videoFileName: "care_morning_1min"
         ),
