@@ -7,8 +7,8 @@ public final class Baseline {
     public var mouthCornerLeft: Double
     public var mouthCornerRight: Double
     public var browTension: Double
-    public var lightingQuality: Double
-    public var deviceAngleOK: Bool
+    public var lightingQuality: Double = 1.0
+    public var deviceAngleOK: Bool = true
 
     public init(
         capturedAt: Date,
