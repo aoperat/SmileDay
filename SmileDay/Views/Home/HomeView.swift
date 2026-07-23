@@ -5,6 +5,8 @@ import CoachingKit
 struct HomeView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: HomeViewModel?
+    @State private var showReminderNudgeCard = false
+    @State private var isReminderSheetPresented = false
 
     let baseline: Baseline
     let onStartCoaching: () -> Void
@@ -30,6 +32,16 @@ struct HomeView: View {
                         )
                     }
                 }
+
+                if showReminderNudgeCard {
+                    ReminderNudgeCard(
+                        onTap: { isReminderSheetPresented = true },
+                        onDismiss: {
+                            ReminderNudge(store: UserDefaultsReminderNudgeState()).dismissHomeCard()
+                            withAnimation { showReminderNudgeCard = false }
+                        }
+                    )
+                }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
@@ -39,7 +51,18 @@ struct HomeView: View {
             let vm = viewModel ?? HomeViewModel(repository: SessionRepository(modelContext: modelContext))
             viewModel = vm
             try? vm.refresh()
+            refreshReminderNudge()
         }
+        .sheet(isPresented: $isReminderSheetPresented, onDismiss: { refreshReminderNudge() }) {
+            ReminderSheet()
+        }
+    }
+
+    private func refreshReminderNudge() {
+        let reminderCount = (try? ReminderRepository(modelContext: modelContext).fetchAll().count) ?? 0
+        let hasAnyCheckIn = viewModel?.recentWeek.contains(where: \.checkedIn) ?? false
+        let nudge = ReminderNudge(store: UserDefaultsReminderNudgeState())
+        showReminderNudgeCard = nudge.shouldShowHomeCard(reminderCount: reminderCount, hasAnyCheckIn: hasAnyCheckIn)
     }
 
     private var greeting: some View {
@@ -209,6 +232,69 @@ struct WeekStreakCard: View {
     private func dotColor(_ day: DayCheckIn, isToday: Bool) -> Color {
         if day.checkedIn { return SDColor.coral }
         return isToday ? SDColor.apricot : SDColor.shell
+    }
+}
+
+/// 리마인더 미설정 사용자를 설정으로 유도하는 카드.
+struct ReminderNudgeCard: View {
+    let onTap: () -> Void
+    let onDismiss: () -> Void
+
+    var body: some View {
+        HStack(spacing: 12) {
+            Image(systemName: "bell.badge.fill")
+                .font(.system(size: 15, weight: .semibold))
+                .foregroundStyle(.white)
+                .frame(width: 34, height: 34)
+                .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 12, style: .continuous))
+
+            VStack(alignment: .leading, spacing: 2) {
+                Text("매일 잊지 않게 알려드릴까요?")
+                    .font(.subheadline.bold())
+                    .foregroundStyle(SDColor.ink)
+                Text("원하는 시간에 표정 질문을 보내드려요")
+                    .font(.caption)
+                    .foregroundStyle(SDColor.muted)
+            }
+
+            Spacer()
+
+            Button {
+                onDismiss()
+            } label: {
+                Image(systemName: "xmark")
+                    .font(.caption.bold())
+                    .foregroundStyle(SDColor.muted)
+                    .padding(6)
+            }
+        }
+        .sdCard()
+        .contentShape(Rectangle())
+        .onTapGesture { onTap() }
+    }
+}
+
+/// 홈에서 시트로 띄우는 리마인더 설정 화면. 뷰모델 생성과 refresh를 책임진다.
+private struct ReminderSheet: View {
+    @Environment(\.modelContext) private var modelContext
+    @State private var viewModel: SettingsViewModel?
+
+    var body: some View {
+        NavigationStack {
+            if let viewModel {
+                ReminderListView(viewModel: viewModel)
+            }
+        }
+        .tint(SDColor.coral)
+        .onAppear {
+            let vm = viewModel ?? SettingsViewModel(
+                reminderRepository: ReminderRepository(modelContext: modelContext),
+                sessionRepository: SessionRepository(modelContext: modelContext),
+                scheduler: UserNotificationReminderScheduler()
+            )
+            viewModel = vm
+            try? vm.refresh()
+        }
     }
 }
 
