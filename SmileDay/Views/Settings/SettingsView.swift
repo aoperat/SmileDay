@@ -27,9 +27,16 @@ struct SettingsView: View {
                             isResettingBaseline = true
                         } label: {
                             SettingsRow(icon: "arrow.clockwise", chipColor: SDColor.coral, title: "기준선 재설정") {
-                                if let weeks = viewModel.baselineAgeWeeks {
-                                    Text("\(weeks)주 전")
-                                        .foregroundStyle(SDColor.muted)
+                                VStack(alignment: .trailing, spacing: 2) {
+                                    if let weeks = viewModel.baselineAgeWeeks {
+                                        Text("\(weeks)주 전")
+                                            .foregroundStyle(viewModel.shouldRecommendReset ? SDColor.coral : SDColor.muted)
+                                    }
+                                    if viewModel.shouldRecommendReset {
+                                        Text("재설정을 권장해요")
+                                            .font(.caption2)
+                                            .foregroundStyle(SDColor.coral)
+                                    }
                                 }
                             }
                         }
