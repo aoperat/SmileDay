@@ -189,4 +189,69 @@ final class SessionRepositoryTests: XCTestCase {
         let remaining = try context.fetch(FetchDescriptor<Baseline>())
         XCTAssertEqual(remaining.count, 3)
     }
+
+    func test_saveCheckIn_persistsSummaryColumnsAndPayload() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let stats = [
+            DerivedMetric.smile: MetricStats(mean: 0.4, max: 0.6, std: 0.2),
+            DerivedMetric.smileAsymmetry: MetricStats(mean: 0.05, max: 0.1, std: 0.02),
+            DerivedMetric.duchenne: MetricStats(mean: 0.3, max: 0.5, std: 0.1),
+        ]
+        let summary = SessionMetricsAccumulator.Summary(stats: stats, durationSeconds: 10, trackingLossCount: 1)
+        let payload = CheckInPayload(
+            blendshapesFinal: ["jawOpen": 0.2],
+            sessionStats: stats,
+            pitchDegrees: 2.0,
+            yawDegrees: -3.0,
+            captureDurationSeconds: 10,
+            trackingLossCount: 1
+        )
+
+        try repository.saveCheckIn(
+            measurement: FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.1),
+            date: Date(timeIntervalSince1970: 1_000),
+            lightingQuality: 1.0,
+            deviceAngleOK: true,
+            scoreDelta: 0.2,
+            summary: summary,
+            payload: payload
+        )
+
+        let saved = try XCTUnwrap(repository.fetchLatestCheckIn())
+        XCTAssertEqual(saved.smileMean ?? -1, 0.4, accuracy: 0.0001)
+        XCTAssertEqual(saved.smileMax ?? -1, 0.6, accuracy: 0.0001)
+        XCTAssertEqual(saved.smileStability ?? -1, 0.2, accuracy: 0.0001)
+        XCTAssertEqual(saved.smileAsymmetry ?? -1, 0.05, accuracy: 0.0001)
+        XCTAssertEqual(saved.duchenneScore ?? -1, 0.3, accuracy: 0.0001)
+        XCTAssertEqual(saved.payloadVersion, CheckInPayload.currentVersion)
+        let decoded = try JSONDecoder().decode(CheckInPayload.self, from: XCTUnwrap(saved.payload))
+        XCTAssertEqual(decoded, payload)
+    }
+
+    func test_saveCheckIn_withoutSummary_leavesNewColumnsNil() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        try saveCheckIn(repository, date: Date(timeIntervalSince1970: 1_000))
+
+        let saved = try XCTUnwrap(repository.fetchLatestCheckIn())
+        XCTAssertNil(saved.smileMean)
+        XCTAssertNil(saved.mood)
+        XCTAssertNil(saved.payload)
+    }
+
+    func test_updateMoodOnLatestCheckIn_setsMoodOnMostRecent() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        try saveCheckIn(repository, date: Date(timeIntervalSince1970: 1_000))
+        try saveCheckIn(repository, date: Date(timeIntervalSince1970: 2_000))
+
+        try repository.updateMoodOnLatestCheckIn("😊")
+
+        let sessions = try repository.fetchCheckIns(from: .distantPast, to: .distantFuture)
+        XCTAssertNil(sessions.first?.mood)
+        XCTAssertEqual(sessions.last?.mood, "😊")
+    }
+
+    func test_updateMoodOnLatestCheckIn_doesNothing_whenNoCheckIns() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        XCTAssertNoThrow(try repository.updateMoodOnLatestCheckIn("😊"))
+    }
 }
