@@ -77,7 +77,7 @@ struct CoachingSessionView: View {
 
             VStack(spacing: 12) {
                 HStack(alignment: .firstTextBaseline) {
-                    Text("지금 입꼬리 각도")
+                    Text("지금 미소 크기")
                         .font(.caption.weight(.bold))
                         .foregroundStyle(SDColor.muted)
                     Spacer()
