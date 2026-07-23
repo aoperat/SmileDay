@@ -49,6 +49,8 @@ public struct CareRoutine: Identifiable, Equatable, Sendable {
     public let category: CareCategory
     public let difficulty: CareDifficulty
     public let steps: [CareStep]
+    /// 이 루틴이 실제로 무엇을 하는지에 대한 담백한 설명. 효과를 약속하지 않는다.
+    public let purpose: String
     /// 번들 내 영상 파일 이름(확장자 제외). 파일이 없으면 플레이어가 아이콘 히어로를 보여준다.
     public let videoFileName: String
 
@@ -58,6 +60,7 @@ public struct CareRoutine: Identifiable, Equatable, Sendable {
         category: CareCategory,
         difficulty: CareDifficulty,
         steps: [CareStep],
+        purpose: String,
         videoFileName: String
     ) {
         self.id = id
@@ -65,6 +68,7 @@ public struct CareRoutine: Identifiable, Equatable, Sendable {
         self.category = category
         self.difficulty = difficulty
         self.steps = steps
+        self.purpose = purpose
         self.videoFileName = videoFileName
     }
 
@@ -92,6 +96,7 @@ public extension CareRoutine {
                 CareStep(title: "광대 쓸어올리기", seconds: 30, systemImage: "hand.draw.fill"),
                 CareStep(title: "입꼬리 옆 지그시 원 그리기", seconds: 60, systemImage: "arrow.triangle.2.circlepath"),
             ],
+            purpose: "입꼬리 주변 근육을 움직이고 마사지하는 스트레칭이에요.",
             videoFileName: "care_lift_smile"
         ),
         CareRoutine(
@@ -105,6 +110,7 @@ public extension CareRoutine {
                 CareStep(title: "광대 바깥으로 쓸어올리기", seconds: 60, systemImage: "hand.draw.fill"),
                 CareStep(title: "관자놀이 지그시 누르기", seconds: 30, reps: 2, systemImage: "hand.point.down.fill"),
             ],
+            purpose: "광대 주변을 눌러 풀고 쓸어 올리는 마사지예요.",
             videoFileName: "care_lift_cheek"
         ),
         CareRoutine(
@@ -117,6 +123,7 @@ public extension CareRoutine {
                 CareStep(title: "미간 바깥으로 쓸어내기", seconds: 60, systemImage: "hand.draw.fill"),
                 CareStep(title: "눈 감고 깊게 호흡", seconds: 30, systemImage: "lungs.fill"),
             ],
+            purpose: "미간과 눈가 주변 근육의 긴장을 풀어주는 간단한 스트레칭이에요.",
             videoFileName: "care_relax_brow"
         ),
         CareRoutine(
@@ -130,6 +137,7 @@ public extension CareRoutine {
                 CareStep(title: "눈 밑 가볍게 두드리기", seconds: 60, systemImage: "hand.tap.fill"),
                 CareStep(title: "얼굴 전체 바깥으로 쓸기", seconds: 60, reps: 2, systemImage: "hand.draw.fill"),
             ],
+            purpose: "목과 얼굴의 림프 흐름을 도와주는 마사지예요.",
             videoFileName: "care_depuff_morning"
         ),
         CareRoutine(
@@ -141,6 +149,7 @@ public extension CareRoutine {
                 CareStep(title: "입 크게 벌려 아·에·이·오·우", seconds: 30, systemImage: "mouth.fill"),
                 CareStep(title: "입꼬리 올려 10초 유지", seconds: 10, reps: 3, systemImage: "mouth.fill"),
             ],
+            purpose: "아침에 표정 근육을 가볍게 깨우는 1분 스트레칭이에요.",
             videoFileName: "care_morning_1min"
         ),
     ]

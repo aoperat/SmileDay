@@ -30,6 +30,10 @@ struct CarePlayerView: View {
                 Spacer()
             }
 
+            Text(routine.purpose)
+                .font(.caption)
+                .foregroundStyle(SDColor.muted)
+
             videoArea
 
             VStack(alignment: .leading, spacing: 5) {

@@ -12,4 +12,13 @@ final class CareRoutineTests: XCTestCase {
             }
         }
     }
+
+    func test_catalog_everyRoutineHasNonEmptyPurpose() {
+        for routine in CareRoutine.catalog {
+            XCTAssertFalse(
+                routine.purpose.isEmpty,
+                "\(routine.id) is missing a purpose description"
+            )
+        }
+    }
 }
