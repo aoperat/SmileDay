@@ -51,13 +51,19 @@ extension ARKitFaceTrackingSession: ARSessionDelegate {
         let browInnerUp = blendShapes[.browInnerUp]?.doubleValue ?? 0
         let browTension = (browDownLeft + browDownRight + browInnerUp) / 3
 
+        let allShapes = Dictionary(uniqueKeysWithValues: blendShapes.map { ($0.key.rawValue, $0.value.doubleValue) })
+        let angles = Self.faceAngles(transform: faceAnchor.transform)
+
         let measurement = FaceMeasurement(
             mouthCornerLeft: mouthCornerLeft,
             mouthCornerRight: mouthCornerRight,
-            browTension: browTension
+            browTension: browTension,
+            blendShapes: allShapes,
+            pitchDegrees: angles.pitch,
+            yawDegrees: angles.yaw
         )
 
-        let angleOK = Self.isAngleWithinTolerance(transform: faceAnchor.transform)
+        let angleOK = AngleEvaluator.isWithinTolerance(pitchDegrees: angles.pitch, yawDegrees: angles.yaw)
 
         // ARSession delegate 큐는 기본값(메인 직렬 큐)이라 바로 콜백해도 안전하다.
         onUpdate?(measurement)
@@ -75,9 +81,9 @@ extension ARKitFaceTrackingSession: ARSessionDelegate {
         onError?(error)
     }
 
-    /// 얼굴 world-space transform에서 pitch(x축)/yaw(y축) 각도를 도 단위로 구해 허용 범위를 판정한다.
+    /// 얼굴 world-space transform에서 pitch(x축)/yaw(y축) 각도를 도 단위로 구한다.
     /// 쿼터니언 성분 순서는 simd_quatf.vector == (x, y, z, w).
-    private static func isAngleWithinTolerance(transform: simd_float4x4) -> Bool {
+    private static func faceAngles(transform: simd_float4x4) -> (pitch: Double, yaw: Double) {
         let q = simd_quatf(transform)
         let x = Double(q.vector.x)
         let y = Double(q.vector.y)
@@ -89,9 +95,24 @@ extension ARKitFaceTrackingSession: ARSessionDelegate {
         let sinYaw = max(-1, min(1, 2 * (w * y - z * x)))
         let yawRadians = asin(sinYaw)
 
-        let pitchDegrees = pitchRadians * 180 / .pi
-        let yawDegrees = yawRadians * 180 / .pi
-
-        return AngleEvaluator.isWithinTolerance(pitchDegrees: pitchDegrees, yawDegrees: yawDegrees)
+        return (pitchRadians * 180 / .pi, yawRadians * 180 / .pi)
     }
+}
+
+extension CuratedMetricKeys {
+    /// ARKit 타입 상수의 rawValue로 만든 키셋. 프로덕션 트래킹 경로는 항상 이걸 쓴다.
+    static let arKit = CuratedMetricKeys(
+        mouthSmileLeft: ARFaceAnchor.BlendShapeLocation.mouthSmileLeft.rawValue,
+        mouthSmileRight: ARFaceAnchor.BlendShapeLocation.mouthSmileRight.rawValue,
+        browDownLeft: ARFaceAnchor.BlendShapeLocation.browDownLeft.rawValue,
+        browDownRight: ARFaceAnchor.BlendShapeLocation.browDownRight.rawValue,
+        browInnerUp: ARFaceAnchor.BlendShapeLocation.browInnerUp.rawValue,
+        eyeSquintLeft: ARFaceAnchor.BlendShapeLocation.eyeSquintLeft.rawValue,
+        eyeSquintRight: ARFaceAnchor.BlendShapeLocation.eyeSquintRight.rawValue,
+        cheekSquintLeft: ARFaceAnchor.BlendShapeLocation.cheekSquintLeft.rawValue,
+        cheekSquintRight: ARFaceAnchor.BlendShapeLocation.cheekSquintRight.rawValue,
+        jawOpen: ARFaceAnchor.BlendShapeLocation.jawOpen.rawValue,
+        mouthPressLeft: ARFaceAnchor.BlendShapeLocation.mouthPressLeft.rawValue,
+        mouthPressRight: ARFaceAnchor.BlendShapeLocation.mouthPressRight.rawValue
+    )
 }

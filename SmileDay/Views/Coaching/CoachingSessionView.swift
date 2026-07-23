@@ -112,7 +112,8 @@ struct CoachingSessionView: View {
             let vm = CoachingViewModel(
                 session: trackingSession,
                 repository: SessionRepository(modelContext: modelContext),
-                baseline: baseline
+                baseline: baseline,
+                metricKeys: .arKit
             )
             viewModel = vm
             vm.start()

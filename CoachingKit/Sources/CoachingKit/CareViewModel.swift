@@ -87,8 +87,32 @@ public final class CareViewModel {
         favoriteIDs = ids
     }
 
-    public func completeRoutine(_ routine: CareRoutine) throws {
-        try careRepository.saveCompletion(routineID: routine.id, date: now())
+    public func completeRoutine(_ routine: CareRoutine, startedAt: Date? = nil) throws {
+        let endedAt = now()
+        try careRepository.saveSession(
+            routineID: routine.id,
+            date: endedAt,
+            startedAt: startedAt,
+            durationSeconds: startedAt.map { endedAt.timeIntervalSince($0) },
+            completedSteps: routine.steps.count,
+            totalSteps: routine.steps.count,
+            wasCompleted: true
+        )
+    }
+
+    /// 중도 이탈 기록. 스텝을 하나도 못 마친 이탈(열자마자 닫기)은 노이즈라 저장하지 않는다.
+    public func abandonRoutine(_ routine: CareRoutine, startedAt: Date?, completedSteps: Int) throws {
+        guard completedSteps > 0 else { return }
+        let endedAt = now()
+        try careRepository.saveSession(
+            routineID: routine.id,
+            date: endedAt,
+            startedAt: startedAt,
+            durationSeconds: startedAt.map { endedAt.timeIntervalSince($0) },
+            completedSteps: completedSteps,
+            totalSteps: routine.steps.count,
+            wasCompleted: false
+        )
     }
 
     /// 어제 측정값 기반 추천. 기록이 없으면 첫 케어 안내.

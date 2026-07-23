@@ -23,20 +23,24 @@ public final class CoachingViewModel {
     private let repository: SessionRepository
     private let baseline: Baseline
     private let now: () -> Date
+    @ObservationIgnored private let accumulator: SessionMetricsAccumulator
 
     public init(
         session: FaceTrackingSession,
         repository: SessionRepository,
         baseline: Baseline,
-        now: @escaping () -> Date = Date.init
+        now: @escaping () -> Date = Date.init,
+        metricKeys: CuratedMetricKeys = .default
     ) {
         self.session = session
         self.repository = repository
         self.baseline = baseline
         self.now = now
+        self.accumulator = SessionMetricsAccumulator(keys: metricKeys)
         self.session.onUpdate = { [weak self] measurement in
             guard let self else { return }
             self.latestMeasurement = measurement
+            self.accumulator.add(measurement, at: self.now())
             let delta = ScoreCalculator.delta(current: measurement, baseline: baseline.measurement)
             let centiDelta = Int((delta * 100).rounded())
             if centiDelta != self.lastDisplayedCentiDelta {
@@ -64,12 +68,23 @@ public final class CoachingViewModel {
     public func complete() throws {
         guard phase == .tracking, let measurement = latestMeasurement else { return }
         let delta = ScoreCalculator.delta(current: measurement, baseline: baseline.measurement)
+        let summary = accumulator.summarize()
+        let payload = CheckInPayload(
+            blendshapesFinal: measurement.blendShapes,
+            sessionStats: summary.stats,
+            pitchDegrees: measurement.pitchDegrees,
+            yawDegrees: measurement.yawDegrees,
+            captureDurationSeconds: summary.durationSeconds,
+            trackingLossCount: summary.trackingLossCount
+        )
         try repository.saveCheckIn(
             measurement: measurement,
             date: now(),
             lightingQuality: latestAmbientIntensity.map(LightingEvaluator.quality(ambientIntensity:)) ?? 1.0,
             deviceAngleOK: isAngleOK,
-            scoreDelta: delta
+            scoreDelta: delta,
+            summary: summary,
+            payload: payload
         )
         session.stop()
         phase = .completed(scoreDelta: delta)

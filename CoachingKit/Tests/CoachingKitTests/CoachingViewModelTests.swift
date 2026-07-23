@@ -201,4 +201,28 @@ final class CoachingViewModelTests: XCTestCase {
 
         XCTAssertEqual(try XCTUnwrap(viewModel.yesterdayDelta()), 0.2, accuracy: 0.001)
     }
+
+    func test_complete_persistsSessionSummaryAndPayload() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
+        let mockSession = MockFaceTrackingSession()
+        let keys = CuratedMetricKeys.default
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline, now: { Date(timeIntervalSince1970: 5_000) }, metricKeys: keys)
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.2, mouthCornerRight: 0.2, browTension: 0.1, blendShapes: [keys.jawOpen: 0.3]))
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.6, mouthCornerRight: 0.4, browTension: 0.1, blendShapes: [keys.jawOpen: 0.5], pitchDegrees: 2.0, yawDegrees: -1.0))
+        try viewModel.complete()
+
+        let saved = try XCTUnwrap(repository.fetchLatestCheckIn())
+        XCTAssertEqual(saved.smileMean ?? -1, 0.35, accuracy: 0.0001) // (0.2 + 0.5)/2
+        XCTAssertEqual(saved.smileMax ?? -1, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(saved.smileAsymmetry ?? -1, 0.1, accuracy: 0.0001) // (0 + 0.2)/2
+
+        let payload = try JSONDecoder().decode(CheckInPayload.self, from: XCTUnwrap(saved.payload))
+        XCTAssertEqual(payload.blendshapesFinal[keys.jawOpen] ?? -1, 0.5, accuracy: 0.0001)
+        XCTAssertEqual(payload.pitchDegrees ?? -1, 2.0, accuracy: 0.0001)
+        XCTAssertEqual(payload.sessionStats[keys.jawOpen]?.mean ?? -1, 0.4, accuracy: 0.0001)
+    }
 }

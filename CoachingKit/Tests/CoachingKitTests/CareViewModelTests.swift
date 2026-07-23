@@ -113,6 +113,60 @@ final class CareViewModelTests: XCTestCase {
         XCTAssertEqual(try repository.fetchCompletions(from: start, to: end).map(\.routineID), [routine.id])
     }
 
+    func test_completeRoutine_savesFullCompletionWithDuration() throws {
+        let context = try makeInMemoryContext()
+        let careRepository = CareRepository(modelContext: context)
+        let viewModel = CareViewModel(
+            sessionRepository: SessionRepository(modelContext: context),
+            careRepository: careRepository,
+            favorites: InMemoryCareFavorites(),
+            now: { Date(timeIntervalSince1970: 2_000) }
+        )
+        let routine = CareRoutine.catalog[0]
+
+        try viewModel.completeRoutine(routine, startedAt: Date(timeIntervalSince1970: 1_870))
+
+        let saved = try XCTUnwrap(careRepository.fetchCompletions(from: .distantPast, to: .distantFuture).first)
+        XCTAssertTrue(saved.wasCompleted)
+        XCTAssertEqual(saved.durationSeconds ?? -1, 130, accuracy: 0.001)
+        XCTAssertEqual(saved.completedSteps, routine.steps.count)
+        XCTAssertEqual(saved.totalSteps, routine.steps.count)
+    }
+
+    func test_abandonRoutine_savesPartialProgress() throws {
+        let context = try makeInMemoryContext()
+        let careRepository = CareRepository(modelContext: context)
+        let viewModel = CareViewModel(
+            sessionRepository: SessionRepository(modelContext: context),
+            careRepository: careRepository,
+            favorites: InMemoryCareFavorites(),
+            now: { Date(timeIntervalSince1970: 2_000) }
+        )
+        let routine = CareRoutine.catalog[0]
+
+        try viewModel.abandonRoutine(routine, startedAt: Date(timeIntervalSince1970: 1_940), completedSteps: 2)
+
+        let saved = try XCTUnwrap(careRepository.fetchCompletions(from: .distantPast, to: .distantFuture).first)
+        XCTAssertFalse(saved.wasCompleted)
+        XCTAssertEqual(saved.completedSteps, 2)
+        XCTAssertEqual(saved.totalSteps, routine.steps.count)
+    }
+
+    func test_abandonRoutine_ignoresZeroStepAbandons() throws {
+        let context = try makeInMemoryContext()
+        let careRepository = CareRepository(modelContext: context)
+        let viewModel = CareViewModel(
+            sessionRepository: SessionRepository(modelContext: context),
+            careRepository: careRepository,
+            favorites: InMemoryCareFavorites(),
+            now: { Date(timeIntervalSince1970: 2_000) }
+        )
+
+        try viewModel.abandonRoutine(CareRoutine.catalog[0], startedAt: Date(timeIntervalSince1970: 1_990), completedSteps: 0)
+
+        XCTAssertTrue(try careRepository.fetchCompletions(from: .distantPast, to: .distantFuture).isEmpty)
+    }
+
     func test_routineDurationText_roundsUpToMinutes() {
         let routine = CareRoutine.catalog.first { $0.id == "lift-smile" }!
         // 30 + 10×3 + 30 + 60 = 150초 → 3분

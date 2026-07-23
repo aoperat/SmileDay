@@ -34,13 +34,17 @@ public final class SessionRepository {
         return try modelContext.fetch(descriptor).first
     }
 
+    @discardableResult
     public func saveCheckIn(
         measurement: FaceMeasurement,
         date: Date,
         lightingQuality: Double,
         deviceAngleOK: Bool,
-        scoreDelta: Double
-    ) throws {
+        scoreDelta: Double,
+        summary: SessionMetricsAccumulator.Summary? = nil,
+        payload: CheckInPayload? = nil
+    ) throws -> CheckInSession {
+        let payloadData = try payload.map { try JSONEncoder().encode($0) }
         let session = CheckInSession(
             date: date,
             mouthCornerLeft: measurement.mouthCornerLeft,
@@ -48,10 +52,18 @@ public final class SessionRepository {
             browTension: measurement.browTension,
             lightingQuality: lightingQuality,
             deviceAngleOK: deviceAngleOK,
-            scoreDelta: scoreDelta
+            scoreDelta: scoreDelta,
+            smileMean: summary?.smileMean,
+            smileMax: summary?.smileMax,
+            smileStability: summary?.smileStability,
+            smileAsymmetry: summary?.smileAsymmetry,
+            duchenneScore: summary?.duchenneScore,
+            payload: payloadData,
+            payloadVersion: CheckInPayload.currentVersion
         )
         modelContext.insert(session)
         try modelContext.save()
+        return session
     }
 
     public func fetchLatestCheckIn() throws -> CheckInSession? {
@@ -125,6 +137,13 @@ public final class SessionRepository {
         for baseline in all.dropFirst(keeping) {
             modelContext.delete(baseline)
         }
+        try modelContext.save()
+    }
+
+    /// 방금 저장된 체크인에 기분 이모지를 사후 기록한다. 체크인이 없으면 무시.
+    public func updateMoodOnLatestCheckIn(_ mood: String) throws {
+        guard let latest = try fetchLatestCheckIn() else { return }
+        latest.mood = mood
         try modelContext.save()
     }
 }

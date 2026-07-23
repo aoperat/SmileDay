@@ -9,7 +9,27 @@ public final class CareRepository {
     }
 
     public func saveCompletion(routineID: String, date: Date) throws {
-        modelContext.insert(CareSession(date: date, routineID: routineID))
+        try saveSession(routineID: routineID, date: date, startedAt: nil, durationSeconds: nil, completedSteps: nil, totalSteps: nil, wasCompleted: true)
+    }
+
+    public func saveSession(
+        routineID: String,
+        date: Date,
+        startedAt: Date?,
+        durationSeconds: Double?,
+        completedSteps: Int?,
+        totalSteps: Int?,
+        wasCompleted: Bool
+    ) throws {
+        modelContext.insert(CareSession(
+            date: date,
+            routineID: routineID,
+            startedAt: startedAt,
+            durationSeconds: durationSeconds,
+            completedSteps: completedSteps,
+            totalSteps: totalSteps,
+            wasCompleted: wasCompleted
+        ))
         try modelContext.save()
     }
 
@@ -24,6 +44,6 @@ public final class CareRepository {
     public func hasCompletion(onDayOf date: Date, calendar: Calendar = .current) throws -> Bool {
         let start = calendar.startOfDay(for: date)
         guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return false }
-        return try !fetchCompletions(from: start, to: end).isEmpty
+        return try fetchCompletions(from: start, to: end).contains { $0.wasCompleted }
     }
 }
