@@ -19,24 +19,41 @@ struct BaselineCaptureView: View {
 
             FaceGuideOverlay()
 
-            if let onCancel {
-                VStack {
+            VStack(spacing: 8) {
+                if let onCancel {
                     HStack {
                         SDCloseButton { onCancel() }
                         Spacer()
                     }
                     .padding(.horizontal)
                     .padding(.top, 4)
-                    Spacer()
                 }
+
+                if viewModel?.isLightingPoor == true {
+                    ReliabilityBanner(text: "조금 어두워요 · 밝은 곳에서 촬영해 주세요", systemImage: "exclamationmark.circle.fill")
+                }
+                if viewModel?.isAngleOK == false {
+                    ReliabilityBanner(text: "얼굴을 정면으로 비춰주세요", systemImage: "face.dashed")
+                }
+
+                Spacer()
             }
 
             VStack(spacing: 16) {
                 Text("무표정으로 얼굴을 타원 안에 맞춰주세요")
                     .font(.headline)
                     .foregroundStyle(.white)
+                Text("밝은 곳에서 정면을 바라보고 촬영해주세요")
+                    .font(.caption)
+                    .foregroundStyle(.white.opacity(0.85))
 
                 MeasurementTable(measurement: viewModel?.latestMeasurement)
+
+                if viewModel?.latestMeasurement != nil && viewModel?.isStable == false {
+                    Text("안정화 중...")
+                        .font(.caption)
+                        .foregroundStyle(.white.opacity(0.75))
+                }
 
                 if let errorMessage {
                     Text(errorMessage)
@@ -48,7 +65,7 @@ struct BaselineCaptureView: View {
                     saveBaseline()
                 }
                 .buttonStyle(.borderedProminent)
-                .disabled(viewModel?.latestMeasurement == nil || viewModel?.phase != .tracking)
+                .disabled(viewModel?.latestMeasurement == nil || viewModel?.phase != .tracking || viewModel?.isStable != true)
             }
             .padding()
             .background(.black.opacity(0.4))
@@ -77,6 +94,20 @@ struct BaselineCaptureView: View {
         if case let .saved(baseline) = viewModel.phase {
             onBaselineSaved(baseline)
         }
+    }
+}
+
+private struct ReliabilityBanner: View {
+    let text: String
+    let systemImage: String
+
+    var body: some View {
+        Label(text, systemImage: systemImage)
+            .font(.caption.bold())
+            .foregroundStyle(.yellow)
+            .padding(8)
+            .background(.black.opacity(0.5), in: RoundedRectangle(cornerRadius: 10))
+            .padding(.horizontal)
     }
 }
 
