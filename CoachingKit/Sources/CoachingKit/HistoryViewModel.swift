@@ -50,4 +50,17 @@ public final class HistoryViewModel {
         monthCheckInDays = Set(sessions.map { calendar.component(.day, from: $0.date) })
         monthCheckInCount = sessions.count
     }
+
+    /// 해당 날짜의 버킷별 대표 점수(표시 점수). 같은 버킷은 마지막 기록이 남는다.
+    /// 버킷 귀속은 달력일 기준 — 새벽 기록은 그 날짜의 저녁 버킷으로 분류된다.
+    public func bucketScores(onDayOf date: Date) throws -> [TimeBucket: Double] {
+        let start = calendar.startOfDay(for: date)
+        guard let end = calendar.date(byAdding: .day, value: 1, to: start) else { return [:] }
+        var scores: [TimeBucket: Double] = [:]
+        for session in try repository.fetchCheckIns(from: start, to: end) {
+            let bucket = TimeBucket(hour: calendar.component(.hour, from: session.date))
+            scores[bucket] = ScoreCalculator.displayValue(session.scoreDelta)
+        }
+        return scores
+    }
 }
