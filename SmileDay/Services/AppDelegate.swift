@@ -1,6 +1,7 @@
 import UIKit
 import UserNotifications
 
+@MainActor
 final class AppDelegate: NSObject, UIApplicationDelegate, UNUserNotificationCenterDelegate {
     let router = NotificationRouter()
 

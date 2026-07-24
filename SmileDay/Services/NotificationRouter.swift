@@ -3,6 +3,7 @@ import Observation
 import CoachingKit
 
 /// 알림 탭 신호를 뷰 계층에 전달한다. AppDelegate가 쓰고 MainTabView가 소비한다.
+@MainActor
 @Observable
 final class NotificationRouter {
     var pendingCoaching: ReminderNotificationPayload?
