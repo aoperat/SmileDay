@@ -11,7 +11,7 @@ final class ARKitFaceTrackingSession: NSObject, FaceTrackingSession {
     var onLightingUpdate: ((Double) -> Void)?
     var onTrackingQualityUpdate: ((Bool) -> Void)?
 
-    let previewView = FilteredCameraPreviewView()
+    let previewView = CameraPreviewView()
     private let session = ARSession()
     private var isRunning = false
 

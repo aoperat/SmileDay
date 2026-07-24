@@ -2,9 +2,9 @@ import MetalKit
 import CoreImage
 import ARKit
 
-/// ARFrame을 FaceBeautyFilter로 보정해 그리는 카메라 프리뷰.
+/// ARFrame 원본을 보정 없이 그리는 카메라 프리뷰.
 /// 세션 프레임이 도착할 때만 수동으로 draw해 카메라 페이스에 동기화한다.
-final class FilteredCameraPreviewView: MTKView {
+final class CameraPreviewView: MTKView {
     private let commandQueue: MTLCommandQueue
     private let ciContext: CIContext
     private var image: CIImage?
@@ -27,7 +27,8 @@ final class FilteredCameraPreviewView: MTKView {
     required init(coder: NSCoder) { fatalError("init(coder:) is not supported") }
 
     func update(with frame: ARFrame) {
-        image = FaceBeautyFilter.apply(to: frame.capturedImage)
+        // 전면 카메라 세로 화면: 90도 회전만. 미러링·색보정 없이 원본 그대로.
+        image = CIImage(cvPixelBuffer: frame.capturedImage).oriented(.right)
         draw()
     }
 
