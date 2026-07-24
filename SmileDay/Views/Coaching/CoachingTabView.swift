@@ -15,6 +15,7 @@ struct CoachingTabView: View {
         let completedHour: Int
         let completedMinute: Int
         let offerReminder: Bool
+        let insightMessage: String?
     }
 
     var body: some View {
@@ -37,6 +38,7 @@ struct CoachingTabView: View {
                         ReminderNudge(store: UserDefaultsReminderNudgeState()).declineCheckInPrompt(forHour: result.completedHour)
                     }
                 ) : nil,
+                insightMessage: result.insightMessage,
                 onMoodSelected: { mood in
                     try? SessionRepository(modelContext: modelContext).updateMoodOnLatestCheckIn(mood)
                 }
@@ -52,12 +54,14 @@ struct CoachingTabView: View {
                     let hour = components.hour ?? 9
                     let registered = (try? ReminderRepository(modelContext: modelContext).registeredBuckets()) ?? []
                     let nudge = ReminderNudge(store: UserDefaultsReminderNudgeState())
+                    let insight = (try? InsightEngine.evaluateLatest(in: SessionRepository(modelContext: modelContext))) ?? nil
                     result = SessionResult(
                         todayScore: today,
                         yesterdayScore: yesterday,
                         completedHour: hour,
                         completedMinute: components.minute ?? 0,
-                        offerReminder: nudge.shouldOfferAfterCheckIn(registeredBuckets: registered, checkInHour: hour)
+                        offerReminder: nudge.shouldOfferAfterCheckIn(registeredBuckets: registered, checkInHour: hour),
+                        insightMessage: insight?.message
                     )
                 },
                 onExit: onExit

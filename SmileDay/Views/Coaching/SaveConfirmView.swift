@@ -14,6 +14,8 @@ struct SaveConfirmView: View {
     let todayScore: Double
     let yesterdayScore: Double?
     var reminderOffer: ReminderOffer? = nil
+    /// 룰 기반 코칭 인사이트 1줄. nil이면 카드를 그리지 않는다.
+    var insightMessage: String? = nil
     /// 기분 이모지 선택 콜백. nil이면 무드 섹션을 그리지 않는다.
     var onMoodSelected: ((String) -> Void)? = nil
     let onConfirm: () -> Void
@@ -59,6 +61,15 @@ struct SaveConfirmView: View {
                         .padding(.horizontal, 12)
                         .padding(.vertical, 6)
                         .background(SDColor.mint, in: Capsule())
+                }
+
+                if let insightMessage {
+                    Label(insightMessage, systemImage: "lightbulb.fill")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                 }
 
                 if onMoodSelected != nil {
