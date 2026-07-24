@@ -115,8 +115,24 @@ public final class CareViewModel {
         )
     }
 
-    /// 어제 측정값 기반 추천. 기록이 없으면 첫 케어 안내.
+    /// 인사이트 기반 추천 → 없으면 어제 측정값 기반 기존 추천.
     private func makeRecommendation() throws -> CareRecommendation? {
+        if let insightRecommendation = try makeInsightRecommendation() {
+            return insightRecommendation
+        }
+        return try makeScoreRecommendation()
+    }
+
+    private func makeInsightRecommendation() throws -> CareRecommendation? {
+        guard let insight = try InsightEngine.evaluateLatest(in: sessionRepository, calendar: calendar),
+              let category = insight.recommendedCategory,
+              let routine = routines.first(where: { $0.category == category })
+        else { return nil }
+        return CareRecommendation(routine: routine, reason: insight.message)
+    }
+
+    /// 어제 측정값 기반 추천. 기록이 없으면 첫 케어 안내. (기존 로직 그대로)
+    private func makeScoreRecommendation() throws -> CareRecommendation? {
         guard let lift = routines.first(where: { $0.category == .lift }) else { return nil }
 
         let today = calendar.startOfDay(for: now())

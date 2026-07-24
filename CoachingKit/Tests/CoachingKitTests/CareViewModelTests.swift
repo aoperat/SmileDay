@@ -173,4 +173,33 @@ final class CareViewModelTests: XCTestCase {
         XCTAssertEqual(routine.totalSeconds, 150)
         XCTAssertEqual(routine.durationText, "3분")
     }
+
+    func test_refresh_recommendsFromInsight_whenTensionHigh() throws {
+        let context = try makeInMemoryContext()
+        let sessionRepository = SessionRepository(modelContext: context)
+        // 신뢰 히스토리 3일(긴장도 0.2) + 최신(긴장도 0.4) → highTension → relax 추천.
+        for daysAgo in [1, 2, 3] {
+            try seedCheckIn(sessionRepository, daysAgo: daysAgo, browTension: 0.2, from: fixedNow)
+        }
+        try seedCheckIn(sessionRepository, daysAgo: 0, browTension: 0.4, from: fixedNow)
+        let viewModel = makeViewModel(context: context)
+
+        try viewModel.refresh()
+
+        XCTAssertEqual(viewModel.recommendation?.routine.category, .relax)
+        XCTAssertEqual(viewModel.recommendation?.reason.contains("긴장"), true)
+    }
+
+    private func seedCheckIn(_ repository: SessionRepository, daysAgo: Int, browTension: Double, from now: Date) throws {
+        let calendar = Calendar.current
+        let start = calendar.date(byAdding: .day, value: -daysAgo, to: calendar.startOfDay(for: now))!
+        let noon = calendar.date(byAdding: .hour, value: 12, to: start)!
+        try repository.saveCheckIn(
+            measurement: FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: browTension),
+            date: noon,
+            lightingQuality: 1.0,
+            deviceAngleOK: true,
+            scoreDelta: 0
+        )
+    }
 }
