@@ -1,3 +1,4 @@
+import SwiftData
 import XCTest
 @testable import CoachingKit
 
@@ -116,5 +117,76 @@ final class InsightEngineTests: XCTestCase {
     func test_priority_tensionBeatsAsymmetry() {
         let today = record(browTension: 0.3, smileAsymmetry: 0.06)
         XCTAssertEqual(InsightEngine.evaluate(today: today, history: calmHistory)?.kind, .highTension)
+    }
+
+    // MARK: 매퍼 + evaluateLatest
+
+    private func makeInMemoryContext() throws -> ModelContext {
+        let schema = PersistenceSchema.schema
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        let container = try ModelContainer(for: schema, configurations: [configuration])
+        return ModelContext(container)
+    }
+
+    func test_mapper_decodesTrackingLossFromPayload() throws {
+        let payload = CheckInPayload(
+            blendshapesFinal: [:], sessionStats: [:],
+            pitchDegrees: nil, yawDegrees: nil,
+            captureDurationSeconds: 5, trackingLossCount: 5
+        )
+        let session = CheckInSession(
+            date: Date(timeIntervalSince1970: 1_000),
+            mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.2,
+            lightingQuality: 1.0, deviceAngleOK: true, scoreDelta: 0,
+            smileAsymmetry: 0.01, duchenneScore: 0.3,
+            payload: try JSONEncoder().encode(payload)
+        )
+
+        let mapped = CheckInRecord(session: session)
+        XCTAssertEqual(mapped.trackingLossCount, 5)
+        XCTAssertEqual(mapped.smileAsymmetry, 0.01)
+        XCTAssertEqual(mapped.duchenneScore, 0.3)
+    }
+
+    func test_mapper_leavesTrackingLossNil_whenNoPayload() {
+        let session = CheckInSession(
+            date: Date(timeIntervalSince1970: 1_000),
+            mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.2,
+            lightingQuality: 1.0, deviceAngleOK: true, scoreDelta: 0
+        )
+        XCTAssertNil(CheckInRecord(session: session).trackingLossCount)
+    }
+
+    private func saveCheckIn(_ repository: SessionRepository, daysAgo: Int, browTension: Double) throws {
+        try repository.saveCheckIn(
+            measurement: FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: browTension),
+            date: Date(timeIntervalSince1970: 1_000_000 - Double(daysAgo) * 86_400),
+            lightingQuality: 1.0,
+            deviceAngleOK: true,
+            scoreDelta: 0
+        )
+    }
+
+    func test_evaluateLatest_returnsInsight_fromRepositoryHistory() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        for day in 1...3 { try saveCheckIn(repository, daysAgo: day, browTension: 0.2) }
+        try saveCheckIn(repository, daysAgo: 0, browTension: 0.4)
+
+        let insight = try InsightEngine.evaluateLatest(in: repository)
+        XCTAssertEqual(insight?.kind, .highTension)
+    }
+
+    func test_evaluateLatest_excludesLatestFromItsOwnBaseline() throws {
+        // 히스토리 2개뿐 → 최신 기록이 히스토리에 새면 3개가 되어 발동해버린다. nil이어야 정상.
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        for day in 1...2 { try saveCheckIn(repository, daysAgo: day, browTension: 0.2) }
+        try saveCheckIn(repository, daysAgo: 0, browTension: 0.9)
+
+        XCTAssertNil(try InsightEngine.evaluateLatest(in: repository))
+    }
+
+    func test_evaluateLatest_returnsNil_whenNoCheckIns() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        XCTAssertNil(try InsightEngine.evaluateLatest(in: repository))
     }
 }

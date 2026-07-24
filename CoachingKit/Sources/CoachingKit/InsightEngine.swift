@@ -124,3 +124,36 @@ public enum InsightEngine {
         }
     }
 }
+
+public extension CheckInRecord {
+    /// SwiftData 모델 → 판정용 값 타입. payload가 있으면 trackingLossCount를 디코드한다.
+    init(session: CheckInSession) {
+        let payload = session.payload.flatMap { try? JSONDecoder().decode(CheckInPayload.self, from: $0) }
+        self.init(
+            date: session.date,
+            browTension: session.browTension,
+            smileAsymmetry: session.smileAsymmetry,
+            duchenneScore: session.duchenneScore,
+            deviceAngleOK: session.deviceAngleOK,
+            lightingQuality: session.lightingQuality,
+            trackingLossCount: payload?.trackingLossCount
+        )
+    }
+}
+
+public extension InsightEngine {
+    /// 저장소의 최신 체크인을 오늘로, 그 직전 historyDays일을 히스토리로 판정한다.
+    /// fetchCheckIns의 상한이 exclusive(date < end)라 최신 기록 자신은 히스토리에 포함되지 않는다.
+    static func evaluateLatest(
+        in repository: SessionRepository,
+        historyDays: Int = 7,
+        calendar: Calendar = .current
+    ) throws -> CheckInInsight? {
+        guard let latest = try repository.fetchLatestCheckIn(),
+              let windowStart = calendar.date(byAdding: .day, value: -historyDays, to: latest.date)
+        else { return nil }
+        let history = try repository.fetchCheckIns(from: windowStart, to: latest.date)
+            .map(CheckInRecord.init(session:))
+        return evaluate(today: CheckInRecord(session: latest), history: history)
+    }
+}
