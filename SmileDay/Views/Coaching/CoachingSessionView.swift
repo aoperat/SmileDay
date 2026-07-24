@@ -8,6 +8,8 @@ struct CoachingSessionView: View {
     @State private var viewModel: CoachingViewModel?
     @State private var errorMessage: String?
 
+    /// 알림 딥링크로 진입한 경우 상단에 이어서 보여줄 표정 질문. 일반 진입은 nil.
+    var promptText: String? = nil
     let baseline: Baseline
     let onCompleted: (Double, Double?) -> Void
     let onExit: () -> Void
@@ -53,6 +55,16 @@ struct CoachingSessionView: View {
                 }
                 .padding(.horizontal)
                 .padding(.top, 4)
+
+                if let promptText {
+                    Text(promptText)
+                        .font(.caption.bold())
+                        .foregroundStyle(SDColor.ink)
+                        .padding(10)
+                        .frame(maxWidth: .infinity)
+                        .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .padding(.horizontal)
+                }
 
                 if viewModel?.isLightingPoor == true {
                     Label("조금 어두워요 · 밝은 곳에서 측정해 주세요", systemImage: "exclamationmark.circle.fill")

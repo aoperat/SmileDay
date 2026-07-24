@@ -40,6 +40,7 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
             content.title = "스마일데이"
             content.body = prompt.text
             content.sound = .default
+            content.userInfo = ReminderNotificationPayload(bucket: TimeBucket(hour: hour), promptText: prompt.text).userInfo
 
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
             let request = UNNotificationRequest(identifier: "\(id)-\(dayOffset)", content: content, trigger: trigger)

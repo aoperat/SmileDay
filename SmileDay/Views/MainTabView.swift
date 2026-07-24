@@ -29,6 +29,8 @@ struct MainTabView: View {
     let baseline: Baseline
     let onBaselineUpdated: (Baseline) -> Void
     @State private var selection: AppTab
+    @Environment(NotificationRouter.self) private var notificationRouter
+    @State private var coachingPrompt: String? = nil
 
     init(baseline: Baseline, onBaselineUpdated: @escaping (Baseline) -> Void) {
         self.baseline = baseline
@@ -61,8 +63,15 @@ struct MainTabView: View {
 
             CoachingTabView(
                 baseline: baseline,
-                onFinished: { selection = .home },
-                onExit: { selection = .home }
+                promptText: coachingPrompt,
+                onFinished: {
+                    coachingPrompt = nil
+                    selection = .home
+                },
+                onExit: {
+                    coachingPrompt = nil
+                    selection = .home
+                }
             )
             .toolbar(.hidden, for: .tabBar)
             .tag(AppTab.coaching)
@@ -88,6 +97,12 @@ struct MainTabView: View {
             }
         }
         .tint(SDColor.coral)
+        .onChange(of: notificationRouter.pendingCoaching, initial: true) { _, payload in
+            guard let payload else { return }
+            coachingPrompt = payload.promptText
+            selection = .coaching
+            notificationRouter.pendingCoaching = nil
+        }
     }
 }
 

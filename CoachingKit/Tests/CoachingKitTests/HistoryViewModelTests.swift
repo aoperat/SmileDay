@@ -60,4 +60,62 @@ final class HistoryViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.monthCheckInCount, 2)
         XCTAssertEqual(viewModel.monthCheckInDays.count, 1)
     }
+
+    private func saveCheckInWithHour(_ repository: SessionRepository, hour: Int, scoreDelta: Double, calendar: Calendar = .current) throws {
+        let start = calendar.startOfDay(for: Date())
+        let date = calendar.date(byAdding: .hour, value: hour, to: start)!
+        try repository.saveCheckIn(
+            measurement: FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
+            date: date,
+            lightingQuality: 1.0,
+            deviceAngleOK: true,
+            scoreDelta: scoreDelta
+        )
+    }
+
+    func test_bucketScores_mapsSessionsToBuckets() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        try saveCheckInWithHour(repository, hour: 9, scoreDelta: 0.2)   // 아침
+        try saveCheckInWithHour(repository, hour: 20, scoreDelta: 0.1)  // 저녁
+        let viewModel = HistoryViewModel(repository: repository)
+
+        let scores = try viewModel.bucketScores(onDayOf: Date())
+
+        XCTAssertEqual(scores[.morning], ScoreCalculator.displayValue(0.2))
+        XCTAssertEqual(scores[.evening], ScoreCalculator.displayValue(0.1))
+        XCTAssertNil(scores[.afternoon])
+    }
+
+    func test_bucketScores_lastRecordWins_inSameBucket() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        try saveCheckInWithHour(repository, hour: 8, scoreDelta: 0.1)
+        try saveCheckInWithHour(repository, hour: 10, scoreDelta: 0.3)  // 같은 아침 버킷, 더 늦은 기록
+        let viewModel = HistoryViewModel(repository: repository)
+
+        let scores = try viewModel.bucketScores(onDayOf: Date())
+
+        XCTAssertEqual(scores[.morning], ScoreCalculator.displayValue(0.3))
+    }
+
+    func test_bucketScores_earlyMorningBelongsToEveningBucket() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        try saveCheckInWithHour(repository, hour: 2, scoreDelta: 0.1)   // 새벽 2시 → 저녁 버킷(달력일 기준)
+        let viewModel = HistoryViewModel(repository: repository)
+
+        let scores = try viewModel.bucketScores(onDayOf: Date())
+
+        XCTAssertEqual(scores[.evening], ScoreCalculator.displayValue(0.1))
+        XCTAssertNil(scores[.morning])
+    }
+
+    func test_bucketScores_emptyWhenNoCheckIns() throws {
+        let context = try makeInMemoryContext()
+        let repository = SessionRepository(modelContext: context)
+        let viewModel = HistoryViewModel(repository: repository)
+
+        XCTAssertTrue(try viewModel.bucketScores(onDayOf: Date()).isEmpty)
+    }
 }
