@@ -6,6 +6,8 @@ import CoachingKit
 struct HistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: HistoryViewModel?
+    @State private var selectedDay: Int = Calendar.current.component(.day, from: .now)
+    @State private var selectedBucketScores: [TimeBucket: Double] = [:]
 
     var body: some View {
         ScrollView {
@@ -30,6 +32,8 @@ struct HistoryView: View {
                 weeklyChartCard
 
                 monthHeatmapCard
+
+                bucketDetailCard
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
@@ -39,6 +43,7 @@ struct HistoryView: View {
             let vm = viewModel ?? HistoryViewModel(repository: SessionRepository(modelContext: modelContext))
             viewModel = vm
             try? vm.refresh()
+            refreshBucketScores()
         }
     }
 
@@ -101,9 +106,44 @@ struct HistoryView: View {
                 .font(.caption.bold())
                 .foregroundStyle(SDColor.muted)
 
-            MonthHeatmapView(checkInDays: viewModel?.monthCheckInDays ?? [])
+            MonthHeatmapView(
+                checkInDays: viewModel?.monthCheckInDays ?? [],
+                selectedDay: selectedDay,
+                onSelectDay: { day in
+                    selectedDay = day
+                    refreshBucketScores()
+                }
+            )
         }
         .sdCard()
+    }
+
+    private var bucketDetailCard: some View {
+        VStack(alignment: .leading, spacing: 10) {
+            Text("시간대별 미소 · \(selectedDay)일")
+                .font(.caption.bold())
+                .foregroundStyle(SDColor.muted)
+
+            HStack(spacing: 8) {
+                ForEach(TimeBucket.allCases, id: \.self) { bucket in
+                    SummaryTile(
+                        value: selectedBucketScores[bucket].map { SDFormat.signedNumber($0) } ?? "—",
+                        unit: selectedBucketScores[bucket] == nil ? "" : "°",
+                        label: bucket.displayName
+                    )
+                }
+            }
+        }
+        .sdCard()
+    }
+
+    private func refreshBucketScores() {
+        guard let viewModel else { return }
+        let calendar = Calendar.current
+        var components = calendar.dateComponents([.year, .month], from: .now)
+        components.day = selectedDay
+        guard let date = calendar.date(from: components) else { return }
+        selectedBucketScores = (try? viewModel.bucketScores(onDayOf: date)) ?? [:]
     }
 }
 
@@ -130,6 +170,8 @@ struct SummaryTile: View {
 
 struct MonthHeatmapView: View {
     let checkInDays: Set<Int>
+    var selectedDay: Int? = nil
+    var onSelectDay: ((Int) -> Void)? = nil
     private let calendar = Calendar.current
 
     var body: some View {
@@ -154,6 +196,16 @@ struct MonthHeatmapView: View {
                         Text("\(day)")
                             .font(.system(size: 9, weight: .bold, design: .rounded))
                             .foregroundStyle(checkedIn ? .white : SDColor.muted.opacity(isFuture ? 0.5 : 1))
+                    }
+                    .overlay {
+                        if day == selectedDay {
+                            RoundedRectangle(cornerRadius: 8, style: .continuous)
+                                .stroke(SDColor.coralDeep, lineWidth: 2)
+                        }
+                    }
+                    .onTapGesture {
+                        guard !isFuture else { return }
+                        onSelectDay?(day)
                     }
             }
         }
