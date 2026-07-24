@@ -92,7 +92,7 @@ public enum InsightEngine {
             let sideText = weakSide == .right ? "오른" : "왼"
             return CheckInInsight(
                 kind: .asymmetry(weakSide: weakSide),
-                message: "오늘은 \(sideText)쪽 입꼬리가 덜 올라갔어요. 리프팅으로 균형을 맞춰봐요",
+                message: "오늘은 \(sideText)쪽 입꼬리가 덜 올라갔어요. 스트레칭으로 균형을 맞춰봐요",
                 recommendedCategory: .lift
             )
         }

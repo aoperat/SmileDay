@@ -150,12 +150,12 @@ public final class CareViewModel {
         if score < 0 {
             return CareRecommendation(
                 routine: lift,
-                reason: "어제 \(scoreText)°로 내려갔어요. 리프팅으로 다시 끌어올려봐요."
+                reason: "어제 \(scoreText)°로 내려갔어요. 스트레칭으로 다시 움직여봐요."
             )
         }
         return CareRecommendation(
             routine: lift,
-            reason: "어제 +\(scoreText)°였어요. 입꼬리 근육을 깨우는 리프팅으로 오늘 기록을 올려봐요."
+            reason: "어제 +\(scoreText)°였어요. 입꼬리 근육을 깨우는 스트레칭으로 오늘 기록을 올려봐요."
         )
     }
 }

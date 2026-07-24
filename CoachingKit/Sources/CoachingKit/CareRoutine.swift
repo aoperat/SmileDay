@@ -87,7 +87,7 @@ public extension CareRoutine {
     static let catalog: [CareRoutine] = [
         CareRoutine(
             id: "lift-smile",
-            title: "입꼬리 리프팅 루틴",
+            title: "입꼬리 스트레칭 루틴",
             category: .lift,
             difficulty: .beginner,
             steps: [
@@ -101,7 +101,7 @@ public extension CareRoutine {
         ),
         CareRoutine(
             id: "lift-cheek",
-            title: "광대 리프팅 마사지",
+            title: "광대 마사지",
             category: .lift,
             difficulty: .beginner,
             steps: [
