@@ -5,6 +5,7 @@ import CoachingKit
 struct CoachingTabView: View {
     @Environment(\.modelContext) private var modelContext
     let baseline: Baseline
+    var promptText: String? = nil
     let onFinished: () -> Void
     let onExit: () -> Void
     @State private var result: SessionResult?
@@ -46,6 +47,7 @@ struct CoachingTabView: View {
             }
         } else {
             CoachingSessionView(
+                promptText: promptText,
                 baseline: baseline,
                 onCompleted: { today, yesterday in
                     let components = Calendar.current.dateComponents([.hour, .minute], from: .now)
