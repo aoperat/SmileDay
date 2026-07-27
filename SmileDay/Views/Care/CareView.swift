@@ -2,10 +2,14 @@ import SwiftUI
 import SwiftData
 import CoachingKit
 
+/// 쉬어가기 탭.
+///
+/// 파일 이름은 Xcode 프로젝트 참조를 건드리지 않으려고 유지한다. 타입과 콘텐츠는
+/// `SmilePractice` 기반으로 전환되어 얼굴 부위나 점수를 다루지 않는다.
 struct CareView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: CareViewModel?
-    @State private var playingRoutine: CareRoutine?
+    @State private var viewModel: SmilePracticeViewModel?
+    @State private var playingPractice: SmilePractice?
     @State private var showSaveError = false
     #if DEBUG
     @State private var didAutoPlay = false
@@ -14,7 +18,7 @@ struct CareView: View {
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 14) {
-                Text("오늘의 케어")
+                Text("잠시 쉬어가기")
                     .font(.title3.bold())
                     .foregroundStyle(SDColor.ink)
                     .padding(.top, 6)
@@ -22,7 +26,7 @@ struct CareView: View {
                 if let viewModel {
                     if let recommendation = viewModel.recommendation {
                         RecommendationCard(recommendation: recommendation) {
-                            playingRoutine = recommendation.routine
+                            playingPractice = recommendation.practice
                         }
                     }
 
@@ -31,12 +35,12 @@ struct CareView: View {
                         set: { viewModel.selectedCategory = $0 }
                     ))
 
-                    ForEach(viewModel.filteredRoutines) { routine in
-                        RoutineRow(
-                            routine: routine,
-                            isFavorite: viewModel.favoriteIDs.contains(routine.id),
-                            onPlay: { playingRoutine = routine },
-                            onToggleFavorite: { viewModel.toggleFavorite(routine.id) }
+                    ForEach(viewModel.filteredPractices) { practice in
+                        PracticeRow(
+                            practice: practice,
+                            isFavorite: viewModel.visibleFavoriteIDs.contains(practice.id),
+                            onPlay: { playingPractice = practice },
+                            onToggleFavorite: { viewModel.toggleFavorite(practice.id) }
                         )
                     }
                 }
@@ -46,36 +50,35 @@ struct CareView: View {
         }
         .background(SDColor.cream)
         .onAppear {
-            let vm = viewModel ?? CareViewModel(
-                sessionRepository: SessionRepository(modelContext: modelContext),
+            let vm = viewModel ?? SmilePracticeViewModel(
                 careRepository: CareRepository(modelContext: modelContext),
-                favorites: UserDefaultsCareFavorites()
+                favorites: UserDefaultsSmilePracticeFavorites()
             )
             viewModel = vm
             try? vm.refresh()
             #if DEBUG
             // 1회만 자동 재생 — 커버가 닫힐 때 onAppear가 다시 불려도 재표시하지 않는다.
             if !didAutoPlay,
-               let routineID = UserDefaults.standard.string(forKey: "autoPlayRoutine") {
+               let practiceID = UserDefaults.standard.string(forKey: "autoPlayRoutine") {
                 didAutoPlay = true
-                playingRoutine = vm.routines.first { $0.id == routineID }
+                playingPractice = vm.practices.first { $0.id == practiceID }
             }
             #endif
         }
-        .fullScreenCover(item: $playingRoutine) { routine in
-            CarePlayerView(routine: routine) { result in
+        .fullScreenCover(item: $playingPractice) { practice in
+            CarePlayerView(practice: practice) { result in
                 if let viewModel {
                     do {
                         if result.completed {
-                            try viewModel.completeRoutine(routine, startedAt: result.startedAt)
+                            try viewModel.completePractice(practice, startedAt: result.startedAt)
                         } else {
-                            try viewModel.abandonRoutine(routine, startedAt: result.startedAt, completedSteps: result.completedSteps)
+                            try viewModel.abandonPractice(practice, startedAt: result.startedAt, completedSteps: result.completedSteps)
                         }
                     } catch {
                         showSaveError = true
                     }
                 }
-                playingRoutine = nil
+                playingPractice = nil
             }
         }
         .alert(SharedStrings.saveFailed, isPresented: $showSaveError) {
@@ -85,7 +88,7 @@ struct CareView: View {
 }
 
 private struct RecommendationCard: View {
-    let recommendation: CareRecommendation
+    let recommendation: SmilePracticeRecommendation
     let onPlay: () -> Void
 
     var body: some View {
@@ -108,7 +111,7 @@ private struct RecommendationCard: View {
                         }
                 }
                 .overlay(alignment: .topLeading) {
-                    Text("오늘의 추천")
+                    Text("지금 어울리는 시간")
                         .font(.system(size: 10, weight: .heavy))
                         .foregroundStyle(.white)
                         .padding(.horizontal, 9)
@@ -118,13 +121,14 @@ private struct RecommendationCard: View {
                 }
             }
             .buttonStyle(.plain)
+            .accessibilityLabel(Text("\(recommendation.practice.title) 시작하기"))
 
             HStack {
-                Text(recommendation.routine.title)
+                Text(recommendation.practice.title)
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.ink)
                 Spacer()
-                Text("\(recommendation.routine.durationText) · \(recommendation.routine.difficulty.displayName)")
+                Text("\(recommendation.practice.durationText) · \(recommendation.practice.category.displayName)")
                     .font(.caption2.weight(.bold))
                     .foregroundStyle(SDColor.muted)
             }
@@ -141,13 +145,13 @@ private struct RecommendationCard: View {
 }
 
 private struct CategoryChips: View {
-    @Binding var selected: CareCategory?
+    @Binding var selected: SmilePracticeCategory?
 
     var body: some View {
         ScrollView(.horizontal, showsIndicators: false) {
             HStack(spacing: 6) {
                 chip(title: "전체", isOn: selected == nil) { selected = nil }
-                ForEach(CareCategory.allCases, id: \.self) { category in
+                ForEach(SmilePracticeCategory.allCases, id: \.self) { category in
                     chip(title: category.displayName, isOn: selected == category) {
                         selected = selected == category ? nil : category
                     }
@@ -172,11 +176,12 @@ private struct CategoryChips: View {
                 }
         }
         .buttonStyle(.plain)
+        .accessibilityAddTraits(isOn ? [.isSelected] : [])
     }
 }
 
-private struct RoutineRow: View {
-    let routine: CareRoutine
+private struct PracticeRow: View {
+    let practice: SmilePractice
     let isFavorite: Bool
     let onPlay: () -> Void
     let onToggleFavorite: () -> Void
@@ -186,7 +191,7 @@ private struct RoutineRow: View {
             Button(action: onPlay) {
                 HStack(spacing: 11) {
                     RoundedRectangle(cornerRadius: 14, style: .continuous)
-                        .fill(routine.category.thumbnailGradient)
+                        .fill(practice.category.thumbnailGradient)
                         .frame(width: 46, height: 46)
                         .overlay {
                             Image(systemName: "play.fill")
@@ -195,10 +200,10 @@ private struct RoutineRow: View {
                         }
 
                     VStack(alignment: .leading, spacing: 2) {
-                        Text(routine.title)
+                        Text(practice.title)
                             .font(.footnote.bold())
                             .foregroundStyle(SDColor.ink)
-                        Text("\(routine.durationText) · \(routine.difficulty.displayName)")
+                        Text("\(practice.durationText) · \(practice.category.displayName)")
                             .font(.system(size: 10, weight: .bold))
                             .foregroundStyle(SDColor.muted)
                     }
@@ -219,13 +224,13 @@ private struct RoutineRow: View {
     }
 }
 
-extension CareCategory {
+extension SmilePracticeCategory {
     var thumbnailGradient: LinearGradient {
         let colors: [Color] = switch self {
-        case .lift: [SDColor.sun, SDColor.apricot]
-        case .relax: [SDColor.lilac, Color(hex: 0x8F6FD1)]
-        case .depuff: [Color(hex: 0x6FCBB0), SDColor.mint]
-        case .morning: [SDColor.coral, SDColor.coralWarm]
+        case .pause: [SDColor.sun, SDColor.apricot]
+        case .breathe: [SDColor.lilac, Color(hex: 0x8F6FD1)]
+        case .recall: [Color(hex: 0x6FCBB0), SDColor.mint]
+        case .connect: [SDColor.coral, SDColor.coralWarm]
         }
         return LinearGradient(colors: colors, startPoint: .topLeading, endPoint: .bottomTrailing)
     }

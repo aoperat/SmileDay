@@ -11,7 +11,7 @@ struct CarePlayResult {
 }
 
 struct CarePlayerView: View {
-    let routine: CareRoutine
+    let practice: SmilePractice
     let onClose: (CarePlayResult) -> Void
 
     @State private var currentStepIndex = 0
@@ -21,10 +21,10 @@ struct CarePlayerView: View {
 
     private let timer = Timer.publish(every: 1, on: .main, in: .common).autoconnect()
 
-    private var isLastStep: Bool { currentStepIndex >= routine.steps.count - 1 }
+    private var isLastStep: Bool { currentStepIndex >= practice.steps.count - 1 }
 
-    private var currentStep: CareStep? {
-        routine.steps.indices.contains(currentStepIndex) ? routine.steps[currentStepIndex] : nil
+    private var currentStep: SmilePracticeStep? {
+        practice.steps.indices.contains(currentStepIndex) ? practice.steps[currentStepIndex] : nil
     }
 
     var body: some View {
@@ -33,13 +33,13 @@ struct CarePlayerView: View {
                 SDCloseButton {
                     onClose(CarePlayResult(completed: false, completedSteps: currentStepIndex, startedAt: startedAt))
                 }
-                Text(routine.title)
+                Text(practice.title)
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.ink)
                 Spacer()
             }
 
-            Text(routine.purpose)
+            Text(practice.purpose)
                 .font(.caption)
                 .foregroundStyle(SDColor.muted)
 
@@ -48,27 +48,27 @@ struct CarePlayerView: View {
             VStack(alignment: .leading, spacing: 5) {
                 // 라벨("n/m 단계")과 일치하도록 진행 중인 단계까지 채운다.
                 ProgressView(
-                    value: Double(min(currentStepIndex + 1, routine.steps.count)),
-                    total: Double(max(routine.steps.count, 1))
+                    value: Double(min(currentStepIndex + 1, practice.steps.count)),
+                    total: Double(max(practice.steps.count, 1))
                 )
                 .tint(SDColor.coral)
                 HStack {
-                    Text("\(min(currentStepIndex + 1, routine.steps.count))/\(routine.steps.count) 단계")
+                    Text("\(min(currentStepIndex + 1, practice.steps.count))/\(practice.steps.count) 단계")
                     Spacer()
-                    Text(routine.durationText)
+                    Text(practice.durationText)
                 }
                 .font(.system(size: 10, weight: .bold))
                 .foregroundStyle(SDColor.muted)
                 .monospacedDigit()
             }
 
-            Text("따라하기")
+            Text("함께 해보기")
                 .font(.caption.bold())
                 .foregroundStyle(SDColor.muted)
 
             ScrollView {
                 VStack(spacing: 8) {
-                    ForEach(Array(routine.steps.enumerated()), id: \.offset) { index, step in
+                    ForEach(Array(practice.steps.enumerated()), id: \.offset) { index, step in
                         StepRow(
                             number: index + 1,
                             step: step,
@@ -79,12 +79,12 @@ struct CarePlayerView: View {
                 }
             }
 
-            Button(isLastStep ? "루틴 완료" : "다음 단계로") {
+            Button(isLastStep ? "마치기" : "다음 단계로") {
                 advance()
             }
             .buttonStyle(SDPrimaryButtonStyle())
 
-            Text("완료하면 오늘 기록에 케어 1회가 함께 남아요")
+            Text("마치면 오늘 쉬어간 기록으로 남아요")
                 .font(.system(size: 10, weight: .semibold))
                 .foregroundStyle(SDColor.muted)
                 .frame(maxWidth: .infinity)
@@ -94,7 +94,7 @@ struct CarePlayerView: View {
         .onAppear {
             startedAt = Date()
             resetTimer()
-            if let url = Bundle.main.url(forResource: routine.videoFileName, withExtension: "mp4") {
+            if let url = Bundle.main.url(forResource: practice.videoFileName, withExtension: "mp4") {
                 let player = AVPlayer(url: url)
                 self.player = player
                 player.play()
@@ -118,14 +118,14 @@ struct CarePlayerView: View {
                 .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         } else if let currentStep {
             StepHeroView(
-                category: routine.category,
+                category: practice.category,
                 step: currentStep,
                 remainingSeconds: remainingSeconds,
                 totalSeconds: currentStep.seconds * currentStep.reps
             )
         } else {
             RoundedRectangle(cornerRadius: 20, style: .continuous)
-                .fill(routine.category.thumbnailGradient)
+                .fill(practice.category.thumbnailGradient)
                 .frame(height: 210)
         }
     }
@@ -138,7 +138,7 @@ struct CarePlayerView: View {
 
     private func advance() {
         if isLastStep {
-            onClose(CarePlayResult(completed: true, completedSteps: routine.steps.count, startedAt: startedAt))
+            onClose(CarePlayResult(completed: true, completedSteps: practice.steps.count, startedAt: startedAt))
         } else {
             currentStepIndex += 1
             resetTimer()
@@ -146,18 +146,18 @@ struct CarePlayerView: View {
     }
 
     private func resetTimer() {
-        guard routine.steps.indices.contains(currentStepIndex) else {
+        guard practice.steps.indices.contains(currentStepIndex) else {
             remainingSeconds = 0
             return
         }
-        let step = routine.steps[currentStepIndex]
+        let step = practice.steps[currentStepIndex]
         remainingSeconds = step.seconds * step.reps
     }
 }
 
 private struct StepHeroView: View {
-    let category: CareCategory
-    let step: CareStep
+    let category: SmilePracticeCategory
+    let step: SmilePracticeStep
     let remainingSeconds: Int
     let totalSeconds: Int
 
@@ -210,7 +210,7 @@ private struct StepRow: View {
     }
 
     let number: Int
-    let step: CareStep
+    let step: SmilePracticeStep
     let state: State
     let remainingSeconds: Int?
 
