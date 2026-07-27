@@ -1,5 +1,10 @@
 import SwiftUI
+import CoachingKit
 
+/// 미소 시간을 마친 뒤의 완료 화면.
+///
+/// 점수나 전날 대비 변화를 보여주지 않는다. 잠시 웃어본 오늘을 확인해 주고,
+/// 원하면 기분과 좋은 순간을 남길 수 있게만 한다. 둘 다 비워도 완료는 온전하다.
 struct SaveConfirmView: View {
     /// 리마인더 제안 정보. nil이면 제안 섹션을 그리지 않는다.
     struct ReminderOffer {
@@ -11,18 +16,29 @@ struct SaveConfirmView: View {
 
     enum OfferState { case showing, accepted, hidden }
 
-    let todayScore: Double
-    let yesterdayScore: Double?
+    /// 격려 문구를 만들 행동 이력. 얼굴 측정값은 들어 있지 않다.
+    let habitContext: HabitContext
     var reminderOffer: ReminderOffer? = nil
-    /// 룰 기반 코칭 인사이트 1줄. nil이면 카드를 그리지 않는다.
-    var insightMessage: String? = nil
-    /// 기분 이모지 선택 콜백. nil이면 무드 섹션을 그리지 않는다.
-    var onMoodSelected: ((String) -> Void)? = nil
-    let onConfirm: () -> Void
+    /// 회고 저장 콜백. 실패하면 false를 돌려주고 화면을 닫지 않는다.
+    let onConfirm: (SmileReflection) -> Bool
 
     @State private var offerState: OfferState = .showing
     @State private var selectedMood: String?
+    @State private var momentNote: String = ""
+    @State private var saveFailed = false
+    @FocusState private var isNoteFocused: Bool
+
     private static let moods = ["😊", "🙂", "😐", "😞", "😫"]
+
+    private var remainingCharacters: Int {
+        SmileReflection.momentNoteLimit - momentNote.count
+    }
+
+    /// 저장 전에 보여주는 문구라, 사용자가 한 줄 기록을 쓰면 그 자리에서 함께 바뀐다.
+    private var encouragement: String {
+        let hasNote = SmileReflection.normalizedMomentNote(momentNote) != nil
+        return HabitEncouragementEngine.evaluate(habitContext.withMomentNote(hasNote)).message
+    }
 
     var body: some View {
         ZStack {
@@ -30,86 +46,125 @@ struct SaveConfirmView: View {
 
             ConfettiDots()
 
-            VStack(spacing: 18) {
-                Spacer()
+            ScrollView {
+                VStack(spacing: 18) {
+                    SunFaceView()
 
-                SunFaceView()
-
-                Text("오늘의 기록이 저장되었어요")
-                    .font(.headline.bold())
-                    .foregroundStyle(SDColor.ink)
-
-                HStack(spacing: 10) {
-                    if let yesterdayScore {
-                        Text("어제 \(SDFormat.signedDegrees(yesterdayScore))")
-                            .foregroundStyle(SDColor.muted)
-                        Image(systemName: "arrow.right")
-                            .font(.footnote)
-                            .foregroundStyle(SDColor.muted)
-                    }
-                    Text("오늘 \(SDFormat.signedDegrees(todayScore))")
-                        .font(.title3.bold())
-                        .foregroundStyle(SDColor.coralDeep)
-                }
-                .font(.body)
-                .monospacedDigit()
-
-                if let yesterdayScore, todayScore > yesterdayScore {
-                    Text("어제보다 \(SDFormat.signedDegrees(todayScore - yesterdayScore)) 올라갔어요")
-                        .font(.caption.bold())
-                        .foregroundStyle(.white)
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(SDColor.mint, in: Capsule())
-                }
-
-                if let insightMessage {
-                    Label(insightMessage, systemImage: "lightbulb.fill")
-                        .font(.caption.weight(.semibold))
+                    Text(SharedStrings.checkInCompleted)
+                        .font(.headline.bold())
                         .foregroundStyle(SDColor.ink)
-                        .padding(.horizontal, 14)
-                        .padding(.vertical, 10)
-                        .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                }
 
-                if onMoodSelected != nil {
-                    VStack(spacing: 8) {
-                        Text("지금 기분은 어때요?")
-                            .font(.caption.weight(.bold))
-                            .foregroundStyle(SDColor.muted)
-                        HStack(spacing: 12) {
-                            ForEach(Self.moods, id: \.self) { mood in
-                                Button {
-                                    selectedMood = mood
-                                    onMoodSelected?(mood)
-                                } label: {
-                                    Text(mood)
-                                        .font(.system(size: 28))
-                                        .opacity(selectedMood == nil || selectedMood == mood ? 1 : 0.35)
-                                        .scaleEffect(selectedMood == mood ? 1.15 : 1)
-                                }
-                                .buttonStyle(.plain)
-                            }
-                        }
-                        .animation(.spring(duration: 0.25), value: selectedMood)
+                    Text(encouragement)
+                        .font(.subheadline)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.center)
+                        .animation(.easeInOut(duration: 0.2), value: encouragement)
+
+                    moodSection
+
+                    momentNoteSection
+
+                    if let reminderOffer, offerState != .hidden {
+                        ReminderOfferCard(offer: reminderOffer, state: $offerState)
                     }
-                    .padding(.top, 4)
-                }
 
-                if let reminderOffer, offerState != .hidden {
-                    ReminderOfferCard(offer: reminderOffer, state: $offerState)
-                }
+                    if saveFailed {
+                        Text(SharedStrings.saveFailed)
+                            .font(.caption.bold())
+                            .foregroundStyle(SDColor.coralDeep)
+                            .multilineTextAlignment(.center)
+                    }
 
-                Button("확인") {
-                    onConfirm()
+                    Button("확인") {
+                        confirm()
+                    }
+                    .buttonStyle(SDPrimaryButtonStyle())
+                    .frame(width: 240)
+                    .padding(.top, 8)
                 }
-                .buttonStyle(SDPrimaryButtonStyle())
-                .frame(width: 240)
-                .padding(.top, 8)
-
-                Spacer()
+                .padding()
+                .frame(maxWidth: .infinity)
             }
-            .padding()
+            .scrollDismissesKeyboard(.interactively)
+        }
+    }
+
+    private var moodSection: some View {
+        VStack(spacing: 8) {
+            Text(SharedStrings.moodQuestion)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(SDColor.muted)
+            HStack(spacing: 12) {
+                ForEach(Self.moods, id: \.self) { mood in
+                    Button {
+                        selectedMood = selectedMood == mood ? nil : mood
+                    } label: {
+                        Text(mood)
+                            .font(.system(size: 28))
+                            .opacity(selectedMood == nil || selectedMood == mood ? 1 : 0.35)
+                            .scaleEffect(selectedMood == mood ? 1.15 : 1)
+                    }
+                    .buttonStyle(.plain)
+                    .accessibilityLabel(Text(moodLabel(for: mood)))
+                    .accessibilityAddTraits(selectedMood == mood ? [.isSelected] : [])
+                }
+            }
+            .animation(.spring(duration: 0.25), value: selectedMood)
+        }
+        .padding(.top, 4)
+    }
+
+    private var momentNoteSection: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text(SharedStrings.momentNoteQuestion)
+                .font(.caption.weight(.bold))
+                .foregroundStyle(SDColor.muted)
+
+            TextField(SharedStrings.momentNotePlaceholder, text: $momentNote, axis: .vertical)
+                .font(.subheadline)
+                .foregroundStyle(SDColor.ink)
+                .lineLimit(2...4)
+                .focused($isNoteFocused)
+                .padding(12)
+                .background(.white, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                .onChange(of: momentNote) { _, newValue in
+                    // 200자를 넘기면 입력 단계에서 막는다. 저장소도 같은 한도로 한 번 더 정규화한다.
+                    if newValue.count > SmileReflection.momentNoteLimit {
+                        momentNote = String(newValue.prefix(SmileReflection.momentNoteLimit))
+                    }
+                }
+                .accessibilityLabel(Text(SharedStrings.momentNoteQuestion))
+                .accessibilityValue(Text(momentNote.isEmpty ? SharedStrings.momentNoteOptionalHint : momentNote))
+
+            HStack {
+                Text(SharedStrings.momentNoteOptionalHint)
+                Spacer()
+                Text("\(momentNote.count)/\(SmileReflection.momentNoteLimit)")
+                    .monospacedDigit()
+                    .accessibilityLabel(Text("남은 글자 수 \(remainingCharacters)자"))
+            }
+            .font(.caption2)
+            .foregroundStyle(SDColor.muted)
+        }
+    }
+
+    private func moodLabel(for mood: String) -> String {
+        switch mood {
+        case "😊": "아주 좋아요"
+        case "🙂": "괜찮아요"
+        case "😐": "그저 그래요"
+        case "😞": "가라앉아요"
+        default: "많이 지쳤어요"
+        }
+    }
+
+    private func confirm() {
+        isNoteFocused = false
+        let reflection = SmileReflection(mood: selectedMood, momentNote: momentNote)
+        if onConfirm(reflection) {
+            saveFailed = false
+        } else {
+            saveFailed = true
         }
     }
 }
@@ -216,5 +271,13 @@ struct ConfettiDots: View {
 }
 
 #Preview {
-    SaveConfirmView(todayScore: 3.0, yesterdayScore: 1.0, onConfirm: {})
+    SaveConfirmView(
+        habitContext: HabitContext(
+            todayCheckInCount: 1,
+            streakDays: 3,
+            recentSevenDayCount: 3,
+            daysSincePreviousCheckIn: 1,
+            hasMomentNote: false
+        )
+    ) { _ in true }
 }

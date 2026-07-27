@@ -47,14 +47,38 @@ final class CoachingViewModelTests: XCTestCase {
 
         XCTAssertEqual(mockSession.startCallCount, 1)
         XCTAssertEqual(mockSession.stopCallCount, 1)
+        XCTAssertEqual(viewModel.phase, .completed)
 
-        guard case let .completed(scoreDelta) = viewModel.phase else {
-            return XCTFail("Expected .completed phase, got \(viewModel.phase)")
-        }
-        XCTAssertEqual(scoreDelta, 0.3, accuracy: 0.0001)
-
+        // 점수는 UI 결과로 돌려주지 않지만 데이터 호환을 위해 계속 저장한다.
         let saved = try repository.fetchLatestCheckIn()
         XCTAssertEqual(saved?.scoreDelta ?? -1, 0.3, accuracy: 0.0001)
+    }
+
+    func test_complete_persistsPromptText_whenEnteredFromReminder() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+        let prompt = "오늘 고마웠던 일 하나를 떠올려볼까요?"
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        try viewModel.complete(promptText: prompt)
+
+        XCTAssertEqual(try repository.fetchLatestCheckIn()?.promptText, prompt)
+    }
+
+    func test_complete_leavesPromptNil_whenEnteredDirectly() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
+        let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
+        let mockSession = MockFaceTrackingSession()
+        let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
+
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        try viewModel.complete()
+
+        XCTAssertNil(try repository.fetchLatestCheckIn()?.promptText)
     }
 
     func test_complete_doesNothing_whenNoMeasurementReceivedYet() throws {
@@ -91,23 +115,24 @@ final class CoachingViewModelTests: XCTestCase {
         XCTAssertEqual(allCheckIns.count, 1)
     }
 
-    func test_displayedMeasurement_updatesOnlyWhenDisplayScoreChanges() throws {
+    func test_displayedMeasurement_signalsReadiness_andDoesNotChurnPerFrame() throws {
         let repository = SessionRepository(modelContext: try makeInMemoryContext())
         let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
+        // 얼굴이 잡히기 전에는 저장할 수 없다.
+        XCTAssertNil(viewModel.displayedMeasurement)
+
         mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        XCTAssertNotNil(viewModel.displayedMeasurement)
+
+        // 이후 프레임은 관찰 값을 다시 건드리지 않는다. 점수를 표시하지 않으므로 값이 바뀔 이유가 없다.
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.9, mouthCornerRight: 0.9, browTension: 0.9))
         XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.4, accuracy: 0.0001)
 
-        // 표시 점수(0.1° 단위)가 같은 미세 변화는 UI 관찰값을 갱신하지 않는다.
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4004, mouthCornerRight: 0.4, browTension: 0.4))
-        XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.4, accuracy: 0.0001)
-        // 원시 측정값은 항상 최신을 유지해 저장 시 정확한 값을 쓴다.
-        XCTAssertEqual(viewModel.latestMeasurement?.mouthCornerLeft ?? -1, 0.4004, accuracy: 0.0001)
-
-        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.5, mouthCornerRight: 0.5, browTension: 0.5))
-        XCTAssertEqual(viewModel.displayedMeasurement?.mouthCornerLeft ?? -1, 0.5, accuracy: 0.0001)
+        // 저장에 쓰는 원시 측정값은 항상 최신을 유지한다.
+        XCTAssertEqual(viewModel.latestMeasurement?.mouthCornerLeft ?? -1, 0.9, accuracy: 0.0001)
     }
 
     func test_isLightingPoor_true_whenAmbientBelowThreshold() throws {
@@ -180,26 +205,20 @@ final class CoachingViewModelTests: XCTestCase {
         XCTAssertEqual(try XCTUnwrap(repository.fetchLatestCheckIn()).lightingQuality, 1.0, accuracy: 0.001)
     }
 
-    func test_yesterdayDelta_returnsYesterdaysLatestScoreDelta() throws {
-        let context = try makeInMemoryContext()
-        let repository = SessionRepository(modelContext: context)
+    func test_complete_buildsHabitContextFromBehaviourOnly() throws {
+        let repository = SessionRepository(modelContext: try makeInMemoryContext())
         let baseline = Baseline(capturedAt: Date(timeIntervalSince1970: 0), mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1, lightingQuality: 1.0, deviceAngleOK: true)
         let mockSession = MockFaceTrackingSession()
         let viewModel = CoachingViewModel(session: mockSession, repository: repository, baseline: baseline)
 
-        XCTAssertNil(try viewModel.yesterdayDelta())
+        viewModel.start()
+        mockSession.emit(FaceMeasurement(mouthCornerLeft: 0.4, mouthCornerRight: 0.4, browTension: 0.4))
+        try viewModel.complete()
 
-        let calendar = Calendar.current
-        let yesterday = calendar.date(byAdding: .day, value: -1, to: Date())!
-        try repository.saveCheckIn(
-            measurement: FaceMeasurement(mouthCornerLeft: 0.1, mouthCornerRight: 0.1, browTension: 0.1),
-            date: yesterday,
-            lightingQuality: 1.0,
-            deviceAngleOK: true,
-            scoreDelta: 0.2
-        )
+        let saved = try XCTUnwrap(repository.fetchLatestCheckIn())
+        let encouragement = HabitEncouragementEngine.evaluate(try repository.habitContext(for: saved))
 
-        XCTAssertEqual(try XCTUnwrap(viewModel.yesterdayDelta()), 0.2, accuracy: 0.001)
+        XCTAssertEqual(encouragement.kind, .first)
     }
 
     func test_complete_persistsSessionSummaryAndPayload() throws {

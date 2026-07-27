@@ -2,55 +2,43 @@ import SwiftUI
 import SwiftData
 import CoachingKit
 
+/// 미소 시간 촬영 화면.
+///
+/// 얼굴 측정은 저장 시점에 계속 수행하지만 사용자에게 점수나 게이지를 보여주지 않는다.
+/// 화면이 하는 일은 얼굴이 잡혔는지 알려주고, 잠시 미소 지을 여유를 주는 것뿐이다.
 struct CoachingSessionView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var trackingSession = ARKitFaceTrackingSession()
     @State private var viewModel: CoachingViewModel?
     @State private var errorMessage: String?
 
-    /// 알림 딥링크로 진입한 경우 상단에 이어서 보여줄 표정 질문. 일반 진입은 nil.
+    /// 알림 딥링크로 진입한 경우 상단에 이어서 보여줄 질문. 일반 진입은 nil.
     var promptText: String? = nil
     let baseline: Baseline
-    let onCompleted: (Double, Double?) -> Void
+    /// 완료 시각만 전달한다. 질문은 이 화면을 띄운 쪽이 이미 알고 있다.
+    let onCompleted: (Date) -> Void
     let onExit: () -> Void
 
-    private var liveDelta: Double? {
-        viewModel?.displayedMeasurement.map {
-            ScoreCalculator.delta(current: $0, baseline: baseline.measurement)
-        }
+    /// 얼굴이 잡혀 저장할 수 있는 상태인지.
+    private var isFaceReady: Bool { viewModel?.displayedMeasurement != nil }
+
+    private var statusText: String {
+        isFaceReady ? SharedStrings.smileInvitation : SharedStrings.alignFaceGuide
     }
 
     var body: some View {
         ZStack(alignment: .bottom) {
             ARFacePreviewRepresentable(session: trackingSession)
                 .ignoresSafeArea()
+                .accessibilityHidden(true)
 
             FaceGuideOverlay()
-
-            // 게이지는 ZStack의 bottom 정렬과 무관하게 오른쪽 세로 중앙에 둔다.
-            HStack {
-                Spacer()
-                if let delta = liveDelta {
-                    VStack(spacing: 7) {
-                        Text(SDFormat.signedDegrees(delta * 10))
-                            .font(.system(size: 11, weight: .heavy, design: .rounded))
-                            .foregroundStyle(SDColor.coralDeep)
-                            .monospacedDigit()
-                            .padding(.horizontal, 9)
-                            .padding(.vertical, 3)
-                            .background(.white.opacity(0.92), in: Capsule())
-
-                        VerticalGaugeView(value: min(max((delta + 1) / 2, 0), 1))
-                            .frame(width: 10, height: 200)
-                    }
-                    .padding(.trailing, 20)
-                }
-            }
-            .frame(maxHeight: .infinity)
+                .accessibilityHidden(true)
 
             VStack {
                 HStack {
                     SDCloseButton { onExit() }
+                        .accessibilitySortPriority(0)
                     Spacer()
                 }
                 .padding(.horizontal)
@@ -64,52 +52,41 @@ struct CoachingSessionView: View {
                         .frame(maxWidth: .infinity)
                         .background(.white.opacity(0.92), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
                         .padding(.horizontal)
+                        .accessibilitySortPriority(4)
                 }
 
                 if viewModel?.isLightingPoor == true {
-                    Label("조금 어두워요 · 밝은 곳에서 측정해 주세요", systemImage: "exclamationmark.circle.fill")
-                        .font(.caption.bold())
-                        .foregroundStyle(Color(hex: 0x6B4E00))
-                        .padding(10)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: 0xFFF0BE).opacity(0.95), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .padding(.horizontal)
+                    GuidanceBanner(text: "조금 어두워요 · 밝은 곳에서 찍어주세요", systemImage: "exclamationmark.circle.fill")
                 }
                 if viewModel?.isAngleOK == false {
-                    Label("얼굴을 정면으로 비춰주세요", systemImage: "face.dashed")
-                        .font(.caption.bold())
-                        .foregroundStyle(Color(hex: 0x6B4E00))
-                        .padding(10)
-                        .frame(maxWidth: .infinity)
-                        .background(Color(hex: 0xFFF0BE).opacity(0.95), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-                        .padding(.horizontal)
+                    GuidanceBanner(text: "얼굴을 정면으로 비춰주세요", systemImage: "face.dashed")
                 }
                 Spacer()
             }
 
             VStack(spacing: 12) {
-                HStack(alignment: .firstTextBaseline) {
-                    Text("지금 미소 크기")
-                        .font(.caption.weight(.bold))
-                        .foregroundStyle(SDColor.muted)
-                    Spacer()
-                    Text(liveDelta.map { SDFormat.signedDegrees($0 * 10) } ?? "—")
-                        .font(.system(size: 24, weight: .heavy, design: .rounded))
-                        .foregroundStyle(SDColor.coralDeep)
-                        .monospacedDigit()
-                }
+                Text(statusText)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(isFaceReady ? SDColor.ink : SDColor.muted)
+                    .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
+                    .animation(.easeInOut(duration: 0.2), value: isFaceReady)
+                    .accessibilitySortPriority(2)
 
                 if let errorMessage {
                     Text(errorMessage)
                         .font(.caption)
                         .foregroundStyle(SDColor.coralDeep)
+                        .accessibilitySortPriority(1)
                 }
 
-                Button("측정 종료") {
+                Button(SharedStrings.saveSmileAction) {
                     complete()
                 }
                 .buttonStyle(SDInkButtonStyle())
-                .disabled(viewModel?.displayedMeasurement == nil || viewModel?.phase != .tracking)
+                .disabled(!isFaceReady || viewModel?.phase != .tracking)
+                .accessibilityHint(isFaceReady ? "" : SharedStrings.alignFaceGuide)
+                .accessibilitySortPriority(0)
             }
             .padding(.horizontal, 18)
             .padding(.top, 16)
@@ -137,29 +114,30 @@ struct CoachingSessionView: View {
 
     private func complete() {
         guard let viewModel else { return }
-        let yesterday = (try? viewModel.yesterdayDelta())?.map(ScoreCalculator.displayValue) ?? nil
         do {
-            try viewModel.complete()
+            try viewModel.complete(promptText: promptText)
         } catch {
             errorMessage = SharedStrings.saveFailed
             return
         }
-        if case let .completed(delta) = viewModel.phase {
-            onCompleted(ScoreCalculator.displayValue(delta), yesterday)
-        }
+        guard viewModel.phase == .completed else { return }
+        onCompleted(.now)
     }
 }
 
-struct VerticalGaugeView: View {
-    let value: Double
+/// 조명·각도처럼 측정 자체를 돕는 안내 배너.
+private struct GuidanceBanner: View {
+    let text: String
+    let systemImage: String
 
     var body: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .bottom) {
-                Capsule().fill(.white.opacity(0.45))
-                Capsule().fill(SDColor.gaugeGradient)
-                    .frame(height: geometry.size.height * min(max(value, 0), 1))
-            }
-        }
+        Label(text, systemImage: systemImage)
+            .font(.caption.bold())
+            .foregroundStyle(Color(hex: 0x6B4E00))
+            .padding(10)
+            .frame(maxWidth: .infinity)
+            .background(Color(hex: 0xFFF0BE).opacity(0.95), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .padding(.horizontal)
+            .accessibilitySortPriority(3)
     }
 }
