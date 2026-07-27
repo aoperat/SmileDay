@@ -12,20 +12,24 @@ public struct DayCheckIn: Equatable {
     }
 }
 
+/// 홈 화면 상태.
+///
+/// 점수를 노출하지 않는다. 오늘 잠시 웃어봤는지, 이번 주에 며칠 웃어봤는지,
+/// 어떤 좋은 순간을 남겼는지처럼 행동과 회고만 보여준다.
 @Observable
 public final class HomeViewModel {
     public private(set) var hasCheckedInToday: Bool = false
     public private(set) var streakDays: Int = 0
-    /// 어제 체크인의 표시 점수(0.1° 단위). 어제 기록이 없으면 nil.
-    public private(set) var yesterdayScore: Double?
-    /// 오늘 체크인의 표시 점수(0.1° 단위). 오늘 기록이 없으면 nil.
-    public private(set) var todayScore: Double?
+    /// 오늘의 미소 시간 횟수. 같은 날 여러 번이면 모두 센다.
+    public private(set) var todayCheckInCount: Int = 0
     /// 오늘로 끝나는 최근 7일. 주 경계를 넘어도 최근 활동이 보이도록 롤링 윈도로 계산한다.
     public private(set) var recentWeek: [DayCheckIn] = []
-    /// 이번 주(월요일~오늘) 체크인 횟수.
-    public private(set) var weekCheckInCount: Int = 0
-    /// 최근 7일 중 기록이 있는 날들의 표시 점수 평균. 기록이 없으면 nil.
-    public private(set) var weeklyAverageScore: Double?
+    /// 이번 주(월요일~오늘) 중 웃어본 고유 일수. 같은 날 여러 번은 하루로 센다.
+    public private(set) var weekCheckInDayCount: Int = 0
+    /// 이번 주에 남긴 좋은 순간 수. 같은 날 여러 개면 각각 센다.
+    public private(set) var weekMomentNoteCount: Int = 0
+    /// 가장 최근에 남긴 좋은 순간. 없으면 nil이며, 빈 상태를 따로 만들지 않는다.
+    public private(set) var latestMomentNote: String?
 
     private let repository: SessionRepository
     private let calendar: Calendar
@@ -47,31 +51,21 @@ public final class HomeViewModel {
 
         // 홈에 필요한 구간(이번 주 ∪ 최근 7일)을 한 번의 범위 조회로 읽는다.
         let sessions = try repository.fetchCheckIns(from: min(monday, sixDaysAgo), to: tomorrow)
-        var latestDeltaByDay: [Date: Double] = [:]
-        for session in sessions { // 날짜 오름차순이라 같은 날은 마지막 기록이 남는다
-            latestDeltaByDay[calendar.startOfDay(for: session.date)] = session.scoreDelta
-        }
+        let digest = CheckInDigest(sessions: sessions, calendar: calendar)
 
-        hasCheckedInToday = latestDeltaByDay[today] != nil
-        todayScore = latestDeltaByDay[today].map(ScoreCalculator.displayValue)
-        if let yesterday = calendar.date(byAdding: .day, value: -1, to: today) {
-            yesterdayScore = latestDeltaByDay[yesterday].map(ScoreCalculator.displayValue)
-        } else {
-            yesterdayScore = nil
-        }
+        todayCheckInCount = digest.count(onDayOf: today)
+        hasCheckedInToday = todayCheckInCount > 0
 
         recentWeek = (0..<7).reversed().compactMap { offset in
             guard let day = calendar.date(byAdding: .day, value: -offset, to: today) else { return nil }
-            return DayCheckIn(date: day, checkedIn: latestDeltaByDay[day] != nil)
+            return DayCheckIn(date: day, checkedIn: digest.hasCheckIn(onDayOf: day))
         }
 
-        weekCheckInCount = (0...mondayOffset).reduce(0) { count, offset in
-            guard let day = calendar.date(byAdding: .day, value: offset, to: monday) else { return count }
-            return count + (latestDeltaByDay[day] != nil ? 1 : 0)
-        }
+        let thisWeek = sessions.filter { $0.date >= monday }
+        weekCheckInDayCount = Set(thisWeek.map { calendar.startOfDay(for: $0.date) }).count
+        weekMomentNoteCount = thisWeek.filter { $0.smileMomentNote != nil }.count
 
-        let recentScores = recentWeek.compactMap { latestDeltaByDay[$0.date].map(ScoreCalculator.displayValue) }
-        weeklyAverageScore = recentScores.isEmpty ? nil : recentScores.reduce(0, +) / Double(recentScores.count)
+        latestMomentNote = try repository.fetchLatestCheckInWithMomentNote()?.smileMomentNote
 
         streakDays = try repository.checkInStreak(endingOn: now(), calendar: calendar)
     }

@@ -9,12 +9,8 @@ struct HomeView: View {
     @State private var reminderNudgeTitle = ""
     @State private var reminderNudgeSubtitle = ""
     @State private var isReminderSheetPresented = false
-    @State private var showBaselineResetNudgeCard = false
-    @State private var isRecapturingBaseline = false
 
-    let baseline: Baseline
     let onStartCoaching: () -> Void
-    let onBaselineUpdated: (Baseline) -> Void
 
     var body: some View {
         ScrollView {
@@ -30,11 +26,8 @@ struct HomeView: View {
                     )
 
                     HStack(spacing: 10) {
-                        StatCard(value: "\(viewModel.weekCheckInCount)회", label: "이번 주 체크인")
-                        StatCard(
-                            value: viewModel.weeklyAverageScore.map { SDFormat.signedDegrees($0) } ?? "—",
-                            label: "7일 평균"
-                        )
+                        StatCard(value: "\(viewModel.weekCheckInDayCount)일", label: "이번 주 웃어본 날")
+                        StatCard(value: "\(viewModel.weekMomentNoteCount)개", label: "남긴 좋은 순간")
                     }
                 }
 
@@ -50,20 +43,6 @@ struct HomeView: View {
                         }
                     )
                 }
-
-                if showBaselineResetNudgeCard {
-                    ReminderNudgeCard(
-                        title: "기준 얼굴을 다시 찍을 때가 됐어요",
-                        subtitle: "지난 촬영 후 4주가 지났어요. 다시 찍으면 오늘의 미소 크기가 더 정확해져요.",
-                        icon: "arrow.clockwise",
-                        iconColor: SDColor.coral,
-                        onTap: { isRecapturingBaseline = true },
-                        onDismiss: {
-                            BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState()).snooze(now: Date())
-                            withAnimation { showBaselineResetNudgeCard = false }
-                        }
-                    )
-                }
             }
             .padding(.horizontal, 18)
             .padding(.vertical, 8)
@@ -74,21 +53,9 @@ struct HomeView: View {
             viewModel = vm
             try? vm.refresh()
             refreshReminderNudge()
-            refreshBaselineResetNudge()
         }
         .sheet(isPresented: $isReminderSheetPresented, onDismiss: { refreshReminderNudge() }) {
             ReminderSheet()
-        }
-        .fullScreenCover(isPresented: $isRecapturingBaseline) {
-            BaselineCaptureView(
-                onBaselineSaved: { newBaseline in
-                    onBaselineUpdated(newBaseline)
-                    BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState()).clearSnooze()
-                    isRecapturingBaseline = false
-                    showBaselineResetNudgeCard = false
-                },
-                onCancel: { isRecapturingBaseline = false }
-            )
         }
     }
 
@@ -100,17 +67,12 @@ struct HomeView: View {
 
         if missing.count == TimeBucket.allCases.count {
             reminderNudgeTitle = "매일 잊지 않게 알려드릴까요?"
-            reminderNudgeSubtitle = "원하는 시간에 표정 질문을 보내드려요"
+            reminderNudgeSubtitle = "원하는 시간에 짧은 질문을 보내드려요"
         } else {
             reminderNudgeTitle = "\(missing.map(\.displayName).joined(separator: "·")) 리마인더도 설정해볼까요?"
-            reminderNudgeSubtitle = "하루 세 번이면 표정 습관이 더 잘 자리 잡아요"
+            reminderNudgeSubtitle = "하루 중 잠시 쉬어갈 시간을 만들어드려요"
         }
         showReminderNudgeCard = nudge.shouldShowHomeCard(registeredBuckets: registered, hasAnyCheckIn: hasAnyCheckIn)
-    }
-
-    private func refreshBaselineResetNudge() {
-        showBaselineResetNudgeCard = BaselineResetNudge(store: UserDefaultsBaselineResetNudgeState())
-            .shouldShowHomeCard(shouldRecommendReset: baseline.isOverdueForReset(), now: Date())
     }
 
     private var greeting: some View {
@@ -121,7 +83,7 @@ struct HomeView: View {
                 .foregroundStyle(SDColor.muted)
 
             (Text(greetingPrefix + ",\n오늘도 ")
-                + Text("활짝").foregroundStyle(SDColor.coral)
+                + Text("잠시").foregroundStyle(SDColor.coral)
                 + Text(" 웃어볼까요?"))
                 .font(.title3.bold())
                 .foregroundStyle(SDColor.ink)
@@ -139,81 +101,66 @@ struct HomeView: View {
         }
     }
 
+    /// 오늘의 미소 시간 상태 카드. 완료 여부와 다음 행동만 보여주고 점수는 쓰지 않는다.
     private var heroCard: some View {
-        VStack(spacing: 0) {
+        VStack(spacing: 12) {
+            SunFaceView()
+                .frame(width: 96, height: 96)
+                .accessibilityHidden(true)
+
             if viewModel?.hasCheckedInToday == true {
-                ArcGaugeView(score: viewModel?.todayScore, label: "오늘의 미소 크기")
-                Label("오늘 체크인을 완료했어요", systemImage: "checkmark.circle.fill")
+                Label("오늘의 미소 시간을 마쳤어요", systemImage: "checkmark.circle.fill")
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.mint)
-                    .padding(.top, 12)
+
+                if let count = viewModel?.todayCheckInCount, count > 1 {
+                    Text("오늘 \(count)번 웃어봤어요")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
+                }
+
+                if let note = viewModel?.latestMomentNote {
+                    Text(note)
+                        .font(.footnote)
+                        .foregroundStyle(SDColor.ink)
+                        .multilineTextAlignment(.center)
+                        .lineLimit(2)
+                        .padding(.horizontal, 14)
+                        .padding(.vertical, 10)
+                        .frame(maxWidth: .infinity)
+                        .background(SDColor.cream, in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+                        .accessibilityLabel(Text("최근 남긴 좋은 순간, \(note)"))
+                }
+
+                Button("한 번 더 웃어보기") {
+                    onStartCoaching()
+                }
+                .font(.subheadline.bold())
+                .foregroundStyle(SDColor.coralDeep)
             } else {
-                ArcGaugeView(score: viewModel?.yesterdayScore, label: "어제의 미소 크기")
-                Button("오늘의 미소 기록하기") {
+                Text(todayPrompt)
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(SDColor.ink)
+                    .multilineTextAlignment(.center)
+
+                Button("오늘의 미소 시간") {
                     onStartCoaching()
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
-                .padding(.top, 12)
             }
         }
         .frame(maxWidth: .infinity)
         .sdCard()
     }
-}
 
-/// 반원 아크 게이지. 점수(°)를 -10~+10 범위로 아크에 매핑한다.
-struct ArcGaugeView: View {
-    let score: Double?
-    let label: String
-
-    private var progress: Double {
-        guard let score else { return 0 }
-        return min(max((score + 10) / 20, 0), 1)
-    }
-
-    var body: some View {
-        ZStack(alignment: .bottom) {
-            semicircle(trim: 1)
-                .stroke(SDColor.shell, style: StrokeStyle(lineWidth: 13, lineCap: .round))
-
-            semicircle(trim: progress)
-                .stroke(
-                    LinearGradient(colors: [SDColor.apricot, SDColor.coral], startPoint: .leading, endPoint: .trailing),
-                    style: StrokeStyle(lineWidth: 13, lineCap: .round)
-                )
-
-            VStack(spacing: 2) {
-                if let score {
-                    (Text(SDFormat.signedNumber(score))
-                        + Text("°").font(.subheadline.bold()).foregroundStyle(SDColor.apricot))
-                        .font(.system(size: 30, weight: .heavy, design: .rounded))
-                        .foregroundStyle(SDColor.ink)
-                        .monospacedDigit()
-                } else {
-                    Text("아직 기록 전")
-                        .font(.headline.bold())
-                        .foregroundStyle(SDColor.muted)
-                }
-                Text(label)
-                    .font(.caption2.weight(.semibold))
-                    .foregroundStyle(SDColor.muted)
-            }
-            .padding(.bottom, 2)
-        }
-        .frame(width: 176, height: 96)
-        .padding(.top, 8)
-    }
-
-    private func semicircle(trim: Double) -> Path {
-        Path { path in
-            path.addArc(
-                center: CGPoint(x: 88, y: 92),
-                radius: 80,
-                startAngle: .degrees(180),
-                endAngle: .degrees(180 + trim * 180),
-                clockwise: false
-            )
-        }
+    /// 지금 시간대의 질문 하나. 홈에서도 알림과 같은 초대 문구를 보여준다.
+    private var todayPrompt: String {
+        let bucket = TimeBucket(hour: Calendar.current.component(.hour, from: .now))
+        let prompts = ReminderPromptCatalog.prompts(for: bucket)
+        guard !prompts.isEmpty else { return "잠시 웃어보는 시간을 가져볼까요?" }
+        // 하루 안에서는 같은 질문이 유지되도록 날짜로 고른다.
+        let day = Calendar.current.ordinality(of: .day, in: .era, for: .now) ?? 0
+        return prompts[day % prompts.count].text
     }
 }
 
@@ -228,7 +175,7 @@ struct WeekStreakCard: View {
     var body: some View {
         VStack(spacing: 8) {
             HStack {
-                Text("최근 7일 스마일")
+                Text("최근 7일 미소 시간")
                     .font(.subheadline.bold())
                     .foregroundStyle(SDColor.ink)
                 Spacer()
