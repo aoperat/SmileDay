@@ -26,16 +26,16 @@ struct SettingsView: View {
                         Button {
                             isResettingBaseline = true
                         } label: {
-                            SettingsRow(icon: "arrow.clockwise", chipColor: SDColor.coral, title: "기준선 재설정") {
+                            SettingsRow(icon: "arrow.clockwise", chipColor: SDColor.coral, title: "기준 표정 다시 찍기") {
                                 VStack(alignment: .trailing, spacing: 2) {
                                     if let weeks = viewModel.baselineAgeWeeks {
                                         Text("\(weeks)주 전")
-                                            .foregroundStyle(viewModel.shouldRecommendReset ? SDColor.coral : SDColor.muted)
+                                            .foregroundStyle(SDColor.muted)
                                     }
                                     if viewModel.shouldRecommendReset {
-                                        Text("재설정을 권장해요")
+                                        Text("원하면 다시 찍어도 돼요")
                                             .font(.caption2)
-                                            .foregroundStyle(SDColor.coral)
+                                            .foregroundStyle(SDColor.muted)
                                     }
                                 }
                             }
@@ -59,7 +59,7 @@ struct SettingsView: View {
                                 .foregroundStyle(.tertiary)
                         }
                     } footer: {
-                        Text("모든 측정 데이터는 회원가입 없이 이 기기 안에만 저장돼요.")
+                        Text("모든 기록은 회원가입 없이 이 기기 안에만 저장돼요. 사진과 영상은 저장하지 않아요.")
                             .font(.caption)
                             .foregroundStyle(SDColor.muted)
                     }

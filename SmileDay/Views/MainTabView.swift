@@ -7,8 +7,8 @@ enum AppTab: Hashable, CaseIterable {
     var title: String {
         switch self {
         case .home: "홈"
-        case .coaching: "코칭"
-        case .care: "케어"
+        case .coaching: SharedStrings.smileTabTitle
+        case .care: SharedStrings.restTabTitle
         case .history: "기록"
         case .settings: "설정"
         }
@@ -17,8 +17,9 @@ enum AppTab: Hashable, CaseIterable {
     var icon: String {
         switch self {
         case .home: "house"
-        case .coaching: "video"
-        case .care: "heart"
+        case .coaching: "face.smiling"
+        // 평가나 미용이 아니라 잠깐의 쉼을 나타내는 심볼.
+        case .care: "leaf"
         case .history: "chart.bar"
         case .settings: "gearshape"
         }
@@ -53,11 +54,7 @@ struct MainTabView: View {
         // 탭별 상태(내비게이션 스택, 필터, 스크롤 위치)를 보존하기 위해 네이티브 TabView를 쓰고,
         // 기본 탭바만 숨긴 채 커스텀 필 탭바를 올린다.
         TabView(selection: $selection) {
-            HomeView(
-                baseline: baseline,
-                onStartCoaching: { selection = .coaching },
-                onBaselineUpdated: onBaselineUpdated
-            )
+            HomeView(onStartCoaching: { selection = .coaching })
                 .toolbar(.hidden, for: .tabBar)
                 .tag(AppTab.home)
 
@@ -89,7 +86,7 @@ struct MainTabView: View {
                 .tag(AppTab.settings)
         }
         .safeAreaInset(edge: .bottom) {
-            // 코칭(측정·저장 완료) 중에는 탭바를 숨긴다 — 나가기는 좌상단 X 버튼.
+            // 미소 시간(촬영·완료) 중에는 탭바를 숨긴다 — 나가기는 좌상단 X 버튼.
             if selection != .coaching {
                 SDTabBar(selection: $selection)
                     .padding(.horizontal, 16)

@@ -18,9 +18,6 @@ enum SDColor {
         LinearGradient(colors: [coral, coralWarm], startPoint: .leading, endPoint: .trailing)
     }
 
-    static var gaugeGradient: LinearGradient {
-        LinearGradient(colors: [apricot, coral], startPoint: .bottom, endPoint: .top)
-    }
 }
 
 extension Color {
@@ -121,21 +118,4 @@ struct SDCloseButton: View {
 enum SDFormat {
     /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
     static let koreanLocale = Locale(identifier: "ko_KR")
-
-    static func signedDegrees(_ value: Int) -> String {
-        value >= 0 ? "+\(value)°" : "\(value)°"
-    }
-
-    static func signedDegrees(_ value: Double, fractionDigits: Int = 1) -> String {
-        signedNumber(value, fractionDigits: fractionDigits) + "°"
-    }
-
-    /// 부호 포함 소수 표기. 표시 자릿수로 반올림한 뒤 부호를 정하므로 "-0.0"이 나오지 않는다.
-    static func signedNumber(_ value: Double, fractionDigits: Int = 1) -> String {
-        let scale = pow(10.0, Double(fractionDigits))
-        var rounded = (value * scale).rounded() / scale
-        if rounded == 0 { rounded = 0 } // -0.0 → +0.0 정규화
-        let magnitude = abs(rounded).formatted(.number.precision(.fractionLength(fractionDigits)))
-        return (rounded < 0 ? "-" : "+") + magnitude
-    }
 }

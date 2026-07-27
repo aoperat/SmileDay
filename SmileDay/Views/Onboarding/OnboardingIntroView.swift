@@ -9,22 +9,22 @@ struct OnboardingIntroView: View {
             IntroPage(
                 systemImage: "face.smiling",
                 title: "스마일데이",
-                message: "무표정일 때의 얼굴 긴장 습관을 인지하고\n매일의 표정 습관을 기록하는 앱입니다."
+                message: "하루에 한 번, 잠시 멈춰 미소 짓는 시간을 만들어요.\n\n잘 웃었는지 평가하지 않아요. 오늘 잠시 웃어본 것과 나를 웃게 한 순간만 기록해요."
             )
             .tag(0)
 
             IntroPage(
                 systemImage: "lock.shield",
-                title: "데이터는 기기에만 저장됩니다",
-                message: "카메라로 측정한 얼굴 데이터는 이 기기에만 저장되며 외부로 전송되지 않습니다.\n\n이 앱은 의학적 효과를 보장하지 않습니다. 심한 비대칭이나 안면마비가 의심되면 전문의 상담을 권장합니다."
+                title: "사진은 저장하지 않아요",
+                message: "카메라는 얼굴이 잘 잡혔는지 확인하는 데만 써요. 사진과 영상은 어디에도 저장하지 않습니다.\n\n기분과 한 줄 기록도 이 기기 안에만 남고 외부로 전송되지 않아요."
             )
             .tag(1)
 
             VStack(spacing: 32) {
                 IntroPage(
                     systemImage: "camera.viewfinder",
-                    title: "기준선 촬영 준비",
-                    message: "밝은 곳에서 정면을 바라보고\n무표정으로 촬영해주세요.\n\n시작하면 카메라 권한을 요청합니다."
+                    title: "처음 한 번만 설정할게요",
+                    message: "카메라가 평소 내 표정을 알아볼 수 있게\n밝은 곳에서 편안한 표정으로 한 번만 찍어요.\n\n시작하면 카메라 권한을 요청합니다."
                 )
 
                 Button("시작하기") {

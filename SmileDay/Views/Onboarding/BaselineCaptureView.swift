@@ -40,10 +40,10 @@ struct BaselineCaptureView: View {
             }
 
             VStack(spacing: 16) {
-                Text("무표정으로 얼굴을 타원 안에 맞춰주세요")
+                Text("편안한 표정으로 얼굴을 타원 안에 맞춰주세요")
                     .font(.headline)
                     .foregroundStyle(.white)
-                Text("밝은 곳에서 정면을 바라보고 촬영해주세요")
+                Text("카메라가 평소 내 표정을 알아보기 위한 한 번의 설정이에요")
                     .font(.caption)
                     .foregroundStyle(.white.opacity(0.85))
 
@@ -61,7 +61,7 @@ struct BaselineCaptureView: View {
                         .foregroundStyle(.red)
                 }
 
-                Button("기준선 저장") {
+                Button("이 표정으로 설정하기") {
                     saveBaseline()
                 }
                 .buttonStyle(.borderedProminent)
