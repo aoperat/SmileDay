@@ -22,6 +22,10 @@ public final class CheckInSession {
     /// CheckInPayload JSON. 스키마는 payloadVersion으로 구분한다.
     public var payload: Data?
     public var payloadVersion: Int = 1
+    /// 이 미소 시간을 시작하게 한 질문. 알림 없이 진입했으면 nil.
+    public var promptText: String?
+    /// "오늘 나를 미소 짓게 한 순간"에 대한 선택적 한 줄 기록. 미입력 시 nil.
+    public var smileMomentNote: String?
 
     public init(
         date: Date,
@@ -38,7 +42,9 @@ public final class CheckInSession {
         duchenneScore: Double? = nil,
         mood: String? = nil,
         payload: Data? = nil,
-        payloadVersion: Int = 1
+        payloadVersion: Int = 1,
+        promptText: String? = nil,
+        smileMomentNote: String? = nil
     ) {
         self.date = date
         self.mouthCornerLeft = mouthCornerLeft
@@ -55,5 +61,7 @@ public final class CheckInSession {
         self.mood = mood
         self.payload = payload
         self.payloadVersion = payloadVersion
+        self.promptText = promptText
+        self.smileMomentNote = smileMomentNote
     }
 }

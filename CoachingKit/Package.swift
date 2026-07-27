@@ -11,7 +11,7 @@ let package = Package(
         .library(name: "CoachingKit", targets: ["CoachingKit"])
     ],
     targets: [
-        .target(name: "CoachingKit"),
-        .testTarget(name: "CoachingKitTests", dependencies: ["CoachingKit"])
+        .target(name: "CoachingKit", exclude: ["AGENTS.md"]),
+        .testTarget(name: "CoachingKitTests", dependencies: ["CoachingKit"], exclude: ["AGENTS.md"])
     ]
 )
