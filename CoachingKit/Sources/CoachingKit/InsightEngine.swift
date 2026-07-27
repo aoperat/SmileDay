@@ -50,13 +50,20 @@ public struct CheckInInsight: Equatable, Sendable {
     }
 
     public let kind: Kind
+    /// 판정 결과를 사람이 읽을 수 있게 적어둔 내부 설명.
+    ///
+    /// 화면에 그대로 띄우지 않는다. 사용자에게 보여줄 문구가 필요하면
+    /// `HabitEncouragementEngine`을 쓴다.
     public let message: String
-    /// 케어 탭 추천에 연결할 카테고리. lowReliability는 nil.
-    public let recommendedCategory: CareCategory?
 }
 
 /// 개인 히스토리 상대 비교로 체크인 인사이트를 판정하는 순수 로직.
 /// 날짜 필터링(최근 7일, 오늘 제외)은 호출자 책임 — 여기서는 신뢰도 필터만 한다.
+///
+/// - Important: 기본 사용자 메시지 생성에 사용하지 않는다.
+///   이 엔진은 얼굴 측정값으로 사용자를 평가하므로 미소 습관 중심 UX와 맞지 않는다.
+///   완료 화면·홈·쉬어가기 추천 문구는 `HabitEncouragementEngine`이 담당한다.
+///   저장 데이터 호환과 향후 내부 연구를 위해 코드만 유지한다.
 public enum InsightEngine {
     public static let poorLightingThreshold = 0.3  // LightingEvaluator.darkThreshold / referenceIntensity
     public static let trackingLossLimit = 3
@@ -69,8 +76,7 @@ public enum InsightEngine {
         if today.isUnreliable {
             return CheckInInsight(
                 kind: .lowReliability,
-                message: "측정이 조금 흔들렸어요. 내일은 밝은 곳에서 정면으로 찍어봐요",
-                recommendedCategory: nil
+                message: "측정 신뢰도 낮음: 각도·조명·트래킹 손실 중 하나가 기준을 벗어남"
             )
         }
         let reliable = history.filter { !$0.isUnreliable }
@@ -79,8 +85,7 @@ public enum InsightEngine {
            today.browTension > stats.mean + Swift.max(0.5 * stats.std, tensionMinDelta) {
             return CheckInInsight(
                 kind: .highTension,
-                message: "오늘은 미간 긴장이 평소보다 높아요. 릴랙스 케어로 풀어줘요",
-                recommendedCategory: .relax
+                message: "미간 긴장이 개인 평소 분포보다 높음"
             )
         }
 
@@ -92,8 +97,7 @@ public enum InsightEngine {
             let sideText = weakSide == .right ? "오른" : "왼"
             return CheckInInsight(
                 kind: .asymmetry(weakSide: weakSide),
-                message: "오늘은 \(sideText)쪽 입꼬리가 덜 올라갔어요. 스트레칭으로 균형을 맞춰봐요",
-                recommendedCategory: .lift
+                message: "입꼬리 좌우 차이가 개인 평소 분포보다 큼(약한 쪽: \(sideText))"
             )
         }
 
@@ -102,8 +106,7 @@ public enum InsightEngine {
            todayDuchenne < stats.mean - Swift.max(0.5 * stats.std, duchenneMinDelta) {
             return CheckInInsight(
                 kind: .lowDuchenne,
-                message: "입은 웃는데 눈은 아직이에요. 아침 스마일 스트레칭이 도움 돼요",
-                recommendedCategory: .morning
+                message: "duchenne 지표가 개인 평소 분포보다 낮음"
             )
         }
 
@@ -144,6 +147,8 @@ public extension CheckInRecord {
 public extension InsightEngine {
     /// 저장소의 최신 체크인을 오늘로, 그 직전 historyDays일을 히스토리로 판정한다.
     /// fetchCheckIns의 상한이 exclusive(date < end)라 최신 기록 자신은 히스토리에 포함되지 않는다.
+    ///
+    /// - Important: 기본 사용자 메시지 생성에 사용하지 않는다. `InsightEngine` 주석 참고.
     static func evaluateLatest(
         in repository: SessionRepository,
         historyDays: Int = 7,

@@ -34,7 +34,6 @@ final class InsightEngineTests: XCTestCase {
         let today = record(browTension: 0.9, deviceAngleOK: false)
         let insight = InsightEngine.evaluate(today: today, history: calmHistory)
         XCTAssertEqual(insight?.kind, .lowReliability)
-        XCTAssertNil(insight?.recommendedCategory)
     }
 
     func test_lowReliability_whenLightingPoor() {
@@ -58,7 +57,6 @@ final class InsightEngineTests: XCTestCase {
     func test_highTension_triggersAboveThreshold() {
         let insight = InsightEngine.evaluate(today: record(browTension: 0.26), history: calmHistory)
         XCTAssertEqual(insight?.kind, .highTension)
-        XCTAssertEqual(insight?.recommendedCategory, .relax)
     }
 
     func test_highTension_notTriggered_atThreshold() {
@@ -83,7 +81,6 @@ final class InsightEngineTests: XCTestCase {
         // 히스토리 |asym| 평균 0.02, std 0 → 임계 0.02 + max(0, 0.03) = 0.05. 오늘 +0.06(좌>우) → 오른쪽이 약함.
         let insight = InsightEngine.evaluate(today: record(smileAsymmetry: 0.06), history: calmHistory)
         XCTAssertEqual(insight?.kind, .asymmetry(weakSide: .right))
-        XCTAssertEqual(insight?.recommendedCategory, .lift)
         XCTAssertEqual(insight?.message.contains("오른"), true)
     }
 
@@ -109,7 +106,6 @@ final class InsightEngineTests: XCTestCase {
         // 임계 = 0.4 − max(0, 0.05) = 0.35. 오늘 0.34 → 발동.
         let insight = InsightEngine.evaluate(today: record(duchenneScore: 0.34), history: calmHistory)
         XCTAssertEqual(insight?.kind, .lowDuchenne)
-        XCTAssertEqual(insight?.recommendedCategory, .morning)
     }
 
     // MARK: 우선순위
