@@ -1,10 +1,10 @@
 <!-- Parent: ../AGENTS.md -->
-<!-- Generated: 2026-07-24 | Updated: 2026-07-24 -->
+<!-- Generated: 2026-07-24 | Updated: 2026-07-27 -->
 
 # Views
 
 ## Purpose
-All SwiftUI screens, grouped by tab/flow. `RootView` gates the app (splash → onboarding → baseline capture → tabs), `MainTabView` hosts a custom floating pill tab bar over 5 tabs (홈/코칭/케어/기록/설정), and `Theme.swift` is the single design-system source ("Morning Glow" palette).
+All SwiftUI screens, grouped by tab/flow. `RootView` gates the app (splash → onboarding → baseline capture → tabs), `MainTabView` hosts a custom floating pill tab bar over 5 tabs (홈/미소/쉬어가기/기록/설정), and `Theme.swift` is the single design-system source ("Morning Glow" palette).
 
 ## Key Files
 | File | Description |
@@ -19,8 +19,8 @@ All SwiftUI screens, grouped by tab/flow. `RootView` gates the app (splash → o
 | Directory | Purpose |
 |-----------|---------|
 | `Home/` | 홈 dashboard: gauges, streak, nudge cards (see `Home/AGENTS.md`) |
-| `Coaching/` | 코칭 check-in flow: live AR session → save confirmation (see `Coaching/AGENTS.md`) |
-| `Care/` | 케어 routine browser + guided player (see `Care/AGENTS.md`) |
+| `Coaching/` | 미소 시간 flow: live AR session → save confirmation with optional reflection (see `Coaching/AGENTS.md`) |
+| `Care/` | 쉬어가기 practice browser + guided player (see `Care/AGENTS.md`) |
 | `History/` | 기록 analytics: charts, heatmap (see `History/AGENTS.md`) |
 | `Settings/` | 설정: reminders, baseline reset, data privacy (see `Settings/AGENTS.md`) |
 | `Onboarding/` | First-run intro + baseline capture (see `Onboarding/AGENTS.md`) |
@@ -46,7 +46,8 @@ No view tests. Verify with `xcodebuild -project SmileDay.xcodeproj -scheme Smile
 ## Dependencies
 
 ### Internal
-- CoachingKit view models, repositories, `InsightEngine`, `ScoreCalculator`, `ReminderNudge`, `BaselineResetNudge`; `Services/` for AR preview and notification routing.
+- CoachingKit view models, repositories, `HabitEncouragementEngine`, `ReminderNudge`; `Services/` for AR preview and notification routing.
+- User-facing copy never shows scores, day-over-day deltas, or left/right comparisons. `InsightEngine` exists for storage compatibility and internal research only.
 
 ### External
 - SwiftUI, Swift Charts (History), Observation.
