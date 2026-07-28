@@ -26,11 +26,15 @@ enum AppTab: Hashable, CaseIterable {
     }
 }
 
+/// 얼굴 측정 시절의 5탭 화면.
+///
+/// 알림 중심 MVP(`2026-07-28-notification-smile-mvp-design.md`)에서는 `RootView`와 알림이
+/// 이 화면을 더 이상 열지 않는다. 저장 데이터 호환을 위해 파일만 남겨둔 상태이고,
+/// 실제 삭제는 별도 정리 작업에서 한다.
 struct MainTabView: View {
     let baseline: Baseline
     let onBaselineUpdated: (Baseline) -> Void
     @State private var selection: AppTab
-    @Environment(NotificationRouter.self) private var notificationRouter
     @State private var coachingPrompt: String? = nil
 
     init(baseline: Baseline, onBaselineUpdated: @escaping (Baseline) -> Void) {
@@ -94,12 +98,6 @@ struct MainTabView: View {
             }
         }
         .tint(SDColor.coral)
-        .onChange(of: notificationRouter.pendingCoaching, initial: true) { _, payload in
-            guard let payload else { return }
-            coachingPrompt = payload.promptText
-            selection = .coaching
-            notificationRouter.pendingCoaching = nil
-        }
     }
 }
 

@@ -1,4 +1,5 @@
 import SwiftUI
+import CoachingKit
 
 /// 모닝 글로우 디자인 토큰.
 enum SDColor {
@@ -118,4 +119,38 @@ struct SDCloseButton: View {
 enum SDFormat {
     /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
     static let koreanLocale = Locale(identifier: "ko_KR")
+}
+
+/// 미소 가이드 하나를 고르는 가로 칩. 온보딩·홈·설정이 같은 모양을 쓴다.
+struct GuidePickerRow: View {
+    let selectedID: String
+    let guides: [SmileGuide]
+    let onSelect: (String) -> Void
+
+    var body: some View {
+        HStack(spacing: 8) {
+            ForEach(guides) { guide in
+                let isSelected = guide.id == selectedID
+                Button {
+                    onSelect(guide.id)
+                } label: {
+                    Text(guide.title)
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(isSelected ? .white : SDColor.ink)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 8)
+                        .background {
+                            if isSelected {
+                                Capsule().fill(SDColor.primaryGradient)
+                            } else {
+                                Capsule().fill(SDColor.shell.opacity(0.5))
+                            }
+                        }
+                }
+                .buttonStyle(.plain)
+                .accessibilityLabel(guide.title)
+                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+            }
+        }
+    }
 }

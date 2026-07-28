@@ -23,4 +23,21 @@ enum SharedStrings {
 
     static let smileTabTitle = "미소"
     static let restTabTitle = "쉬어가기"
+
+    // MARK: - 알림 중심 미소 (MVP)
+
+    static let smileNowAction = "지금 미소 짓기"
+    static let guideStartAction = "시작"
+    /// 타이머를 끝까지 본 뒤의 문구. 표정이 어땠는지는 말하지 않는다.
+    static let guideCompleted = "오늘의 미소를 남겼어요"
+    static let guideSaveFailed = "기록을 저장하지 못했어요. 다시 시도해주세요."
+    static let todayCountTitle = "오늘 미소"
+    static let weekActiveDaysTitle = "이번 주"
+    static let recentSevenDaysTitle = "최근 7일"
+    static let nextReminderTitle = "다음 알림"
+    static let noReminderYet = "설정된 알림이 없어요"
+    /// 쉬어간 날을 실패로 표현하지 않는다.
+    static let noSmileYetToday = "아직 오늘의 미소가 없어요"
+    static let notificationDeniedNotice = "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요."
+    static let openSystemSettings = "설정 앱 열기"
 }

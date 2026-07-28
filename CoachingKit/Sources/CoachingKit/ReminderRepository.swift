@@ -9,8 +9,8 @@ public final class ReminderRepository {
     }
 
     @discardableResult
-    public func add(hour: Int, minute: Int) throws -> ReminderSetting {
-        let reminder = ReminderSetting(hour: hour, minute: minute)
+    public func add(hour: Int, minute: Int, guideID: String? = nil) throws -> ReminderSetting {
+        let reminder = ReminderSetting(hour: hour, minute: minute, guideID: guideID)
         modelContext.insert(reminder)
         try modelContext.save()
         return reminder
@@ -41,6 +41,11 @@ public final class ReminderRepository {
     public func updateTime(_ reminder: ReminderSetting, hour: Int, minute: Int) throws {
         reminder.hour = hour
         reminder.minute = minute
+        try modelContext.save()
+    }
+
+    public func updateGuide(_ reminder: ReminderSetting, guideID: String) throws {
+        reminder.guideID = guideID
         try modelContext.save()
     }
 }

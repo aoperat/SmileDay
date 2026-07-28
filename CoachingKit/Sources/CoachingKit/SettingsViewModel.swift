@@ -5,6 +5,9 @@ import Observation
 public final class SettingsViewModel {
     public private(set) var reminders: [ReminderSetting] = []
     public private(set) var baselineAgeWeeks: Int?
+    /// 아직 확인하지 않았으면 nil. 화면은 확인 전에는 권한 안내를 띄우지 않는다.
+    public private(set) var authorizationStatus: ReminderAuthorizationStatus?
+
     public var shouldRecommendReset: Bool {
         (baselineAgeWeeks ?? 0) >= Baseline.recommendResetThresholdWeeks
     }
@@ -35,11 +38,16 @@ public final class SettingsViewModel {
         }
     }
 
-    public func addReminder(hour: Int, minute: Int) async throws {
+    public func refreshAuthorizationStatus() async {
+        authorizationStatus = await scheduler.currentAuthorizationStatus()
+    }
+
+    public func addReminder(hour: Int, minute: Int, guideID: String = SmileGuideCatalog.default.id) async throws {
         _ = await scheduler.requestAuthorization()
-        let reminder = try reminderRepository.add(hour: hour, minute: minute)
-        await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: hour, minute: minute, days: reminderRollingWindowDays)
+        let reminder = try reminderRepository.add(hour: hour, minute: minute, guideID: guideID)
+        await schedule(reminder)
         try refresh()
+        await refreshAuthorizationStatus()
     }
 
     public func removeReminder(_ reminder: ReminderSetting) throws {
@@ -52,7 +60,7 @@ public final class SettingsViewModel {
         let newValue = !reminder.isEnabled
         try reminderRepository.setEnabled(reminder, newValue)
         if newValue {
-            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: reminder.hour, minute: reminder.minute, days: reminderRollingWindowDays)
+            await schedule(reminder)
         } else {
             scheduler.cancel(id: reminder.notificationID)
         }
@@ -62,7 +70,15 @@ public final class SettingsViewModel {
     public func updateReminderTime(_ reminder: ReminderSetting, hour: Int, minute: Int) async throws {
         try reminderRepository.updateTime(reminder, hour: hour, minute: minute)
         if reminder.isEnabled {
-            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: hour, minute: minute, days: reminderRollingWindowDays)
+            await schedule(reminder)
+        }
+        try refresh()
+    }
+
+    public func updateReminderGuide(_ reminder: ReminderSetting, guideID: String) async throws {
+        try reminderRepository.updateGuide(reminder, guideID: guideID)
+        if reminder.isEnabled {
+            await schedule(reminder)
         }
         try refresh()
     }
@@ -71,7 +87,18 @@ public final class SettingsViewModel {
     public func refreshAllScheduledReminders() async throws {
         try refresh()
         for reminder in reminders where reminder.isEnabled {
-            await scheduler.scheduleRollingWindow(id: reminder.notificationID, hour: reminder.hour, minute: reminder.minute, days: reminderRollingWindowDays)
+            await schedule(reminder)
         }
+    }
+
+    /// 저장된 guideID가 nil이거나 카탈로그에 없어도 기본 가이드로 예약된다.
+    private func schedule(_ reminder: ReminderSetting) async {
+        await scheduler.scheduleRollingWindow(
+            id: reminder.notificationID,
+            hour: reminder.hour,
+            minute: reminder.minute,
+            guideID: reminder.guide.id,
+            days: reminderRollingWindowDays
+        )
     }
 }
