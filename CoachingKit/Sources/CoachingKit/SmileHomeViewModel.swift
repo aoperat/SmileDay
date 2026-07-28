@@ -24,23 +24,27 @@ public final class SmileHomeViewModel {
     public private(set) var recentSevenDays: [SmileDayCount] = []
     public private(set) var nextReminder: UpcomingReminder?
 
-    public let guides: [SmileGuide]
+    /// 목록에 보이는 상황 카드. 사용자가 만든 카드도 포함한다.
+    public private(set) var guides: [SmileGuide] = []
+    /// 지금 시간대에 어울리는 첫 카드. 홈이 기본 선택으로 쓴다.
+    public private(set) var suggestedGuide: SmileGuide?
 
     private let momentRepository: SmileMomentRepository
     private let reminderRepository: ReminderRepository
+    private let library: SmileGuideLibrary
     private let calendar: Calendar
     private let now: () -> Date
 
     public init(
         momentRepository: SmileMomentRepository,
         reminderRepository: ReminderRepository,
-        guides: [SmileGuide] = SmileGuideCatalog.all,
+        library: SmileGuideLibrary,
         calendar: Calendar = .current,
         now: @escaping () -> Date = Date.init
     ) {
         self.momentRepository = momentRepository
         self.reminderRepository = reminderRepository
-        self.guides = guides
+        self.library = library
         self.calendar = calendar
         self.now = now
     }
@@ -51,6 +55,10 @@ public final class SmileHomeViewModel {
         weekActiveDayCount = try momentRepository.weekActiveDayCount(endingOn: today, calendar: calendar)
         recentSevenDays = try momentRepository.recentSevenDays(endingOn: today, calendar: calendar)
         nextReminder = try findNextReminder(after: today)
+
+        guides = try library.visibleGuides()
+        let slot = DaySlot(hour: calendar.component(.hour, from: today))
+        suggestedGuide = guides.first { $0.slot == slot } ?? guides.first
     }
 
     /// 활성 알림마다 다음 발생 시각을 구해 가장 이른 것을 고른다.
@@ -60,7 +68,7 @@ public final class SmileHomeViewModel {
 
         let candidates: [(date: Date, tieBreaker: String, guide: SmileGuide)] = enabled.compactMap { reminder in
             guard let date = nextOccurrence(hour: reminder.hour, minute: reminder.minute, after: reference) else { return nil }
-            return (date, reminder.notificationID, reminder.guide)
+            return (date, reminder.notificationID, library.guide(id: reminder.guideID))
         }
 
         // 같은 시각에 두 개가 있어도 항상 같은 하나를 고르도록 ID로 마지막 순서를 정한다.

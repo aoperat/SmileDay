@@ -34,13 +34,13 @@ final class SmileMomentRepositoryTests: XCTestCase {
     func test_save_persistsGuideAndSource() throws {
         let repository = try makeRepository()
 
-        let saved = try repository.save(guideID: "greeting-smile", source: .notification, date: date(2026, 7, 28, 9, 30))
+        let saved = try repository.save(guideID: "morning-greeting", source: .notification, date: date(2026, 7, 28, 9, 30))
 
-        XCTAssertEqual(saved.guideID, "greeting-smile")
+        XCTAssertEqual(saved.guideID, "morning-greeting")
         XCTAssertEqual(saved.source, .notification)
         let fetched = try repository.fetch(from: date(2026, 7, 28, 0), to: date(2026, 7, 29, 0))
         XCTAssertEqual(fetched.count, 1)
-        XCTAssertEqual(fetched.first?.guideID, "greeting-smile")
+        XCTAssertEqual(fetched.first?.guideID, "morning-greeting")
         XCTAssertEqual(fetched.first?.source, .notification)
     }
 
@@ -48,9 +48,9 @@ final class SmileMomentRepositoryTests: XCTestCase {
 
     func test_fetch_returnsOldestFirst() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 18))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 13))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 18))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 13))
 
         let fetched = try repository.fetch(from: date(2026, 7, 28, 0), to: date(2026, 7, 29, 0))
 
@@ -60,8 +60,8 @@ final class SmileMomentRepositoryTests: XCTestCase {
     /// 시작은 포함, 끝은 제외.
     func test_fetch_isHalfOpenRange() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 0, 0))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 29, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 29, 0, 0))
 
         let fetched = try repository.fetch(from: date(2026, 7, 28, 0), to: date(2026, 7, 29, 0))
 
@@ -78,9 +78,9 @@ final class SmileMomentRepositoryTests: XCTestCase {
 
     func test_count_countsEveryCompletionOnThatDay() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try repository.save(guideID: "greeting-smile", source: .notification, date: date(2026, 7, 28, 13))
-        try repository.save(guideID: "bright-smile", source: .manual, date: date(2026, 7, 28, 18))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try repository.save(guideID: "morning-greeting", source: .notification, date: date(2026, 7, 28, 13))
+        try repository.save(guideID: "anytime-pause", source: .manual, date: date(2026, 7, 28, 18))
 
         XCTAssertEqual(try repository.count(onDayOf: date(2026, 7, 28, 21), calendar: calendar), 3)
     }
@@ -88,8 +88,8 @@ final class SmileMomentRepositoryTests: XCTestCase {
     /// 자정 직전과 직후는 다른 날이다.
     func test_count_respectsDayBoundary() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 23, 59))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 29, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 23, 59))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 29, 0, 0))
 
         XCTAssertEqual(try repository.count(onDayOf: date(2026, 7, 28, 12), calendar: calendar), 1)
         XCTAssertEqual(try repository.count(onDayOf: date(2026, 7, 29, 12), calendar: calendar), 1)
@@ -97,7 +97,7 @@ final class SmileMomentRepositoryTests: XCTestCase {
 
     func test_count_isZero_whenNoCompletionThatDay() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
 
         XCTAssertEqual(try repository.count(onDayOf: date(2026, 7, 27, 9), calendar: calendar), 0)
     }
@@ -116,9 +116,9 @@ final class SmileMomentRepositoryTests: XCTestCase {
 
     func test_recentSevenDays_fillsMissingDaysWithZero() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 18))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 24, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 18))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 24, 9))
 
         let days = try repository.recentSevenDays(endingOn: date(2026, 7, 28), calendar: calendar)
 
@@ -129,8 +129,8 @@ final class SmileMomentRepositoryTests: XCTestCase {
     /// 7일 창 밖의 기록은 세지 않는다.
     func test_recentSevenDays_excludesOlderAndFutureDays() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 21, 23, 59))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 29, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 21, 23, 59))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 29, 0, 0))
 
         let days = try repository.recentSevenDays(endingOn: date(2026, 7, 28), calendar: calendar)
 
@@ -151,9 +151,9 @@ final class SmileMomentRepositoryTests: XCTestCase {
     /// 같은 날 여러 번 완료해도 하루로 센다.
     func test_weekActiveDayCount_countsDistinctDays() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 26, 9))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 18))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 26, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 18))
 
         XCTAssertEqual(try repository.weekActiveDayCount(endingOn: date(2026, 7, 28), calendar: calendar), 2)
     }
@@ -161,15 +161,15 @@ final class SmileMomentRepositoryTests: XCTestCase {
     /// 2026-07-28은 화요일. 일요일 시작 주는 07-26 ~ 08-01이라 07-25는 지난 주다.
     func test_weekActiveDayCount_excludesPreviousWeek() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 25, 23, 59))
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 26, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 25, 23, 59))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 26, 0, 0))
 
         XCTAssertEqual(try repository.weekActiveDayCount(endingOn: date(2026, 7, 28), calendar: calendar), 1)
     }
 
     func test_weekActiveDayCount_excludesNextWeek() throws {
         let repository = try makeRepository()
-        try repository.save(guideID: "soft-smile", source: .manual, date: date(2026, 8, 2, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 8, 2, 9))
 
         XCTAssertEqual(try repository.weekActiveDayCount(endingOn: date(2026, 7, 28), calendar: calendar), 0)
     }

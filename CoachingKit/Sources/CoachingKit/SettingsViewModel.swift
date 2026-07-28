@@ -14,19 +14,27 @@ public final class SettingsViewModel {
 
     private let reminderRepository: ReminderRepository
     private let sessionRepository: SessionRepository
+    private let library: SmileGuideLibrary
     private let scheduler: ReminderScheduling
     private let now: () -> Date
 
     public init(
         reminderRepository: ReminderRepository,
         sessionRepository: SessionRepository,
+        library: SmileGuideLibrary,
         scheduler: ReminderScheduling,
         now: @escaping () -> Date = Date.init
     ) {
         self.reminderRepository = reminderRepository
         self.sessionRepository = sessionRepository
+        self.library = library
         self.scheduler = scheduler
         self.now = now
+    }
+
+    /// 사용자가 만든 카드까지 포함해 해석한다.
+    public func guide(for reminder: ReminderSetting) -> SmileGuide {
+        library.guide(id: reminder.guideID)
     }
 
     public func refresh() throws {
@@ -91,13 +99,13 @@ public final class SettingsViewModel {
         }
     }
 
-    /// 저장된 guideID가 nil이거나 카탈로그에 없어도 기본 가이드로 예약된다.
+    /// 저장된 guideID가 nil이거나 어디에도 없어도 기본 카드로 예약된다.
     private func schedule(_ reminder: ReminderSetting) async {
         await scheduler.scheduleRollingWindow(
             id: reminder.notificationID,
             hour: reminder.hour,
             minute: reminder.minute,
-            guideID: reminder.guide.id,
+            guide: library.guide(id: reminder.guideID),
             days: reminderRollingWindowDays
         )
     }

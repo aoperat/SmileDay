@@ -44,6 +44,10 @@ struct RootView: View {
                 let viewModel = SettingsViewModel(
                     reminderRepository: ReminderRepository(modelContext: modelContext),
                     sessionRepository: SessionRepository(modelContext: modelContext),
+                    library: SmileGuideLibrary(
+                        modelContext: modelContext,
+                        hiddenStore: UserDefaultsHiddenSmileGuideStore()
+                    ),
                     scheduler: UserNotificationReminderScheduler()
                 )
                 try? await viewModel.refreshAllScheduledReminders()

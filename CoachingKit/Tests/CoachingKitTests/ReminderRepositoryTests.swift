@@ -76,10 +76,9 @@ final class ReminderRepositoryTests: XCTestCase {
     func test_add_storesGuideID() throws {
         let repository = ReminderRepository(modelContext: try makeInMemoryContext())
 
-        let reminder = try repository.add(hour: 13, minute: 0, guideID: "greeting-smile")
+        let reminder = try repository.add(hour: 13, minute: 0, guideID: "morning-greeting")
 
-        XCTAssertEqual(reminder.guideID, "greeting-smile")
-        XCTAssertEqual(reminder.guide.id, "greeting-smile")
+        XCTAssertEqual(reminder.guideID, "morning-greeting")
     }
 
     /// 가이드가 없던 시절 알림은 guideID가 nil이다 — 기본 가이드로 읽혀야 한다.
@@ -88,32 +87,24 @@ final class ReminderRepositoryTests: XCTestCase {
 
         let reminder = try repository.add(hour: 9, minute: 0)
 
-        XCTAssertNil(reminder.guideID)
-        XCTAssertEqual(reminder.guide.id, "soft-smile")
-    }
-
-    func test_guide_fallsBackToDefault_whenStoredIDUnknown() throws {
-        let repository = ReminderRepository(modelContext: try makeInMemoryContext())
-        let reminder = try repository.add(hour: 9, minute: 0, guideID: "retired-guide")
-
-        XCTAssertEqual(reminder.guide.id, "soft-smile")
+        XCTAssertNil(reminder.guideID, "가이드가 없던 시절 알림은 nil로 남는다")
     }
 
     func test_updateGuide_changesGuideID() throws {
         let repository = ReminderRepository(modelContext: try makeInMemoryContext())
-        let reminder = try repository.add(hour: 9, minute: 0, guideID: "soft-smile")
+        let reminder = try repository.add(hour: 9, minute: 0, guideID: "anytime-soft")
 
-        try repository.updateGuide(reminder, guideID: "bright-smile")
+        try repository.updateGuide(reminder, guideID: "anytime-pause")
 
-        XCTAssertEqual(try XCTUnwrap(repository.fetchAll().first).guideID, "bright-smile")
+        XCTAssertEqual(try XCTUnwrap(repository.fetchAll().first).guideID, "anytime-pause")
     }
 
     func test_updateTime_keepsGuideID() throws {
         let repository = ReminderRepository(modelContext: try makeInMemoryContext())
-        let reminder = try repository.add(hour: 9, minute: 0, guideID: "bright-smile")
+        let reminder = try repository.add(hour: 9, minute: 0, guideID: "anytime-pause")
 
         try repository.updateTime(reminder, hour: 20, minute: 30)
 
-        XCTAssertEqual(try XCTUnwrap(repository.fetchAll().first).guideID, "bright-smile")
+        XCTAssertEqual(try XCTUnwrap(repository.fetchAll().first).guideID, "anytime-pause")
     }
 }

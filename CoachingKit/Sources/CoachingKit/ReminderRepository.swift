@@ -48,4 +48,14 @@ public final class ReminderRepository {
         reminder.guideID = guideID
         try modelContext.save()
     }
+
+    /// 이 카드를 쓰는 알림. guideID가 nil인 옛 알림은 기본 카드를 쓰는 것으로 친다.
+    public func reminders(usingGuideID guideID: String) throws -> [ReminderSetting] {
+        let isDefault = guideID == SmileGuideCatalog.default.id
+        return try fetchAll().filter { reminder in
+            guard let stored = reminder.guideID else { return isDefault }
+            // 옛 ID로 저장된 알림도 별칭을 거쳐 같은 카드로 잡힌다.
+            return (SmileGuideCatalog.legacyIDAliases[stored] ?? stored) == guideID
+        }
+    }
 }

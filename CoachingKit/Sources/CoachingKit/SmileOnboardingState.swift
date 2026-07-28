@@ -43,9 +43,6 @@ public struct ReminderDraft: Identifiable, Equatable, Sendable {
         self.guideID = guideID
     }
 
-    public var guide: SmileGuide {
-        SmileGuideCatalog.guide(id: guideID)
-    }
 }
 
 /// 첫 실행 설정 상태.
@@ -58,9 +55,9 @@ public final class SmileOnboardingViewModel {
     /// 권장 기본값. 사용자가 화면에서 지우거나 바꿀 수 있다.
     public static var recommendedDrafts: [ReminderDraft] {
         [
-            ReminderDraft(hour: 9, minute: 0, guideID: "soft-smile"),
-            ReminderDraft(hour: 13, minute: 0, guideID: "greeting-smile"),
-            ReminderDraft(hour: 18, minute: 0, guideID: "bright-smile"),
+            ReminderDraft(hour: 9, minute: 0, guideID: "morning-greeting"),
+            ReminderDraft(hour: 13, minute: 0, guideID: "noon-before-lunch"),
+            ReminderDraft(hour: 18, minute: 0, guideID: "evening-after-work"),
         ]
     }
 
@@ -72,24 +69,35 @@ public final class SmileOnboardingViewModel {
     /// 확정 후의 권한 상태. 거부여도 앱 진입은 막지 않는다.
     public private(set) var authorizationStatus: ReminderAuthorizationStatus?
 
-    public let guides: [SmileGuide]
+    /// 고를 수 있는 상황 카드. 사용자가 첫 실행에 만든 카드도 반영된다.
+    public private(set) var guides: [SmileGuide]
 
     private let reminderRepository: ReminderRepository
+    private let library: SmileGuideLibrary
     private let scheduler: ReminderScheduling
     private let store: SmileOnboardingStoring
 
     public init(
         reminderRepository: ReminderRepository,
+        library: SmileGuideLibrary,
         scheduler: ReminderScheduling,
         store: SmileOnboardingStoring,
-        drafts: [ReminderDraft]? = nil,
-        guides: [SmileGuide] = SmileGuideCatalog.all
+        drafts: [ReminderDraft]? = nil
     ) {
         self.reminderRepository = reminderRepository
+        self.library = library
         self.scheduler = scheduler
         self.store = store
         self.drafts = drafts ?? Self.recommendedDrafts
-        self.guides = guides
+        self.guides = (try? library.visibleGuides()) ?? SmileGuideCatalog.builtIn
+    }
+
+    public func refreshGuides() {
+        guides = (try? library.visibleGuides()) ?? SmileGuideCatalog.builtIn
+    }
+
+    public func guide(for draft: ReminderDraft) -> SmileGuide {
+        library.guide(id: draft.guideID)
     }
 
     public func updateTime(draftID: UUID, hour: Int, minute: Int) {
@@ -125,7 +133,7 @@ public final class SmileOnboardingViewModel {
         do {
             for draft in drafts {
                 savedReminders.append(
-                    try reminderRepository.add(hour: draft.hour, minute: draft.minute, guideID: draft.guide.id)
+                    try reminderRepository.add(hour: draft.hour, minute: draft.minute, guideID: guide(for: draft).id)
                 )
             }
         } catch {
@@ -140,7 +148,7 @@ public final class SmileOnboardingViewModel {
                 id: reminder.notificationID,
                 hour: reminder.hour,
                 minute: reminder.minute,
-                guideID: reminder.guide.id,
+                guide: library.guide(id: reminder.guideID),
                 days: reminderRollingWindowDays
             )
         }

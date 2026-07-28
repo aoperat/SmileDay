@@ -18,8 +18,8 @@ final class SettingsViewModelTests: XCTestCase {
             status
         }
 
-        func scheduleRollingWindow(id: String, hour: Int, minute: Int, guideID: String, days: Int) async {
-            scheduled.append((id, hour, minute, guideID, days))
+        func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async {
+            scheduled.append((id, hour, minute, guide.id, days))
         }
 
         func cancel(id: String) {
@@ -37,6 +37,7 @@ final class SettingsViewModelTests: XCTestCase {
         let viewModel = SettingsViewModel(
             reminderRepository: ReminderRepository(modelContext: context),
             sessionRepository: sessionRepository,
+            library: SmileGuideLibrary(modelContext: context, hiddenStore: InMemoryHiddenSmileGuideStore()),
             scheduler: scheduler
         )
         return (viewModel, sessionRepository, scheduler)
@@ -190,10 +191,10 @@ final class SettingsViewModelTests: XCTestCase {
     func test_addReminder_schedulesWithChosenGuide() async throws {
         let (viewModel, _, scheduler) = try makeViewModel()
 
-        try await viewModel.addReminder(hour: 13, minute: 0, guideID: "greeting-smile")
+        try await viewModel.addReminder(hour: 13, minute: 0, guideID: "morning-greeting")
 
-        XCTAssertEqual(viewModel.reminders.first?.guideID, "greeting-smile")
-        XCTAssertEqual(scheduler.scheduled.first?.guideID, "greeting-smile")
+        XCTAssertEqual(viewModel.reminders.first?.guideID, "morning-greeting")
+        XCTAssertEqual(scheduler.scheduled.first?.guideID, "morning-greeting")
     }
 
     func test_addReminder_withoutGuide_usesDefaultGuide() async throws {
@@ -206,16 +207,16 @@ final class SettingsViewModelTests: XCTestCase {
 
     func test_updateReminderGuide_reschedulesWithNewGuide() async throws {
         let (viewModel, _, scheduler) = try makeViewModel()
-        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "soft-smile")
+        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "anytime-soft")
         let reminder = try XCTUnwrap(viewModel.reminders.first)
         let scheduledBefore = scheduler.scheduled.count
 
-        try await viewModel.updateReminderGuide(reminder, guideID: "bright-smile")
+        try await viewModel.updateReminderGuide(reminder, guideID: "anytime-pause")
 
-        XCTAssertEqual(viewModel.reminders.first?.guideID, "bright-smile")
+        XCTAssertEqual(viewModel.reminders.first?.guideID, "anytime-pause")
         let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBefore)
         XCTAssertEqual(newlyScheduled.count, 1)
-        XCTAssertEqual(newlyScheduled.first?.guideID, "bright-smile")
+        XCTAssertEqual(newlyScheduled.first?.guideID, "anytime-pause")
     }
 
     func test_updateReminderGuide_disabledReminder_doesNotReschedule() async throws {
@@ -225,47 +226,47 @@ final class SettingsViewModelTests: XCTestCase {
         try await viewModel.toggleReminder(reminder) // 끈다
         let scheduledBefore = scheduler.scheduled.count
 
-        try await viewModel.updateReminderGuide(reminder, guideID: "bright-smile")
+        try await viewModel.updateReminderGuide(reminder, guideID: "anytime-pause")
 
-        XCTAssertEqual(viewModel.reminders.first?.guideID, "bright-smile")
+        XCTAssertEqual(viewModel.reminders.first?.guideID, "anytime-pause")
         XCTAssertEqual(scheduler.scheduled.count, scheduledBefore)
     }
 
     func test_updateReminderTime_keepsGuide() async throws {
         let (viewModel, _, scheduler) = try makeViewModel()
-        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "bright-smile")
+        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "anytime-pause")
         let reminder = try XCTUnwrap(viewModel.reminders.first)
         let scheduledBefore = scheduler.scheduled.count
 
         try await viewModel.updateReminderTime(reminder, hour: 20, minute: 30)
 
         let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBefore)
-        XCTAssertEqual(newlyScheduled.first?.guideID, "bright-smile")
+        XCTAssertEqual(newlyScheduled.first?.guideID, "anytime-pause")
         XCTAssertEqual(newlyScheduled.first?.hour, 20)
     }
 
     func test_toggleReminder_backOn_keepsGuide() async throws {
         let (viewModel, _, scheduler) = try makeViewModel()
-        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "greeting-smile")
+        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "morning-greeting")
         let reminder = try XCTUnwrap(viewModel.reminders.first)
 
         try await viewModel.toggleReminder(reminder) // 끈다
         try await viewModel.toggleReminder(reminder) // 다시 켠다
 
-        XCTAssertEqual(scheduler.scheduled.last?.guideID, "greeting-smile")
+        XCTAssertEqual(scheduler.scheduled.last?.guideID, "morning-greeting")
     }
 
     func test_refreshAllScheduledReminders_keepsEachReminderGuide() async throws {
         let (viewModel, _, scheduler) = try makeViewModel()
-        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "soft-smile")
-        try await viewModel.addReminder(hour: 13, minute: 0, guideID: "greeting-smile")
-        try await viewModel.addReminder(hour: 18, minute: 0, guideID: "bright-smile")
+        try await viewModel.addReminder(hour: 9, minute: 0, guideID: "anytime-soft")
+        try await viewModel.addReminder(hour: 13, minute: 0, guideID: "morning-greeting")
+        try await viewModel.addReminder(hour: 18, minute: 0, guideID: "anytime-pause")
         let scheduledBefore = scheduler.scheduled.count
 
         try await viewModel.refreshAllScheduledReminders()
 
         let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBefore)
-        XCTAssertEqual(newlyScheduled.map(\.guideID), ["soft-smile", "greeting-smile", "bright-smile"])
+        XCTAssertEqual(newlyScheduled.map(\.guideID), ["anytime-soft", "morning-greeting", "anytime-pause"])
     }
 
     /// guideID가 nil인 과거 알림도 재예약 시 기본 가이드로 나간다.
@@ -279,7 +280,7 @@ final class SettingsViewModelTests: XCTestCase {
         try await viewModel.refreshAllScheduledReminders()
 
         let newlyScheduled = scheduler.scheduled.suffix(from: scheduledBefore)
-        XCTAssertEqual(newlyScheduled.first?.guideID, "soft-smile")
+        XCTAssertEqual(newlyScheduled.first?.guideID, "anytime-soft")
     }
 
     /// 여러 알림을 만드는 데 개수 제한이 없어야 한다 — 다중 알림이 MVP 핵심 무료 기능이다.

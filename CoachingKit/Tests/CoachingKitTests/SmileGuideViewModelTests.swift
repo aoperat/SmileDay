@@ -137,7 +137,7 @@ final class SmileGuideViewModelTests: XCTestCase {
         let repository = try makeRepository()
         let completedAt = Date(timeIntervalSince1970: 1_800_000_000)
         let viewModel = SmileGuideViewModel(
-            guide: SmileGuideCatalog.guide(id: "greeting-smile"),
+            guide: SmileGuideCatalog.guide(id: "morning-greeting"),
             source: .notification,
             repository: repository,
             clock: ImmediateClock(),
@@ -148,7 +148,7 @@ final class SmileGuideViewModelTests: XCTestCase {
 
         let saved = try savedMoments(repository)
         XCTAssertEqual(saved.count, 1)
-        XCTAssertEqual(saved.first?.guideID, "greeting-smile")
+        XCTAssertEqual(saved.first?.guideID, "morning-greeting")
         XCTAssertEqual(saved.first?.source, .notification)
         XCTAssertEqual(saved.first?.date, completedAt)
         XCTAssertFalse(viewModel.saveFailed)
@@ -157,7 +157,7 @@ final class SmileGuideViewModelTests: XCTestCase {
     func test_manualEntry_savesManualSource() async throws {
         let repository = try makeRepository()
         let viewModel = SmileGuideViewModel(
-            guide: SmileGuideCatalog.guide(id: "bright-smile"),
+            guide: SmileGuideCatalog.guide(id: "anytime-pause"),
             source: .manual,
             repository: repository,
             clock: ImmediateClock()

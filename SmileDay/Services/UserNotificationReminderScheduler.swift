@@ -30,11 +30,9 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
         }
     }
 
-    func scheduleRollingWindow(id: String, hour: Int, minute: Int, guideID: String, days: Int) async {
+    func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async {
         cancel(id: id)
 
-        // 사라진 ID여도 빈 알림이 나가지 않게 카탈로그가 기본 가이드로 대체한다.
-        let guide = SmileGuideCatalog.guide(id: guideID)
         let today = calendar.startOfDay(for: now())
 
         for dayOffset in 0..<days {
@@ -46,7 +44,7 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
 
             let content = UNMutableNotificationContent()
             content.title = guide.title
-            content.body = guide.notificationText
+            content.body = guide.instruction
             content.sound = .default
             content.userInfo = ReminderNotificationPayload(reminderID: id, guideID: guide.id).userInfo
 

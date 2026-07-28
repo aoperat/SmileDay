@@ -27,10 +27,8 @@ public struct ReminderNotificationPayload: Equatable, Sendable {
         [Key.reminderID: reminderID, Key.guideID: guideID]
     }
 
-    /// 알 수 없는 guideID여도 기본 가이드로 읽힌다.
-    public var guide: SmileGuide {
-        SmileGuideCatalog.guide(id: guideID)
-    }
+    // 카드 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 여기서 카탈로그를 직접 부르면
+    // 사용자가 만든 카드로 예약한 알림을 탭했을 때 기본 카드가 열린다.
 
     /// 새 payload면 그대로, 구버전(bucket/promptText) 알림이면 기본 가이드로 연결한다.
     /// 둘 다 아니면 nil이라 앱은 홈에 머문다.

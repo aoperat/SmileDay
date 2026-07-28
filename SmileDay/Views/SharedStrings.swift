@@ -40,4 +40,20 @@ enum SharedStrings {
     static let noSmileYetToday = "아직 오늘의 미소가 없어요"
     static let notificationDeniedNotice = "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요."
     static let openSystemSettings = "설정 앱 열기"
+
+    // MARK: - 상황 카드
+
+    static let pickGuideAction = "상황 고르기"
+    static let pickGuideTitle = "어떤 상황에서 웃을까요?"
+    static let addCardAction = "내 카드 추가"
+    static let myCardsTitle = "미소 카드"
+    static let hiddenCardsTitle = "숨긴 카드"
+    static let restoreCardAction = "되돌리기"
+    static let hideCardAction = "숨기기"
+    static let deleteCardAction = "지우기"
+    static let cardTitleLabel = "상황 이름"
+    static let cardTitlePlaceholder = "예) 엘리베이터에서 웃기"
+    static let cardInstructionLabel = "안내 문구"
+    static let cardInstructionHint = "비워두면 기본 문구를 씁니다."
+    static let cardSlotLabel = "시간대"
 }

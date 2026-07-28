@@ -50,6 +50,10 @@ struct SmileMVPOnboardingView: View {
             guard viewModel == nil else { return }
             viewModel = SmileOnboardingViewModel(
                 reminderRepository: ReminderRepository(modelContext: modelContext),
+                library: SmileGuideLibrary(
+                    modelContext: modelContext,
+                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
+                ),
                 scheduler: UserNotificationReminderScheduler(),
                 store: UserDefaultsSmileOnboardingStore()
             )
@@ -143,7 +147,7 @@ private struct ReminderSetupStep: View {
                 if let errorMessage = viewModel.errorMessage {
                     Text(errorMessage)
                         .font(.footnote)
-                        .foregroundStyle(SDColor.coralDeep)
+                        .foregroundStyle(SDColor.alert)
                         .multilineTextAlignment(.center)
                 }
 
@@ -172,6 +176,7 @@ private struct ReminderSetupStep: View {
 private struct ReminderDraftRow: View {
     let draft: ReminderDraft
     let viewModel: SmileOnboardingViewModel
+    @State private var isPickingGuide = false
 
     private var time: Binding<Date> {
         Binding(
@@ -210,10 +215,16 @@ private struct ReminderDraftRow: View {
                 .accessibilityLabel("이 시간 지우기")
             }
 
-            GuidePickerRow(selectedID: draft.guideID, guides: viewModel.guides) { guideID in
-                viewModel.updateGuide(draftID: draft.id, guideID: guideID)
-            }
+            GuideSelectionRow(guide: viewModel.guide(for: draft)) { isPickingGuide = true }
         }
         .sdCard(padding: 14, cornerRadius: 18)
+        .sheet(isPresented: $isPickingGuide) {
+            SmileGuidePickerSheet(
+                guides: viewModel.guides,
+                selectedID: draft.guideID,
+                onSelect: { viewModel.updateGuide(draftID: draft.id, guideID: $0.id) }
+                // 첫 설정에서는 카드 만들기까지 끌고 가지 않는다. 목록에서 고르기만 한다.
+            )
+        }
     }
 }

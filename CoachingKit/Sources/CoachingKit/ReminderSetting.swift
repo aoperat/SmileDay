@@ -27,8 +27,6 @@ public final class ReminderSetting {
         self.guideID = guideID
     }
 
-    /// nil이거나 카탈로그에 없는 ID는 기본 가이드로 읽는다 — 알림이 비어 나가지 않게.
-    public var guide: SmileGuide {
-        SmileGuideCatalog.guide(id: guideID)
-    }
+    // 카드 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 여기에 편의 프로퍼티를 두면
+    // 사용자가 만든 카드를 못 찾고 조용히 기본 카드로 떨어진다.
 }

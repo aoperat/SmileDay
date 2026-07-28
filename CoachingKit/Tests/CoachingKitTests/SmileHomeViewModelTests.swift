@@ -31,6 +31,7 @@ final class SmileHomeViewModelTests: XCTestCase {
         let viewModel = SmileHomeViewModel(
             momentRepository: momentRepository,
             reminderRepository: reminderRepository,
+            library: SmileGuideLibrary(modelContext: context, hiddenStore: InMemoryHiddenSmileGuideStore()),
             calendar: calendar,
             now: { now }
         )
@@ -41,9 +42,9 @@ final class SmileHomeViewModelTests: XCTestCase {
 
     func test_refresh_countsEveryCompletionToday() throws {
         let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "greeting-smile", source: .notification, date: date(2026, 7, 28, 13))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 27, 9))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try moments.save(guideID: "morning-greeting", source: .notification, date: date(2026, 7, 28, 13))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 27, 9))
 
         try viewModel.refresh()
 
@@ -61,7 +62,7 @@ final class SmileHomeViewModelTests: XCTestCase {
     /// 자정 직후에는 어제 기록이 오늘로 넘어오지 않는다.
     func test_refresh_afterMidnight_startsTodayCountFromZero() throws {
         let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 29, 0, 5))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 23, 55))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 23, 55))
 
         try viewModel.refresh()
 
@@ -72,9 +73,9 @@ final class SmileHomeViewModelTests: XCTestCase {
 
     func test_refresh_weekActiveDayCount_countsDistinctDays() throws {
         let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 26, 9))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 18))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 26, 9))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 18))
 
         try viewModel.refresh()
 
@@ -83,8 +84,8 @@ final class SmileHomeViewModelTests: XCTestCase {
 
     func test_refresh_recentSevenDays_endsOnToday_andFillsGaps() throws {
         let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "soft-smile", source: .manual, date: date(2026, 7, 25, 9))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 25, 9))
 
         try viewModel.refresh()
 
@@ -97,33 +98,33 @@ final class SmileHomeViewModelTests: XCTestCase {
 
     func test_refresh_nextReminder_picksNearestLaterToday() throws {
         let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        try reminders.add(hour: 9, minute: 0, guideID: "soft-smile")
-        try reminders.add(hour: 13, minute: 0, guideID: "greeting-smile")
-        try reminders.add(hour: 18, minute: 0, guideID: "bright-smile")
+        try reminders.add(hour: 9, minute: 0, guideID: "anytime-soft")
+        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
+        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
 
         try viewModel.refresh()
 
         XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 13))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "greeting-smile")
+        XCTAssertEqual(viewModel.nextReminder?.guide.id, "morning-greeting")
     }
 
     /// 오늘 남은 알림이 없으면 다음 날 첫 알림.
     func test_refresh_nextReminder_rollsOverToTomorrow() throws {
         let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 22))
-        try reminders.add(hour: 9, minute: 0, guideID: "soft-smile")
-        try reminders.add(hour: 18, minute: 0, guideID: "bright-smile")
+        try reminders.add(hour: 9, minute: 0, guideID: "anytime-soft")
+        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
 
         try viewModel.refresh()
 
         XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 29, 9))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "soft-smile")
+        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-soft")
     }
 
     /// 방금 울린 알림은 다시 "다음"이 되지 않는다.
     func test_refresh_nextReminder_skipsReminderAtExactlyNow() throws {
         let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 13, 0))
-        try reminders.add(hour: 13, minute: 0, guideID: "greeting-smile")
-        try reminders.add(hour: 18, minute: 0, guideID: "bright-smile")
+        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
+        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
 
         try viewModel.refresh()
 
@@ -132,14 +133,14 @@ final class SmileHomeViewModelTests: XCTestCase {
 
     func test_refresh_nextReminder_ignoresDisabledReminders() throws {
         let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        let disabled = try reminders.add(hour: 13, minute: 0, guideID: "greeting-smile")
+        let disabled = try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
         try reminders.setEnabled(disabled, false)
-        try reminders.add(hour: 18, minute: 0, guideID: "bright-smile")
+        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
 
         try viewModel.refresh()
 
         XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 18))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "bright-smile")
+        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-pause")
     }
 
     func test_refresh_nextReminder_isNil_whenNoReminders() throws {
@@ -163,8 +164,8 @@ final class SmileHomeViewModelTests: XCTestCase {
     /// 같은 시각에 두 개가 있어도 매번 같은 하나를 고른다.
     func test_refresh_nextReminder_isStable_whenTwoRemindersShareTime() throws {
         let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        try reminders.add(hour: 13, minute: 0, guideID: "greeting-smile")
-        try reminders.add(hour: 13, minute: 0, guideID: "bright-smile")
+        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
+        try reminders.add(hour: 13, minute: 0, guideID: "anytime-pause")
 
         try viewModel.refresh()
         let firstPick = viewModel.nextReminder
@@ -181,14 +182,31 @@ final class SmileHomeViewModelTests: XCTestCase {
 
         try viewModel.refresh()
 
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "soft-smile")
+        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-soft")
     }
 
     // MARK: - 노출 범위
 
-    func test_guides_areTheThreeCatalogGuides() throws {
+    func test_refresh_guidesComeFromLibrary() throws {
         let (viewModel, _, _) = try makeViewModel(now: date(2026, 7, 28, 10))
 
-        XCTAssertEqual(viewModel.guides.map(\.id), ["soft-smile", "greeting-smile", "bright-smile"])
+        try viewModel.refresh()
+
+        XCTAssertEqual(viewModel.guides.count, 14)
+    }
+
+    /// 홈은 지금 시간대에 어울리는 카드를 기본 선택으로 제안한다.
+    func test_refresh_suggestedGuideMatchesCurrentSlot() throws {
+        let (morning, _, _) = try makeViewModel(now: date(2026, 7, 28, 9))
+        try morning.refresh()
+        XCTAssertEqual(morning.suggestedGuide?.slot, .morning)
+
+        let (afternoon, _, _) = try makeViewModel(now: date(2026, 7, 28, 13))
+        try afternoon.refresh()
+        XCTAssertEqual(afternoon.suggestedGuide?.slot, .afternoon)
+
+        let (evening, _, _) = try makeViewModel(now: date(2026, 7, 28, 20))
+        try evening.refresh()
+        XCTAssertEqual(evening.suggestedGuide?.slot, .evening)
     }
 }

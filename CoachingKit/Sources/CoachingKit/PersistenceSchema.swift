@@ -1,8 +1,12 @@
 import SwiftData
 
 public enum PersistenceSchema {
-    /// 기존 모델은 업데이트 호환을 위해 남겨둔다. 새 흐름은 `ReminderSetting`과 `SmileMoment`만 쓴다.
-    public static let models: [any PersistentModel.Type] = [Baseline.self, CheckInSession.self, ReminderSetting.self, CareSession.self, SmileMoment.self]
+    /// 기존 모델은 업데이트 호환을 위해 남겨둔다.
+    /// 새 흐름은 `ReminderSetting`, `SmileMoment`, `CustomSmileCard`만 쓴다.
+    public static let models: [any PersistentModel.Type] = [
+        Baseline.self, CheckInSession.self, ReminderSetting.self, CareSession.self,
+        SmileMoment.self, CustomSmileCard.self,
+    ]
 
     public static var schema: Schema {
         Schema(models)

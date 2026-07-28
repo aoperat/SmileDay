@@ -2,23 +2,27 @@ import SwiftUI
 import CoachingKit
 
 /// 모닝 글로우 디자인 토큰.
+///
+/// 원시 hex 값은 `CoachingKit.SDPalette`에 있다. 앱 타깃에는 테스트 번들이 없어
+/// 대비 회귀를 잡을 수 없으므로, 값은 그쪽에 두고 여기서는 감싸기만 한다.
 enum SDColor {
-    static let coral = Color(hex: 0xF65D73)
-    static let coralDeep = Color(hex: 0xE04360)
-    static let coralWarm = Color(hex: 0xFB7E62)
-    static let apricot = Color(hex: 0xFFA94D)
-    static let sun = Color(hex: 0xFFC93C)
-    static let mint = Color(hex: 0x3BAF8C)
-    static let lilac = Color(hex: 0xB79CE4)
-    static let cream = Color(hex: 0xFFF6EE)
-    static let ink = Color(hex: 0x46323C)
-    static let muted = Color(hex: 0xA08B96)
-    static let shell = Color(hex: 0xF1E2D6)
+    static let coral = Color(hex: SDPalette.coral)
+    static let coralDeep = Color(hex: SDPalette.coralDeep)
+    static let coralWarm = Color(hex: SDPalette.coralWarm)
+    static let apricot = Color(hex: SDPalette.apricot)
+    static let sun = Color(hex: SDPalette.sun)
+    static let mint = Color(hex: SDPalette.mint)
+    static let lilac = Color(hex: SDPalette.lilac)
+    static let cream = Color(hex: SDPalette.cream)
+    static let ink = Color(hex: SDPalette.ink)
+    static let muted = Color(hex: SDPalette.muted)
+    static let shell = Color(hex: SDPalette.shell)
+    static let alert = Color(hex: SDPalette.alert)
 
+    /// 흰 글자를 얹으므로 밝은 쪽 끝(coralWarm, 흰 글자 대비 2.54:1)을 쓰지 않는다.
     static var primaryGradient: LinearGradient {
-        LinearGradient(colors: [coral, coralWarm], startPoint: .leading, endPoint: .trailing)
+        LinearGradient(colors: [coralDeep, coral], startPoint: .leading, endPoint: .trailing)
     }
-
 }
 
 extension Color {
@@ -121,36 +125,38 @@ enum SDFormat {
     static let koreanLocale = Locale(identifier: "ko_KR")
 }
 
-/// 미소 가이드 하나를 고르는 가로 칩. 온보딩·홈·설정이 같은 모양을 쓴다.
-struct GuidePickerRow: View {
-    let selectedID: String
-    let guides: [SmileGuide]
-    let onSelect: (String) -> Void
+/// 지금 고른 상황 카드를 보여주고 선택 시트를 여는 줄. 홈·설정·온보딩이 같은 모양을 쓴다.
+struct GuideSelectionRow: View {
+    let guide: SmileGuide
+    let onTap: () -> Void
 
     var body: some View {
-        HStack(spacing: 8) {
-            ForEach(guides) { guide in
-                let isSelected = guide.id == selectedID
-                Button {
-                    onSelect(guide.id)
-                } label: {
+        Button(action: onTap) {
+            HStack(spacing: 8) {
+                VStack(alignment: .leading, spacing: 2) {
                     Text(guide.title)
-                        .font(.caption.weight(.semibold))
-                        .foregroundStyle(isSelected ? .white : SDColor.ink)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 8)
-                        .background {
-                            if isSelected {
-                                Capsule().fill(SDColor.primaryGradient)
-                            } else {
-                                Capsule().fill(SDColor.shell.opacity(0.5))
-                            }
-                        }
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+                        .multilineTextAlignment(.leading)
+                    Text(guide.instruction)
+                        .font(.caption)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel(guide.title)
-                .accessibilityAddTraits(isSelected ? [.isSelected] : [])
+
+                Spacer(minLength: 8)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(SDColor.muted)
             }
+            .padding(12)
+            .background(SDColor.shell.opacity(0.45), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
+        .accessibilityLabel("상황 카드: \(guide.title)")
+        .accessibilityHint(SharedStrings.pickGuideAction)
     }
 }

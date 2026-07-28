@@ -95,7 +95,7 @@ struct SmileGuideView: View {
         case .running(let remainingSeconds):
             Text("\(remainingSeconds)")
                 .font(.system(size: 72, weight: .bold, design: .rounded).monospacedDigit())
-                .foregroundStyle(SDColor.coral)
+                .foregroundStyle(SDColor.ink)
                 // Reduce Motion에서는 숫자만 바뀌고 커지는 전환을 생략한다.
                 .contentTransition(reduceMotion ? .identity : .numericText())
                 .animation(reduceMotion ? nil : .snappy, value: remainingSeconds)
@@ -106,7 +106,7 @@ struct SmileGuideView: View {
                 if viewModel.saveFailed {
                     Text(SharedStrings.guideSaveFailed)
                         .font(.headline)
-                        .foregroundStyle(SDColor.coralDeep)
+                        .foregroundStyle(SDColor.alert)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 } else {

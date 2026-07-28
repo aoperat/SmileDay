@@ -15,7 +15,10 @@ public protocol ReminderScheduling: AnyObject {
     /// 거부되어도 throw하지 않는다. 호출자가 상태를 보고 안내 문구를 정한다.
     func requestAuthorization() async -> Bool
     func currentAuthorizationStatus() async -> ReminderAuthorizationStatus
-    /// hour:minute에 향후 `days`일치 알림을 예약한다. 문구와 딥링크는 `guideID`가 정한다.
-    func scheduleRollingWindow(id: String, hour: Int, minute: Int, guideID: String, days: Int) async
+    /// hour:minute에 향후 `days`일치 알림을 예약한다.
+    ///
+    /// ID가 아니라 해석된 카드를 받는다. 스케줄러는 앱 타깃에 있어 저장소를 모르므로,
+    /// ID만 넘기면 사용자가 만든 카드를 찾지 못해 기본 카드 문구로 알림이 나간다.
+    func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async
     func cancel(id: String)
 }

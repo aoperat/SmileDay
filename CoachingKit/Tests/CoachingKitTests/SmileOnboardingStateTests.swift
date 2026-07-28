@@ -19,8 +19,8 @@ final class SmileOnboardingStateTests: XCTestCase {
             status
         }
 
-        func scheduleRollingWindow(id: String, hour: Int, minute: Int, guideID: String, days: Int) async {
-            scheduled.append((id, hour, minute, guideID, days))
+        func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async {
+            scheduled.append((id, hour, minute, guide.id, days))
         }
 
         func cancel(id: String) {
@@ -32,11 +32,13 @@ final class SmileOnboardingStateTests: XCTestCase {
         let schema = PersistenceSchema.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
-        let repository = ReminderRepository(modelContext: ModelContext(container))
+        let context = ModelContext(container)
+        let repository = ReminderRepository(modelContext: context)
         let scheduler = MockScheduler()
         let store = InMemorySmileOnboardingStore()
         let viewModel = SmileOnboardingViewModel(
             reminderRepository: repository,
+            library: SmileGuideLibrary(modelContext: context, hiddenStore: InMemoryHiddenSmileGuideStore()),
             scheduler: scheduler,
             store: store
         )
@@ -68,13 +70,13 @@ final class SmileOnboardingStateTests: XCTestCase {
 
         XCTAssertEqual(viewModel.drafts.count, 3)
         XCTAssertEqual(viewModel.drafts.map(\.hour), [9, 13, 18])
-        XCTAssertEqual(viewModel.drafts.map(\.guideID), ["soft-smile", "greeting-smile", "bright-smile"])
+        XCTAssertEqual(viewModel.drafts.map(\.guideID), ["morning-greeting", "noon-before-lunch", "evening-after-work"])
     }
 
-    func test_guides_offerTheWholeCatalog() throws {
+    func test_guides_offerTheVisibleLibrary() throws {
         let (viewModel, _, _, _) = try makeViewModel()
 
-        XCTAssertEqual(viewModel.guides.map(\.id), SmileGuideCatalog.all.map(\.id))
+        XCTAssertEqual(viewModel.guides.count, 14)
     }
 
     // MARK: - 사용자 수정
@@ -94,16 +96,16 @@ final class SmileOnboardingStateTests: XCTestCase {
         let (viewModel, _, _, _) = try makeViewModel()
         let target = try XCTUnwrap(viewModel.drafts.first)
 
-        viewModel.updateGuide(draftID: target.id, guideID: "bright-smile")
+        viewModel.updateGuide(draftID: target.id, guideID: "anytime-pause")
 
-        XCTAssertEqual(viewModel.drafts.first?.guideID, "bright-smile")
-        XCTAssertEqual(viewModel.drafts[1].guideID, "greeting-smile")
+        XCTAssertEqual(viewModel.drafts.first?.guideID, "anytime-pause")
+        XCTAssertEqual(viewModel.drafts[1].guideID, "noon-before-lunch")
     }
 
     func test_addAndRemoveDraft() throws {
         let (viewModel, _, _, _) = try makeViewModel()
 
-        viewModel.addDraft(hour: 21, minute: 0, guideID: "soft-smile")
+        viewModel.addDraft(hour: 21, minute: 0, guideID: "anytime-soft")
         XCTAssertEqual(viewModel.drafts.count, 4)
 
         let removed = try XCTUnwrap(viewModel.drafts.last)
@@ -120,7 +122,7 @@ final class SmileOnboardingStateTests: XCTestCase {
 
         XCTAssertEqual(scheduler.authorizationRequests, 1)
         XCTAssertEqual(try repository.fetchAll().count, 3)
-        XCTAssertEqual(scheduler.scheduled.map(\.guideID), ["soft-smile", "greeting-smile", "bright-smile"])
+        XCTAssertEqual(scheduler.scheduled.map(\.guideID), ["morning-greeting", "noon-before-lunch", "evening-after-work"])
         XCTAssertEqual(scheduler.scheduled.map(\.hour), [9, 13, 18])
         XCTAssertTrue(scheduler.scheduled.allSatisfy { $0.days == reminderRollingWindowDays })
         XCTAssertTrue(store.hasCompletedOnboarding)
@@ -132,15 +134,15 @@ final class SmileOnboardingStateTests: XCTestCase {
         let (viewModel, repository, scheduler, _) = try makeViewModel()
         let first = try XCTUnwrap(viewModel.drafts.first)
         viewModel.updateTime(draftID: first.id, hour: 7, minute: 15)
-        viewModel.updateGuide(draftID: first.id, guideID: "bright-smile")
+        viewModel.updateGuide(draftID: first.id, guideID: "anytime-pause")
 
         await viewModel.confirm()
 
         let saved = try repository.fetchAll()
         XCTAssertEqual(saved.first?.hour, 7)
         XCTAssertEqual(saved.first?.minute, 15)
-        XCTAssertEqual(saved.first?.guideID, "bright-smile")
-        XCTAssertEqual(scheduler.scheduled.first?.guideID, "bright-smile")
+        XCTAssertEqual(saved.first?.guideID, "anytime-pause")
+        XCTAssertEqual(scheduler.scheduled.first?.guideID, "anytime-pause")
     }
 
     /// 권한을 거부해도 리마인더는 저장되고 앱에 들어갈 수 있어야 한다.

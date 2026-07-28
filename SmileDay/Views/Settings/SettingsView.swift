@@ -77,6 +77,10 @@ struct SettingsView: View {
             let vm = viewModel ?? SettingsViewModel(
                 reminderRepository: ReminderRepository(modelContext: modelContext),
                 sessionRepository: SessionRepository(modelContext: modelContext),
+                library: SmileGuideLibrary(
+                    modelContext: modelContext,
+                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
+                ),
                 scheduler: UserNotificationReminderScheduler()
             )
             viewModel = vm

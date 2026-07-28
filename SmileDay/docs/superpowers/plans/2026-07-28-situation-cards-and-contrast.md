@@ -14,7 +14,7 @@
 
 **Files:** none
 
-- [ ] 브랜치와 작업 트리를 확인한다.
+- [x] 브랜치와 작업 트리를 확인한다.
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -22,7 +22,7 @@ git branch --show-current   # feature/situation-cards-and-contrast
 git status --short
 ```
 
-- [ ] 기준 테스트와 빌드를 기록한다.
+- [x] 기준 테스트와 빌드를 기록한다.
 
 ```bash
 cd CoachingKit && swift test
@@ -42,7 +42,7 @@ Expected: `Test Suite 'All tests' passed` (330 tests), `** BUILD SUCCEEDED **`.
 - Create: `CoachingKit/Sources/CoachingKit/SDPalette.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/SDPaletteTests.swift`
 
-- [ ] **Step 1: 대비 계산과 팔레트를 쓴다**
+- [x] **Step 1: 대비 계산과 팔레트를 쓴다**
 
 `SDPalette.swift`:
 
@@ -96,7 +96,7 @@ public enum SDPalette {
 }
 ```
 
-- [ ] **Step 2: 테스트를 쓴다**
+- [x] **Step 2: 테스트를 쓴다**
 
 `SDPaletteTests.swift`:
 
@@ -154,7 +154,7 @@ final class SDPaletteTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 3: 실행한다**
+- [x] **Step 3: 실행한다**
 
 ```bash
 cd CoachingKit && swift test --filter SDPaletteTests
@@ -162,7 +162,7 @@ cd CoachingKit && swift test --filter SDPaletteTests
 
 Expected: 6 tests pass.
 
-- [ ] **Step 4: 커밋한다**
+- [x] **Step 4: 커밋한다**
 
 ```bash
 git add CoachingKit/Sources/CoachingKit/SDPalette.swift CoachingKit/Tests/CoachingKitTests/SDPaletteTests.swift
@@ -179,7 +179,7 @@ git commit -m "feat: pin palette contrast with tests in CoachingKit"
 - Modify: `SmileDay/Views/Coaching/SmileGuideView.swift`
 - Modify: `SmileDay/Views/Home/SmileMVPHomeView.swift`
 
-- [ ] **Step 1: `SDColor`가 `SDPalette`를 쓰게 한다**
+- [x] **Step 1: `SDColor`가 `SDPalette`를 쓰게 한다**
 
 `Theme.swift`의 `SDColor`를 다음으로 바꾼다. `Color(hex:)`는 `UInt32`를 받으므로 시그니처는 그대로다.
 
@@ -205,19 +205,19 @@ enum SDColor {
 }
 ```
 
-- [ ] **Step 2: 카운트다운 숫자를 `ink`로 바꾼다**
+- [x] **Step 2: 카운트다운 숫자를 `ink`로 바꾼다**
 
 `SmileGuideView.swift`의 `.running` 케이스에서 `.foregroundStyle(SDColor.coral)`을 `.foregroundStyle(SDColor.ink)`로 바꾼다.
 
-- [ ] **Step 3: 저장 실패 문구를 `alert`로 바꾼다**
+- [x] **Step 3: 저장 실패 문구를 `alert`로 바꾼다**
 
 같은 파일 `.completed` 케이스의 `.foregroundStyle(SDColor.coralDeep)`을 `.foregroundStyle(SDColor.alert)`로 바꾼다.
 
-- [ ] **Step 4: 아이콘 칩 글리프를 `ink`로 바꾼다**
+- [x] **Step 4: 아이콘 칩 글리프를 `ink`로 바꾼다**
 
 `SmileMVPHomeView.swift`의 `NextReminderCard`에서 종 아이콘의 `.foregroundStyle(.white)`를 `.foregroundStyle(SDColor.ink)`로 바꾼다.
 
-- [ ] **Step 5: 남은 `.white` 글리프와 `coralDeep` 문구를 찾는다**
+- [x] **Step 5: 남은 `.white` 글리프와 `coralDeep` 문구를 찾는다**
 
 ```bash
 rg -n 'foregroundStyle\(\.white\)|SDColor\.coralDeep' \
@@ -230,7 +230,7 @@ rg -n 'foregroundStyle\(\.white\)|SDColor\.coralDeep' \
 
 `primaryGradient` 위에 얹힌 흰 글자(버튼 라벨, 선택된 칩, 도트 숫자)는 그대로 둔다. 밝은 단색 칩 위의 흰 글자만 `ink`로 바꾼다.
 
-- [ ] **Step 6: 빌드한다**
+- [x] **Step 6: 빌드한다**
 
 ```bash
 xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
@@ -240,7 +240,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`.
 
-- [ ] **Step 7: 커밋한다**
+- [x] **Step 7: 커밋한다**
 
 ```bash
 git add SmileDay/Views
@@ -256,7 +256,7 @@ git commit -m "fix: raise text and glyph contrast to WCAG AA"
 - Modify: `CoachingKit/Sources/CoachingKit/SmileGuide.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/SmileGuideTests.swift`
 
-- [ ] **Step 1: `DaySlot`과 새 `SmileGuide`를 쓴다**
+- [x] **Step 1: `DaySlot`과 새 `SmileGuide`를 쓴다**
 
 `SmileGuide.swift`를 통째로 바꾼다.
 
@@ -408,7 +408,7 @@ public enum SmileGuideCatalog {
 }
 ```
 
-- [ ] **Step 2: 테스트를 바꾼다**
+- [x] **Step 2: 테스트를 바꾼다**
 
 `SmileGuideTests.swift`를 통째로 바꾼다.
 
@@ -524,7 +524,7 @@ final class SmileGuideTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 3: 실행한다.** 이 시점에는 `notificationText`를 쓰던 곳이 깨진다. Task 4에서 고친다.
+- [x] **Step 3: 실행한다.** 이 시점에는 `notificationText`를 쓰던 곳이 깨진다. Task 4에서 고친다.
 
 ```bash
 cd CoachingKit && swift test --filter SmileGuideTests 2>&1 | grep -E "error:|Executed"
@@ -538,7 +538,7 @@ cd CoachingKit && swift test --filter SmileGuideTests 2>&1 | grep -E "error:|Exe
 
 - Modify: `SmileDay/Services/UserNotificationReminderScheduler.swift`
 
-- [ ] **Step 1: 알림 본문을 `instruction`으로 바꾼다**
+- [x] **Step 1: 알림 본문을 `instruction`으로 바꾼다**
 
 `scheduleRollingWindow` 안의 content 구성을 바꾼다.
 
@@ -550,7 +550,7 @@ content.sound = .default
 content.userInfo = ReminderNotificationPayload(reminderID: id, guideID: guide.id).userInfo
 ```
 
-- [ ] **Step 2: 다른 사용처가 없는지 확인한다**
+- [x] **Step 2: 다른 사용처가 없는지 확인한다**
 
 ```bash
 rg -n 'notificationText' SmileDay CoachingKit --glob '*.swift'
@@ -558,7 +558,7 @@ rg -n 'notificationText' SmileDay CoachingKit --glob '*.swift'
 
 Expected: 결과 없음.
 
-- [ ] **Step 3: 패키지 테스트를 돌린다**
+- [x] **Step 3: 패키지 테스트를 돌린다**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests"
@@ -574,7 +574,7 @@ cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests"
 - Modify: `CoachingKit/Sources/CoachingKit/PersistenceSchema.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/CustomSmileCardTests.swift`
 
-- [ ] **Step 1: 모델을 쓴다**
+- [x] **Step 1: 모델을 쓴다**
 
 ```swift
 import Foundation
@@ -622,7 +622,7 @@ public final class CustomSmileCard {
 }
 ```
 
-- [ ] **Step 2: 스키마에 넣는다**
+- [x] **Step 2: 스키마에 넣는다**
 
 ```swift
 public static let models: [any PersistentModel.Type] = [
@@ -631,7 +631,7 @@ public static let models: [any PersistentModel.Type] = [
 ]
 ```
 
-- [ ] **Step 3: 테스트를 쓴다**
+- [x] **Step 3: 테스트를 쓴다**
 
 ```swift
 import XCTest
@@ -678,7 +678,7 @@ final class CustomSmileCardTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 4: 실행하고 커밋한다**
+- [x] **Step 4: 실행하고 커밋한다**
 
 ```bash
 cd CoachingKit && swift test --filter 'CustomSmileCardTests|SmileGuideTests'
@@ -693,7 +693,7 @@ cd CoachingKit && swift test --filter 'CustomSmileCardTests|SmileGuideTests'
 - Create: `CoachingKit/Sources/CoachingKit/HiddenSmileGuideStore.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/HiddenSmileGuideStoreTests.swift`
 
-- [ ] **Step 1: 프로토콜과 두 구현을 쓴다**
+- [x] **Step 1: 프로토콜과 두 구현을 쓴다**
 
 ```swift
 import Foundation
@@ -726,7 +726,7 @@ public final class InMemoryHiddenSmileGuideStore: HiddenSmileGuideStoring {
 }
 ```
 
-- [ ] **Step 2: 테스트를 쓴다**
+- [x] **Step 2: 테스트를 쓴다**
 
 ```swift
 import XCTest
@@ -767,7 +767,7 @@ final class HiddenSmileGuideStoreTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 3: 실행한다**
+- [x] **Step 3: 실행한다**
 
 ```bash
 cd CoachingKit && swift test --filter HiddenSmileGuideStoreTests
@@ -782,7 +782,7 @@ cd CoachingKit && swift test --filter HiddenSmileGuideStoreTests
 - Create: `CoachingKit/Sources/CoachingKit/SmileGuideLibrary.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/SmileGuideLibraryTests.swift`
 
-- [ ] **Step 1: 라이브러리를 쓴다**
+- [x] **Step 1: 라이브러리를 쓴다**
 
 ```swift
 import Foundation
@@ -870,7 +870,7 @@ public final class SmileGuideLibrary {
 }
 ```
 
-- [ ] **Step 2: 테스트를 쓴다**
+- [x] **Step 2: 테스트를 쓴다**
 
 ```swift
 import XCTest
@@ -1032,7 +1032,7 @@ final class SmileGuideLibraryTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 3: 실행한다**
+- [x] **Step 3: 실행한다**
 
 ```bash
 cd CoachingKit && swift test --filter SmileGuideLibraryTests
@@ -1047,7 +1047,7 @@ cd CoachingKit && swift test --filter SmileGuideLibraryTests
 - Modify: `CoachingKit/Sources/CoachingKit/ReminderRepository.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/ReminderRepositoryTests.swift`
 
-- [ ] **Step 1: 조회를 추가한다**
+- [x] **Step 1: 조회를 추가한다**
 
 `ReminderRepository`에 넣는다.
 
@@ -1062,11 +1062,11 @@ public func reminders(usingGuideID guideID: String) throws -> [ReminderSetting] 
 }
 ```
 
-- [ ] **Step 2: `ReminderSetting.guide`가 라이브러리를 모르는 점을 그대로 둔다**
+- [x] **Step 2: `ReminderSetting.guide`가 라이브러리를 모르는 점을 그대로 둔다**
 
 `ReminderSetting.guide`는 기본 카탈로그만 본다. 사용자 카드까지 포함한 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 알림 예약과 화면은 라이브러리를 거친다.
 
-- [ ] **Step 3: 테스트를 더한다**
+- [x] **Step 3: 테스트를 더한다**
 
 `ReminderRepositoryTests`의 "미소 가이드" 섹션 끝에 붙인다. 기존 테스트 중 `soft-smile`, `greeting-smile`, `bright-smile`을 쓰는 곳은 각각 `anytime-soft`, `morning-greeting`, `anytime-pause`로 바꾼다.
 
@@ -1106,7 +1106,7 @@ func test_remindersUsingGuideID_returnsEmpty_whenNoneMatch() throws {
 }
 ```
 
-- [ ] **Step 4: 실행한다**
+- [x] **Step 4: 실행한다**
 
 ```bash
 cd CoachingKit && swift test --filter ReminderRepositoryTests
@@ -1121,7 +1121,7 @@ cd CoachingKit && swift test --filter ReminderRepositoryTests
 - Create: `CoachingKit/Sources/CoachingKit/SmileLibraryViewModel.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/SmileLibraryViewModelTests.swift`
 
-- [ ] **Step 1: ViewModel을 쓴다**
+- [x] **Step 1: ViewModel을 쓴다**
 
 ```swift
 import Foundation
@@ -1233,7 +1233,7 @@ public final class SmileLibraryViewModel {
 }
 ```
 
-- [ ] **Step 2: 테스트를 쓴다**
+- [x] **Step 2: 테스트를 쓴다**
 
 ```swift
 import XCTest
@@ -1397,7 +1397,7 @@ final class SmileLibraryViewModelTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 3: 실행한다**
+- [x] **Step 3: 실행한다**
 
 ```bash
 cd CoachingKit && swift test --filter SmileLibraryViewModelTests
@@ -1414,7 +1414,7 @@ cd CoachingKit && swift test --filter SmileLibraryViewModelTests
 - Modify: `CoachingKit/Tests/CoachingKitTests/SmileHomeViewModelTests.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/SmileOnboardingStateTests.swift`
 
-- [ ] **Step 1: `SmileHomeViewModel`이 라이브러리를 쓰게 한다**
+- [x] **Step 1: `SmileHomeViewModel`이 라이브러리를 쓰게 한다**
 
 `guides: [SmileGuide]` 저장 프로퍼티를 지우고 라이브러리 주입으로 바꾼다.
 
@@ -1436,7 +1436,7 @@ suggestedGuide = guides.first { $0.slot == slot } ?? guides.first
 
 `nextReminder`를 만들 때 `reminder.guide` 대신 `library.guide(id: reminder.guideID)`를 쓴다.
 
-- [ ] **Step 2: 홈 테스트를 고친다**
+- [x] **Step 2: 홈 테스트를 고친다**
 
 `makeViewModel`에 라이브러리를 넣는다.
 
@@ -1475,7 +1475,7 @@ func test_refresh_suggestedGuideMatchesCurrentSlot() throws {
 
 기존 테스트에서 쓰는 `soft-smile` / `greeting-smile` / `bright-smile`은 `anytime-soft` / `morning-greeting` / `evening-after-work`로 바꾼다. `test_refresh_nextReminder_legacyReminderShowsDefaultGuide`의 기대값은 `"anytime-soft"`로 바꾼다.
 
-- [ ] **Step 3: 온보딩 권장값을 상황 카드로 바꾼다**
+- [x] **Step 3: 온보딩 권장값을 상황 카드로 바꾼다**
 
 `SmileOnboardingViewModel.recommendedDrafts`를 바꾼다.
 
@@ -1491,7 +1491,7 @@ public static var recommendedDrafts: [ReminderDraft] {
 
 `guides: [SmileGuide] = SmileGuideCatalog.all` 인자를 `library: SmileGuideLibrary`로 바꾸고, `guides`는 `try? library.visibleGuides() ?? SmileGuideCatalog.builtIn`으로 채운다. `ReminderDraft.guide`는 `SmileGuideCatalog.guide(id:)` 대신 주입된 라이브러리를 쓸 수 없으므로(값 타입) 그대로 두고, `confirm()`에서 `draft.guideID`를 그대로 저장한다.
 
-- [ ] **Step 4: 온보딩 테스트를 고친다**
+- [x] **Step 4: 온보딩 테스트를 고친다**
 
 `test_recommendedDrafts_areThreeTimesWithDistinctGuides`의 기대값을 `["morning-greeting", "noon-before-lunch", "evening-after-work"]`로 바꾼다.
 `test_guides_offerTheWholeCatalog`를 다음으로 바꾼다.
@@ -1506,7 +1506,7 @@ func test_guides_offerTheVisibleLibrary() throws {
 
 `test_confirm_*`에서 쓰는 guideID를 새 ID로 바꾼다.
 
-- [ ] **Step 5: 패키지 전체를 돌린다**
+- [x] **Step 5: 패키지 전체를 돌린다**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|All tests"
@@ -1524,11 +1524,11 @@ Expected: `Test Suite 'All tests' passed`.
 - Create: `SmileDay/Views/Guides/AddSmileCardView.swift`
 - Modify: `SmileDay/Views/Theme.swift` (`GuidePickerRow` 삭제)
 
-- [ ] **Step 1: `GuidePickerRow`를 지운다**
+- [x] **Step 1: `GuidePickerRow`를 지운다**
 
 `Theme.swift` 끝의 `GuidePickerRow` 전체를 지운다. 카드가 14개 이상이라 가로 칩으로는 담을 수 없다.
 
-- [ ] **Step 2: 선택 시트를 만든다**
+- [x] **Step 2: 선택 시트를 만든다**
 
 `SmileGuidePickerSheet.swift`:
 
@@ -1625,7 +1625,7 @@ private struct GuideRow: View {
 }
 ```
 
-- [ ] **Step 3: 카드 추가 화면을 만든다**
+- [x] **Step 3: 카드 추가 화면을 만든다**
 
 `AddSmileCardView.swift`:
 
@@ -1712,7 +1712,7 @@ struct AddSmileCardView: View {
 }
 ```
 
-- [ ] **Step 4: 빌드한다.** 이 시점에는 `GuidePickerRow`를 쓰던 세 화면이 깨진다. Task 12에서 고친다.
+- [x] **Step 4: 빌드한다.** 이 시점에는 `GuidePickerRow`를 쓰던 세 화면이 깨진다. Task 12에서 고친다.
 
 ---
 
@@ -1725,7 +1725,7 @@ struct AddSmileCardView: View {
 - Modify: `SmileDay/Views/Onboarding/SmileMVPOnboardingView.swift`
 - Modify: `SmileDay/Views/SharedStrings.swift`
 
-- [ ] **Step 1: 문구를 더한다**
+- [x] **Step 1: 문구를 더한다**
 
 `SharedStrings`에 넣는다.
 
@@ -1737,7 +1737,7 @@ static let hiddenCardsTitle = "숨긴 카드"
 static let restoreCardAction = "되돌리기"
 ```
 
-- [ ] **Step 2: 홈의 칩을 카드 이름 + 시트로 바꾼다**
+- [x] **Step 2: 홈의 칩을 카드 이름 + 시트로 바꾼다**
 
 `TodayCard`에서 `GuidePickerRow` 자리를 다음으로 바꾼다.
 
@@ -1792,11 +1792,11 @@ Button {
 }
 ```
 
-- [ ] **Step 3: 설정의 알림 행을 시트로 바꾼다**
+- [x] **Step 3: 설정의 알림 행을 시트로 바꾼다**
 
 `ReminderRow`에서 `GuidePickerRow`를 지우고, 현재 카드 이름을 보여주는 버튼으로 바꾼다. 탭하면 `SmileGuidePickerSheet`가 열리고, 고르면 `viewModel.updateReminderGuide(reminder, guideID:)`를 부른다. "알림 추가" 섹션도 같은 방식으로 바꾼다.
 
-- [ ] **Step 4: 설정에 "미소 카드" 섹션을 더한다**
+- [x] **Step 4: 설정에 "미소 카드" 섹션을 더한다**
 
 ```swift
 Section(SharedStrings.myCardsTitle) {
@@ -1869,11 +1869,11 @@ if !libraryViewModel.hiddenGuides.isEmpty {
 }
 ```
 
-- [ ] **Step 5: 온보딩의 칩을 시트로 바꾼다**
+- [x] **Step 5: 온보딩의 칩을 시트로 바꾼다**
 
 `ReminderDraftRow`에서 `GuidePickerRow`를 지우고, 카드 이름 버튼 + `SmileGuidePickerSheet`로 바꾼다. 고르면 `viewModel.updateGuide(draftID:guideID:)`를 부른다.
 
-- [ ] **Step 6: 빌드한다**
+- [x] **Step 6: 빌드한다**
 
 ```bash
 xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
@@ -1887,7 +1887,7 @@ Expected: `** BUILD SUCCEEDED **`.
 
 ### Task 13: 전체 검증
 
-- [ ] **Step 1: 패키지 전체**
+- [x] **Step 1: 패키지 전체**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay/CoachingKit && swift test
@@ -1895,7 +1895,7 @@ cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay/CoachingKit && swift 
 
 Expected: `Test Suite 'All tests' passed`.
 
-- [ ] **Step 2: 앱 빌드**
+- [x] **Step 2: 앱 빌드**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1906,7 +1906,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`.
 
-- [ ] **Step 3: 스키마 호환**
+- [x] **Step 3: 스키마 호환**
 
 `PersistenceSchemaMigrationTests`가 `CustomSmileCard`를 포함한 새 스키마로도 구버전 저장소를 여는지 확인한다. `legacySchema`는 그대로 두고 통과해야 한다.
 
@@ -1914,7 +1914,7 @@ Expected: `** BUILD SUCCEEDED **`.
 cd CoachingKit && swift test --filter PersistenceSchemaMigrationTests
 ```
 
-- [ ] **Step 4: 남은 옛 ID 확인**
+- [x] **Step 4: 남은 옛 ID 확인**
 
 ```bash
 rg -n 'soft-smile|greeting-smile|bright-smile' SmileDay CoachingKit --glob '*.swift'
@@ -1922,7 +1922,7 @@ rg -n 'soft-smile|greeting-smile|bright-smile' SmileDay CoachingKit --glob '*.sw
 
 Expected: `SmileGuide.swift`의 `legacyIDAliases`와 그 테스트에서만 나온다.
 
-- [ ] **Step 5: 금지 문구**
+- [x] **Step 5: 금지 문구**
 
 ```bash
 rg -n '개선|교정|치료|리프팅|진짜 미소|억지 미소|어제보다|점수가|미소 크기|퇴근길|출근길' \
@@ -1931,7 +1931,7 @@ rg -n '개선|교정|치료|리프팅|진짜 미소|억지 미소|어제보다|�
 
 기존처럼 주석과 테스트의 금지어 목록에서만 나와야 한다.
 
-- [ ] **Step 6: 정적 검사**
+- [x] **Step 6: 정적 검사**
 
 ```bash
 git diff --check
@@ -1947,3 +1947,52 @@ git status --short
 - [ ] 카드를 추가하고 그 카드로 알림을 예약한 뒤 알림이 그 카드를 여는지
 - [ ] 알림이 쓰는 카드를 지웠을 때 예약된 알림이 대체 카드 문구로 바뀌는지 (설정 앱 > 알림에서 확인하거나 시각을 1분 뒤로 바꿔 확인)
 - [ ] 기본 카드를 숨겼다 되돌렸을 때 목록 순서가 유지되는지
+
+---
+
+## 실행 기록 (2026-07-28)
+
+브랜치: `feature/situation-cards-and-contrast`. Task 0~13 완료, Task 14는 실기기가 필요해 미실행.
+
+### 검증 결과
+
+| 항목 | 결과 |
+|---|---|
+| `swift test` (기준) | `Executed 330 tests, with 0 failures` |
+| `swift test` (완료 후) | `Executed 393 tests, with 0 failures` — `Test Suite 'All tests' passed` |
+| `xcodebuild ... build` | `** BUILD SUCCEEDED **` |
+| 옛 표정 ID 잔존 | `SmileGuide.swift`의 `legacyIDAliases`와 그 테스트에만 |
+| 금지 문구 | 주석 2건(그렇게 하지 않는다는 설명)만 |
+| 라이브러리 우회 | 앱 타깃에 `SmileGuideCatalog.guide(` 호출 없음 |
+
+### 계획과 달라진 점
+
+계획의 `scheduleRollingWindow(id:hour:minute:guideID:days:)`는 **사용자 카드를 깨뜨렸다.**
+스케줄러는 앱 타깃에 있어 `ModelContext`를 모르므로, ID만 받으면 `SmileGuideCatalog`로밖에
+해석할 수 없고 그러면 내가 만든 카드로 예약한 알림이 기본 카드 문구로 나간다.
+시그니처를 `guide: SmileGuide`로 바꿔 호출자가 라이브러리로 해석한 카드를 넘기게 했다.
+
+같은 함정이 세 군데 더 있어 함께 지웠다. 전부 `SmileGuideCatalog`만 보는 편의 프로퍼티였다.
+
+- `ReminderSetting.guide`
+- `SmileMoment.guide`
+- `ReminderNotificationPayload.guide`
+
+이제 카드 해석은 `SmileGuideLibrary.guide(id:)` 한 곳에서만 한다.
+
+그 밖의 차이:
+
+- **`SmileLibraryViewModel.addCard`가 만든 카드를 반환**한다. 목록은 시간대순이라
+  "마지막 항목"이 방금 만든 카드가 아니다. 화면이 새 카드를 바로 고를 수 있어야 했다.
+- **`SettingsViewModel`에 `library`를 주입**하고 `guide(for:)`를 더했다. 알림 행이
+  사용자 카드 이름을 보여주려면 필요하다.
+- **`SmileOnboardingViewModel`도 라이브러리를 받는다.** `ReminderDraft.guide`는 값 타입이라
+  스스로 해석할 수 없어 `guide(for:)`로 옮겼다.
+- **`GuidePickerRow` → `GuideSelectionRow`.** 칩 3개가 아니라 지금 고른 카드를 보여주고
+  시트를 여는 줄이다.
+- **`SmileGuidePickerSheet.onAddCard`는 옵셔널**이다. 온보딩은 첫 설정에서 카드 만들기까지
+  끌고 가지 않으므로 버튼을 감춘다.
+- **최근 7일 도트의 숫자를 도트 밖으로 뺐다.** 12pt 굵은 글씨는 WCAG 큰 글자 예외에
+  해당하지 않아 그라디언트 위 흰 글자(3.12~4.08:1)로는 본문 기준을 못 맞춘다.
+- **레거시 화면 4곳의 `SettingsViewModel` 호출부**(`SettingsView`, `HomeView`,
+  `CoachingTabView`, `RootView`)에 `library` 인자를 더했다. 도달할 수 없어도 빌드에는 들어간다.

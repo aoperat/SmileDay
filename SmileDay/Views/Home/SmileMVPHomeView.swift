@@ -9,9 +9,12 @@ struct SmileMVPHomeView: View {
     @Environment(NotificationRouter.self) private var notificationRouter
 
     @State private var viewModel: SmileHomeViewModel?
-    @State private var selectedGuideID: String = SmileGuideCatalog.default.id
+    @State private var libraryViewModel: SmileLibraryViewModel?
+    @State private var selectedGuide: SmileGuide?
     @State private var launch: GuideLaunch?
     @State private var isShowingSettings = false
+    @State private var isPickingGuide = false
+    @State private var isAddingCard = false
 
     /// 가이드 화면을 여는 요청 하나. 알림으로 들어왔는지 홈에서 눌렀는지를 함께 들고 간다.
     private struct GuideLaunch: Identifiable {
@@ -30,11 +33,11 @@ struct SmileMVPHomeView: View {
                         VStack(spacing: 16) {
                             TodayCard(
                                 count: viewModel.todayCompletionCount,
-                                guides: viewModel.guides,
-                                selectedGuideID: $selectedGuideID,
+                                selectedGuide: selectedGuide ?? SmileGuideCatalog.default,
+                                onPickGuide: { isPickingGuide = true },
                                 onStart: {
                                     launch = GuideLaunch(
-                                        guide: SmileGuideCatalog.guide(id: selectedGuideID),
+                                        guide: selectedGuide ?? SmileGuideCatalog.default,
                                         source: .manual
                                     )
                                 }
@@ -68,15 +71,28 @@ struct SmileMVPHomeView: View {
                 SmileMVPSettingsView()
             }
         }
-        .tint(SDColor.coral)
+        .tint(SDColor.coralDeep)
         .onAppear {
             if viewModel == nil {
+                let library = SmileGuideLibrary(
+                    modelContext: modelContext,
+                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
+                )
                 viewModel = SmileHomeViewModel(
                     momentRepository: SmileMomentRepository(modelContext: modelContext),
-                    reminderRepository: ReminderRepository(modelContext: modelContext)
+                    reminderRepository: ReminderRepository(modelContext: modelContext),
+                    library: library
+                )
+                libraryViewModel = SmileLibraryViewModel(
+                    library: library,
+                    reminderRepository: ReminderRepository(modelContext: modelContext),
+                    scheduler: UserNotificationReminderScheduler()
                 )
             }
             try? viewModel?.refresh()
+            try? libraryViewModel?.refresh()
+            // 첫 진입에는 지금 시간대에 어울리는 카드를 골라둔다.
+            if selectedGuide == nil { selectedGuide = viewModel?.suggestedGuide }
         }
         // 앱으로 돌아올 때 오늘 횟수와 다음 알림을 다시 계산한다.
         .onChange(of: scenePhase) { _, newPhase in
@@ -84,10 +100,34 @@ struct SmileMVPHomeView: View {
             try? viewModel?.refresh()
         }
         // 알림 탭은 cold launch와 foreground 모두 여기로 들어온다.
+        // 사용자가 만든 카드도 열려야 하므로 라이브러리로 해석한다.
         .onChange(of: notificationRouter.pendingSmileGuide, initial: true) { _, payload in
             guard let payload else { return }
-            launch = GuideLaunch(guide: payload.guide, source: .notification)
+            let library = SmileGuideLibrary(
+                modelContext: modelContext,
+                hiddenStore: UserDefaultsHiddenSmileGuideStore()
+            )
+            launch = GuideLaunch(guide: library.guide(id: payload.guideID), source: .notification)
             notificationRouter.pendingSmileGuide = nil
+        }
+        .sheet(isPresented: $isPickingGuide) {
+            SmileGuidePickerSheet(
+                guides: viewModel?.guides ?? [],
+                selectedID: selectedGuide?.id ?? "",
+                onSelect: { selectedGuide = $0 },
+                onAddCard: {
+                    isPickingGuide = false
+                    isAddingCard = true
+                }
+            )
+        }
+        .sheet(isPresented: $isAddingCard) {
+            if let libraryViewModel {
+                AddSmileCardView(viewModel: libraryViewModel) { added in
+                    selectedGuide = added
+                    try? viewModel?.refresh()
+                }
+            }
         }
         .fullScreenCover(item: $launch) { launch in
             SmileGuideView(
@@ -107,8 +147,8 @@ struct SmileMVPHomeView: View {
 
 private struct TodayCard: View {
     let count: Int
-    let guides: [SmileGuide]
-    @Binding var selectedGuideID: String
+    let selectedGuide: SmileGuide
+    let onPickGuide: () -> Void
     let onStart: () -> Void
 
     var body: some View {
@@ -131,9 +171,7 @@ private struct TodayCard: View {
             .accessibilityElement(children: .combine)
             .accessibilityLabel("오늘 미소 \(count)번")
 
-            GuidePickerRow(selectedID: selectedGuideID, guides: guides) { guideID in
-                selectedGuideID = guideID
-            }
+            GuideSelectionRow(guide: selectedGuide, onTap: onPickGuide)
 
             Button(SharedStrings.smileNowAction, action: onStart)
                 .buttonStyle(SDPrimaryButtonStyle())
@@ -149,7 +187,8 @@ private struct NextReminderCard: View {
         HStack(spacing: 12) {
             Image(systemName: "bell.fill")
                 .font(.system(size: 13, weight: .semibold))
-                .foregroundStyle(.white)
+                // 밝은 살구색 칩 위의 흰 글리프는 1.90:1이라 ink를 쓴다.
+                .foregroundStyle(SDColor.ink)
                 .frame(width: 30, height: 30)
                 .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
                 .accessibilityHidden(true)
@@ -213,18 +252,16 @@ private struct DayDot: View {
     let day: SmileDayCount
 
     var body: some View {
-        VStack(spacing: 6) {
-            ZStack {
-                Circle()
-                    .fill(day.hasSmile ? AnyShapeStyle(SDColor.primaryGradient) : AnyShapeStyle(SDColor.shell.opacity(0.6)))
-                    .frame(height: 36)
+        VStack(spacing: 5) {
+            // 도트는 웃은 날인지만 나타낸다. 횟수는 12pt라 도트 위 흰 글자로는
+            // 본문 대비(4.5:1)를 못 맞춰서 아래에 ink로 따로 적는다.
+            Circle()
+                .fill(day.hasSmile ? AnyShapeStyle(SDColor.primaryGradient) : AnyShapeStyle(SDColor.shell.opacity(0.6)))
+                .frame(height: 32)
 
-                if day.count > 0 {
-                    Text("\(day.count)")
-                        .font(.caption.bold().monospacedDigit())
-                        .foregroundStyle(.white)
-                }
-            }
+            Text(day.count > 0 ? "\(day.count)" : "·")
+                .font(.caption.bold().monospacedDigit())
+                .foregroundStyle(day.count > 0 ? SDColor.ink : SDColor.muted)
 
             Text(weekdayText)
                 .font(.caption2)

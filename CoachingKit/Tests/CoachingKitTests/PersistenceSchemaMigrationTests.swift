@@ -69,7 +69,6 @@ final class PersistenceSchemaMigrationTests: XCTestCase {
         let reminders = try context.fetch(FetchDescriptor<ReminderSetting>())
         XCTAssertEqual(reminders.count, 1)
         XCTAssertNil(reminders.first?.guideID, "구버전 알림의 guideID는 nil로 들어온다")
-        XCTAssertEqual(reminders.first?.guide.id, "soft-smile", "nil은 기본 가이드로 읽혀야 한다")
 
         XCTAssertTrue(try context.fetch(FetchDescriptor<SmileMoment>()).isEmpty)
         _ = container
@@ -88,7 +87,7 @@ final class PersistenceSchemaMigrationTests: XCTestCase {
         do {
             let (container, context) = try makeContext(schema: PersistenceSchema.schema)
             try SmileMomentRepository(modelContext: context)
-                .save(guideID: "greeting-smile", source: .notification, date: completedAt)
+                .save(guideID: "morning-greeting", source: .notification, date: completedAt)
             _ = container
         }
 
@@ -96,7 +95,7 @@ final class PersistenceSchemaMigrationTests: XCTestCase {
         let moments = try context.fetch(FetchDescriptor<SmileMoment>())
 
         XCTAssertEqual(moments.count, 1)
-        XCTAssertEqual(moments.first?.guideID, "greeting-smile")
+        XCTAssertEqual(moments.first?.guideID, "morning-greeting")
         XCTAssertEqual(moments.first?.source, .notification)
         XCTAssertEqual(moments.first?.date, completedAt)
         XCTAssertEqual(try context.fetch(FetchDescriptor<CareSession>()).count, 1, "기존 기록은 그대로여야 한다")
@@ -116,14 +115,14 @@ final class PersistenceSchemaMigrationTests: XCTestCase {
             let (container, context) = try makeContext(schema: PersistenceSchema.schema)
             let repository = ReminderRepository(modelContext: context)
             let reminder = try XCTUnwrap(repository.fetchAll().first)
-            try repository.updateGuide(reminder, guideID: "bright-smile")
+            try repository.updateGuide(reminder, guideID: "anytime-pause")
             _ = container
         }
 
         let (container, context) = try makeContext(schema: PersistenceSchema.schema)
         let reminder = try XCTUnwrap(ReminderRepository(modelContext: context).fetchAll().first)
 
-        XCTAssertEqual(reminder.guideID, "bright-smile")
+        XCTAssertEqual(reminder.guideID, "anytime-pause")
         XCTAssertEqual(reminder.hour, 20)
         XCTAssertEqual(reminder.minute, 30)
         XCTAssertEqual(reminder.notificationID, "legacy-reminder", "알림 식별자가 바뀌면 예약 취소가 어긋난다")
