@@ -34,7 +34,8 @@ enum SharedStrings {
     static let liveMonitorIntroPoints = [
         "전면 카메라가 켜지고, iOS 초록색 표시가 나타나요.",
         "카메라 화면은 기본으로 꺼져 있고, 버튼으로 켜고 끌 수 있어요.",
-        "화면을 켜든 끄든 사진·영상·측정값을 저장하지 않아요.",
+        "끝나면 그동안의 그래프와 1분당 1장의 사진을 보여드려요.",
+        "그래프와 사진은 화면을 닫으면 사라져요. 저장하거나 전송하지 않아요.",
         "화면을 켜두는 동안 배터리가 평소보다 빨리 줄어요.",
     ]
 
@@ -66,4 +67,19 @@ enum SharedStrings {
     static let liveMonitorNudgeIntervalLabel = "알림 간격"
     static let liveMonitorNudgeHapticToggle = "진동"
     static let liveMonitorNudgeFooter = "실시간 미소 확인 중, 이 시간만큼 편안한 표정이 이어지면 알려드려요. 얼굴이 보이지 않는 동안은 시간을 세지 않아요."
+
+    // MARK: - 실시간 확인 세션 요약
+
+    static let liveSummaryTitle = "이번 실시간 확인"
+    /// 분모가 "카메라를 켠 시간"이 아니라 "얼굴을 판정할 수 있던 시간"이라 이렇게 쓴다.
+    static let liveSummaryRatioLabel = "얼굴이 보인 동안 미소"
+    static let liveSummaryLegendSmiling = "미소"
+    static let liveSummaryLegendNotSmiling = "안 웃음"
+    static let liveSummaryLegendUnknown = "알 수 없음"
+    static let liveSummaryCloseAction = "닫기"
+    /// 분모에서 알 수 없음을 뺐으므로 그 비율을 항상 함께 보여준다.
+    static let liveSummaryLowConfidence = "인식된 시간이 짧아 이 숫자는 참고만 해주세요."
+    static let liveSummaryNoMeasurement = "측정된 시간이 없어요."
+    /// 숫자를 값 판단으로 읽지 않도록 함께 둔다.
+    static let liveSummaryMeaning = "이 비율은 웃음의 좋고 나쁨이 아니라, 카메라가 입꼬리 움직임을 감지한 시간의 비율이에요."
 }
