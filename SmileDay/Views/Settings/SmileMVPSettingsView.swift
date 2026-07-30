@@ -2,121 +2,204 @@ import SwiftUI
 import SwiftData
 import CoachingKit
 
-/// 알림 CRUD, 미소 카드 관리, 데이터 저장 위치. 기준선 재촬영과 Pro는 없다.
 struct SmileMVPSettingsView: View {
     @Environment(\.modelContext) private var modelContext
-    @State private var viewModel: SettingsViewModel?
-    @State private var libraryViewModel: SmileLibraryViewModel?
+    @State private var viewModel: SmileReminderScheduleViewModel?
+    @State private var messageViewModel: ReminderMessageViewModel?
+    @State private var didSave = false
+    @State private var loadFailed = false
 
-    @State private var newTime = Date()
-    @State private var newGuide: SmileGuide = SmileGuideCatalog.default
-    @State private var isPickingNewGuide = false
-    @State private var editingReminder: ReminderSetting?
-    @State private var isAddingCard = false
-    @State private var pendingRemoval: GuideRemovalImpact?
-
-    private var guides: [SmileGuide] { libraryViewModel?.guides ?? [] }
+    private let reminderMessageStore = UserDefaultsReminderMessageStore()
+    private let nudgeStore = UserDefaultsLiveSmileNudgeSettingsStore()
+    /// 실시간 확인 알림 설정. 바꾸는 즉시 저장한다 — 따로 저장 버튼을 두지 않는다.
+    @State private var nudgeSettings = LiveSmileNudgeSettings.default
 
     var body: some View {
         List {
-            if let viewModel, let libraryViewModel {
-                if viewModel.authorizationStatus == .denied {
+            if let viewModel {
+                if loadFailed {
+                    Section {
+                        AppDataLoadFailureView {
+                            Task { await loadSettings() }
+                        }
+                        .listRowInsets(EdgeInsets())
+                    }
+                    .listRowBackground(SDColor.cream)
+                } else if viewModel.authorizationStatus == .denied {
                     permissionSection
                 }
 
-                remindersSection(viewModel)
-                addReminderSection(viewModel)
-                cardsSection(libraryViewModel)
-                if !libraryViewModel.hiddenGuides.isEmpty {
-                    hiddenCardsSection(libraryViewModel)
+                if !loadFailed {
+                    Section {
+                        Toggle(isOn: Binding(
+                            get: { viewModel.isEnabled },
+                            set: { viewModel.updateEnabled($0) }
+                        )) {
+                            Text("미소 알림")
+                                .foregroundStyle(SDColor.ink)
+                        }
+                        .tint(SDColor.coralDeep)
+
+                        ReminderPatternControls(viewModel: viewModel)
+                            .padding(.vertical, 6)
+
+                        if let errorMessage = viewModel.errorMessage {
+                            Text(errorMessage)
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(SDColor.alert)
+                        } else if viewModel.pattern == nil {
+                            Text("종료 시간은 시작 시간보다 늦어야 해요.")
+                                .font(.footnote.weight(.semibold))
+                                .foregroundStyle(SDColor.alert)
+                        }
+
+                        Button {
+                            Task {
+                                didSave = await viewModel.save(requestAuthorization: viewModel.isEnabled)
+                            }
+                        } label: {
+                            Text(viewModel.isSaving ? "저장 중…" : "알림 설정 저장")
+                                .frame(maxWidth: .infinity)
+                        }
+                        .buttonStyle(SDInkButtonStyle())
+                        .disabled(viewModel.isSaving || viewModel.pattern == nil)
+                    } header: {
+                        Text("반복 설정")
+                            .foregroundStyle(SDColor.ink)
+                    } footer: {
+                        Text("놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요.")
+                            .foregroundStyle(SDColor.muted)
+                    }
+                    .listRowBackground(Color.white)
                 }
-                dataSection
+
+                if didSave && !loadFailed {
+                    Section {
+                        Label("알림 설정을 저장했어요", systemImage: "checkmark.circle.fill")
+                            .foregroundStyle(SDColor.ink)
+                    }
+                    .listRowBackground(Color.white)
+                }
+
+                if !loadFailed {
+                    if let messageViewModel {
+                        Section {
+                            NavigationLink {
+                                ReminderMessageManagementView(
+                                    viewModel: messageViewModel,
+                                    onChanged: { didSave = false }
+                                )
+                            } label: {
+                                HStack {
+                                    Label("메시지 관리", systemImage: "text.bubble")
+                                        .foregroundStyle(SDColor.ink)
+                                    Spacer()
+                                    Text("\(messageViewModel.messages.count)개")
+                                        .foregroundStyle(SDColor.muted)
+                                }
+                            }
+                        } header: {
+                            Text("알림 문구")
+                                .foregroundStyle(SDColor.ink)
+                        } footer: {
+                            Text("추가·수정·삭제하거나 순서를 바꿀 수 있어요.")
+                                .foregroundStyle(SDColor.muted)
+                        }
+                        .listRowBackground(Color.white)
+                    }
+
+                    liveMonitorNudgeSection
+                    dataSection
+                }
             }
         }
         .scrollContentBackground(.hidden)
         .background(SDColor.cream)
         .navigationTitle("설정")
         .navigationBarTitleDisplayMode(.inline)
+        .toolbarColorScheme(.light, for: .navigationBar)
+        .toolbarBackground(SDColor.cream, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .task {
             if viewModel == nil {
-                let library = SmileGuideLibrary(
-                    modelContext: modelContext,
-                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
-                )
-                viewModel = SettingsViewModel(
-                    reminderRepository: ReminderRepository(modelContext: modelContext),
-                    sessionRepository: SessionRepository(modelContext: modelContext),
-                    library: library,
-                    scheduler: UserNotificationReminderScheduler()
-                )
-                libraryViewModel = SmileLibraryViewModel(
-                    library: library,
-                    reminderRepository: ReminderRepository(modelContext: modelContext),
-                    scheduler: UserNotificationReminderScheduler()
+                viewModel = SmileReminderScheduleViewModel(
+                    scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
+                    legacyReminderRepository: LegacyReminderRepository(modelContext: modelContext),
+                    scheduler: UserNotificationReminderScheduler(),
+                    messageStore: reminderMessageStore
                 )
             }
-            try? viewModel?.refresh()
-            try? libraryViewModel?.refresh()
-            await viewModel?.refreshAuthorizationStatus()
-        }
-        .sheet(isPresented: $isPickingNewGuide) {
-            SmileGuidePickerSheet(
-                guides: guides,
-                selectedID: newGuide.id,
-                onSelect: { newGuide = $0 },
-                onAddCard: {
-                    isPickingNewGuide = false
-                    isAddingCard = true
-                }
-            )
-        }
-        .sheet(item: $editingReminder) { reminder in
-            if let viewModel {
-                SmileGuidePickerSheet(
-                    guides: guides,
-                    selectedID: viewModel.guide(for: reminder).id,
-                    onSelect: { guide in
-                        Task { try? await viewModel.updateReminderGuide(reminder, guideID: guide.id) }
-                    },
-                    onAddCard: {
-                        editingReminder = nil
-                        isAddingCard = true
-                    }
-                )
+            if messageViewModel == nil {
+                messageViewModel = ReminderMessageViewModel(store: reminderMessageStore)
             }
-        }
-        .sheet(isPresented: $isAddingCard) {
-            if let libraryViewModel {
-                AddSmileCardView(viewModel: libraryViewModel) { added in
-                    newGuide = added
-                }
-            }
-        }
-        .alert("이 카드를 지울까요?", isPresented: Binding(
-            get: { pendingRemoval != nil },
-            set: { if !$0 { pendingRemoval = nil } }
-        )) {
-            Button("취소", role: .cancel) { pendingRemoval = nil }
-            Button(SharedStrings.deleteCardAction, role: .destructive) {
-                guard let impact = pendingRemoval else { return }
-                pendingRemoval = nil
-                Task {
-                    try? await libraryViewModel?.remove(impact.guide)
-                    try? viewModel?.refresh()
-                }
-            }
-        } message: {
-            if let impact = pendingRemoval {
-                if impact.isInUse {
-                    Text("이 카드를 쓰는 알림이 \(impact.affectedReminderTimes.count)개 있어요.\n\(impact.affectedReminderTimes.joined(separator: ", "))\n\n지우면 이 알림들은 '\(impact.replacement.title)'로 바뀝니다.")
-                } else {
-                    Text("'\(impact.guide.title)'를 목록에서 지웁니다.")
-                }
-            }
+            await loadSettings()
         }
     }
 
-    // MARK: - 섹션
+    private func loadSettings() async {
+        do {
+            try viewModel?.refresh()
+            await viewModel?.refreshAuthorizationStatus()
+            nudgeSettings = nudgeStore.settings
+            loadFailed = false
+        } catch {
+            loadFailed = true
+        }
+    }
+
+    private var liveMonitorNudgeSection: some View {
+        Section {
+            Toggle(isOn: nudgeBinding(\.isEnabled)) {
+                Text(SharedStrings.liveMonitorNudgeToggle)
+                    .foregroundStyle(SDColor.ink)
+            }
+            .tint(SDColor.coralDeep)
+
+            if nudgeSettings.isEnabled {
+                Picker(selection: nudgeBinding(\.intervalSeconds)) {
+                    ForEach(LiveSmileNudgeSettings.allowedIntervalSeconds, id: \.self) { seconds in
+                        Text(intervalLabel(seconds)).tag(seconds)
+                    }
+                } label: {
+                    Text(SharedStrings.liveMonitorNudgeIntervalLabel)
+                        .foregroundStyle(SDColor.ink)
+                }
+
+                Toggle(isOn: nudgeBinding(\.isHapticEnabled)) {
+                    Text(SharedStrings.liveMonitorNudgeHapticToggle)
+                        .foregroundStyle(SDColor.ink)
+                }
+                .tint(SDColor.coralDeep)
+            }
+        } header: {
+            Text(SharedStrings.liveMonitorNudgeSectionTitle)
+                .foregroundStyle(SDColor.ink)
+        } footer: {
+            Text(SharedStrings.liveMonitorNudgeFooter)
+                .foregroundStyle(SDColor.muted)
+        }
+        .listRowBackground(Color.white)
+    }
+
+    /// 바꾸는 즉시 저장하는 바인딩. 저장 버튼 없이 토글 하나로 끝난다.
+    private func nudgeBinding<Value>(
+        _ keyPath: WritableKeyPath<LiveSmileNudgeSettings, Value>
+    ) -> Binding<Value> {
+        Binding(
+            get: { nudgeSettings[keyPath: keyPath] },
+            set: { newValue in
+                nudgeSettings[keyPath: keyPath] = newValue
+                nudgeStore.settings = nudgeSettings
+            }
+        )
+    }
+
+    private func intervalLabel(_ seconds: Int) -> String {
+        guard seconds >= 60 else { return "\(seconds)초" }
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
+    }
 
     private var permissionSection: some View {
         Section {
@@ -130,115 +213,9 @@ struct SmileMVPSettingsView: View {
                     UIApplication.shared.open(url)
                 }
                 .font(.footnote.weight(.semibold))
-                .foregroundStyle(SDColor.coralDeep)
+                .foregroundStyle(SDColor.ink)
             }
             .padding(.vertical, 4)
-        }
-        .listRowBackground(Color.white)
-    }
-
-    private func remindersSection(_ viewModel: SettingsViewModel) -> some View {
-        Section("내 알림") {
-            if viewModel.reminders.isEmpty {
-                Text(SharedStrings.noReminderYet)
-                    .font(.subheadline)
-                    .foregroundStyle(SDColor.muted)
-            }
-
-            ForEach(viewModel.reminders, id: \.notificationID) { reminder in
-                ReminderRow(
-                    reminder: reminder,
-                    guide: viewModel.guide(for: reminder),
-                    viewModel: viewModel,
-                    onPickGuide: { editingReminder = reminder }
-                )
-            }
-            .onDelete { indexSet in
-                for index in indexSet {
-                    try? viewModel.removeReminder(viewModel.reminders[index])
-                }
-            }
-        }
-        .listRowBackground(Color.white)
-    }
-
-    private func addReminderSection(_ viewModel: SettingsViewModel) -> some View {
-        Section("알림 추가") {
-            DatePicker("시간", selection: $newTime, displayedComponents: .hourAndMinute)
-
-            GuideSelectionRow(guide: newGuide) { isPickingNewGuide = true }
-                .padding(.vertical, 2)
-
-            Button("추가") {
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newTime)
-                Task {
-                    try? await viewModel.addReminder(
-                        hour: components.hour ?? 9,
-                        minute: components.minute ?? 0,
-                        guideID: newGuide.id
-                    )
-                }
-            }
-            .font(.subheadline.weight(.semibold))
-        }
-        .listRowBackground(Color.white)
-    }
-
-    private func cardsSection(_ libraryViewModel: SmileLibraryViewModel) -> some View {
-        Section {
-            ForEach(libraryViewModel.guides) { guide in
-                HStack(alignment: .top, spacing: 8) {
-                    VStack(alignment: .leading, spacing: 2) {
-                        Text(guide.title)
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(SDColor.ink)
-                        Text(guide.slot.displayName)
-                            .font(.caption)
-                            .foregroundStyle(SDColor.muted)
-                    }
-
-                    Spacer(minLength: 8)
-
-                    Button(guide.isBuiltIn ? SharedStrings.hideCardAction : SharedStrings.deleteCardAction) {
-                        pendingRemoval = try? libraryViewModel.removalImpact(for: guide)
-                    }
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.alert)
-                    .buttonStyle(.borderless)
-                }
-                .padding(.vertical, 2)
-            }
-
-            Button(SharedStrings.addCardAction) { isAddingCard = true }
-                .font(.subheadline.weight(.semibold))
-        } header: {
-            Text(SharedStrings.myCardsTitle)
-        } footer: {
-            Text("기본 카드는 숨겼다가 언제든 되돌릴 수 있어요.")
-                .font(.caption)
-                .foregroundStyle(SDColor.muted)
-        }
-        .listRowBackground(Color.white)
-    }
-
-    private func hiddenCardsSection(_ libraryViewModel: SmileLibraryViewModel) -> some View {
-        Section(SharedStrings.hiddenCardsTitle) {
-            ForEach(libraryViewModel.hiddenGuides) { guide in
-                HStack {
-                    Text(guide.title)
-                        .font(.subheadline)
-                        .foregroundStyle(SDColor.muted)
-
-                    Spacer()
-
-                    Button(SharedStrings.restoreCardAction) {
-                        try? libraryViewModel.restore(guide)
-                    }
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.coralDeep)
-                    .buttonStyle(.borderless)
-                }
-            }
         }
         .listRowBackground(Color.white)
     }
@@ -246,63 +223,18 @@ struct SmileMVPSettingsView: View {
     private var dataSection: some View {
         Section {
             Label("모든 기록은 이 기기에만 저장됩니다", systemImage: "iphone")
+                .foregroundStyle(SDColor.ink)
             Label("외부 서버로 전송되지 않습니다", systemImage: "lock.shield")
+                .foregroundStyle(SDColor.ink)
             Label("앱을 삭제하면 모든 기록이 함께 삭제됩니다", systemImage: "trash")
+                .foregroundStyle(SDColor.ink)
         } header: {
             Text("데이터 저장 위치")
+                .foregroundStyle(SDColor.ink)
         } footer: {
-            Text("완료한 시각과 어떤 카드였는지만 저장해요. 사진과 영상은 찍지도, 저장하지도 않아요.")
-                .font(.caption)
+            Text("완료한 시각만 저장해요. 사진과 영상은 찍지도, 저장하지도 않아요.")
                 .foregroundStyle(SDColor.muted)
         }
         .listRowBackground(Color.white)
-    }
-}
-
-private struct ReminderRow: View {
-    let reminder: ReminderSetting
-    let guide: SmileGuide
-    let viewModel: SettingsViewModel
-    let onPickGuide: () -> Void
-
-    private var time: Binding<Date> {
-        Binding(
-            get: {
-                var components = DateComponents()
-                components.hour = reminder.hour
-                components.minute = reminder.minute
-                return Calendar.current.date(from: components) ?? Date()
-            },
-            set: { newValue in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                Task {
-                    try? await viewModel.updateReminderTime(
-                        reminder,
-                        hour: components.hour ?? reminder.hour,
-                        minute: components.minute ?? reminder.minute
-                    )
-                }
-            }
-        )
-    }
-
-    var body: some View {
-        VStack(alignment: .leading, spacing: 10) {
-            HStack {
-                DatePicker("알림 시간", selection: time, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
-
-                Spacer()
-
-                Toggle("알림 켜기", isOn: Binding(
-                    get: { reminder.isEnabled },
-                    set: { _ in Task { try? await viewModel.toggleReminder(reminder) } }
-                ))
-                .labelsHidden()
-            }
-
-            GuideSelectionRow(guide: guide, onTap: onPickGuide)
-        }
-        .padding(.vertical, 4)
     }
 }

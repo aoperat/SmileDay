@@ -1,38 +1,14 @@
 import Foundation
 
 enum SharedStrings {
-    static let saveFailed = "저장에 실패했습니다. 다시 시도해주세요."
-
-    // MARK: - 미소 시간
-
-    /// 아직 얼굴이 잡히지 않았을 때의 안내.
-    static let alignFaceGuide = "얼굴을 가이드 안에 맞춰주세요"
-    /// 얼굴이 잡힌 뒤의 초대 문구. 잘 웃으라고 요구하지 않는다.
-    static let smileInvitation = "편하게 숨을 쉬고 살짝 미소 지어보세요"
-    static let saveSmileAction = "오늘의 미소 남기기"
-
-    // MARK: - 회고
-
-    static let momentNoteQuestion = "오늘 나를 미소 짓게 한 순간이 있었나요?"
-    static let momentNotePlaceholder = "떠오르는 순간을 짧게 남겨보세요"
-    static let momentNoteOptionalHint = "비워두어도 괜찮아요"
-    static let moodQuestion = "지금 기분은 어때요?"
-    static let checkInCompleted = "오늘도 잠시 웃어봤어요"
-
-    // MARK: - 탭
-
-    static let smileTabTitle = "미소"
-    static let restTabTitle = "쉬어가기"
-
     // MARK: - 알림 중심 미소 (MVP)
 
-    static let smileNowAction = "지금 미소 짓기"
+    static let smileNowAction = "지금 한 번 웃기"
     static let guideStartAction = "시작"
     /// 타이머를 끝까지 본 뒤의 문구. 표정이 어땠는지는 말하지 않는다.
-    static let guideCompleted = "오늘의 미소를 남겼어요"
+    static let guideCompleted = "오늘 한 번 더 웃어봤어요"
     static let guideSaveFailed = "기록을 저장하지 못했어요. 다시 시도해주세요."
     static let todayCountTitle = "오늘 미소"
-    static let weekActiveDaysTitle = "이번 주"
     static let recentSevenDaysTitle = "최근 7일"
     static let nextReminderTitle = "다음 알림"
     static let noReminderYet = "설정된 알림이 없어요"
@@ -41,19 +17,53 @@ enum SharedStrings {
     static let notificationDeniedNotice = "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요."
     static let openSystemSettings = "설정 앱 열기"
 
-    // MARK: - 상황 카드
+    // MARK: - 실시간 미소 확인 (선택형)
 
-    static let pickGuideAction = "상황 고르기"
-    static let pickGuideTitle = "어떤 상황에서 웃을까요?"
-    static let addCardAction = "내 카드 추가"
-    static let myCardsTitle = "미소 카드"
-    static let hiddenCardsTitle = "숨긴 카드"
-    static let restoreCardAction = "되돌리기"
-    static let hideCardAction = "숨기기"
-    static let deleteCardAction = "지우기"
-    static let cardTitleLabel = "상황 이름"
-    static let cardTitlePlaceholder = "예) 엘리베이터에서 웃기"
-    static let cardInstructionLabel = "안내 문구"
-    static let cardInstructionHint = "비워두면 기본 문구를 씁니다."
-    static let cardSlotLabel = "시간대"
+    static let liveMonitorTitle = "실시간 미소 확인"
+    static let liveMonitorEntrySummary = "카메라 화면 없이 미소 신호만 보여드려요. 원하면 화면을 켤 수도 있어요."
+    /// 측정 중 항상 보이는 프라이버시 고지. 화면 표시 여부와 무관하게 저장하지 않는다는 약속이다.
+    static let liveMonitorPrivacyBadge = "카메라 사용 중 · 영상과 측정값은 저장하지 않아요"
+    static let liveMonitorLevelLabel = "지금 미소 신호"
+    static let liveMonitorStartAction = "시작하기"
+    static let liveMonitorRecalibrateAction = "다시 보정"
+    static let liveMonitorCloseAction = "종료"
+    static let liveMonitorShowPreview = "카메라 화면 보기"
+    static let liveMonitorHidePreview = "카메라 화면 숨기기"
+
+    /// 시작 전 안내. 무엇이 켜지고 무엇이 남지 않는지 먼저 말한다.
+    static let liveMonitorIntroPoints = [
+        "전면 카메라가 켜지고, iOS 초록색 표시가 나타나요.",
+        "카메라 화면은 기본으로 꺼져 있고, 버튼으로 켜고 끌 수 있어요.",
+        "화면을 켜든 끄든 사진·영상·측정값을 저장하지 않아요.",
+        "화면을 켜두는 동안 배터리가 평소보다 빨리 줄어요.",
+    ]
+
+    static let liveMonitorCalibrating = "편한 표정으로 잠시 바라봐주세요."
+    static let liveMonitorFaceNotFound = "얼굴이 카메라에 들어오도록 기기를 조정해주세요."
+    /// 화면 중앙에 있을 필요는 없다. 카메라 쪽을 보고 있기만 하면 된다.
+    static let liveMonitorNotFacingCamera = "카메라 쪽을 편하게 바라봐주세요."
+    static let liveMonitorTooDark = "조금 더 밝은 곳에서 사용해주세요."
+    static let liveMonitorUnsupported = "이 기기에서는 실시간 미소 확인을 사용할 수 없어요."
+    static let liveMonitorPermissionDenied = "카메라 권한이 필요해요. 설정에서 허용해주세요."
+    static let liveMonitorSessionFailed = "카메라를 시작하지 못했어요. 잠시 후 다시 시도해주세요."
+    static let liveMonitorInterrupted = "측정을 멈췄어요. 다시 시작할 수 있어요."
+
+    /// 단계별 문구. 잘함·못함이 아니라 지금 신호가 어디쯤인지만 말한다.
+    static let liveMonitorLevelResting = "편하게 있다가 천천히 미소 지어보세요."
+    static let liveMonitorLevelStarting = "미소 신호가 올라오고 있어요."
+    static let liveMonitorLevelHolding = "미소가 이어지고 있어요."
+    static let liveMonitorLevelClear = "미소 신호가 또렷하게 잡혀요."
+
+    /// 단계를 값 판단으로 읽지 않도록 화면에 함께 둔다.
+    static let liveMonitorLevelMeaning = "이 표시는 웃음의 좋고 나쁨이 아니라, 지금 카메라가 감지한 입꼬리 움직임을 보여줘요."
+
+    // MARK: - 웃지 않을 때 알리기
+
+    static let liveMonitorNudgeTitle = "Smile!"
+    static let liveMonitorNudgeBody = "잠깐 입꼬리를 올려볼까요?"
+    static let liveMonitorNudgeSectionTitle = "실시간 확인 알림"
+    static let liveMonitorNudgeToggle = "웃지 않으면 알리기"
+    static let liveMonitorNudgeIntervalLabel = "알림 간격"
+    static let liveMonitorNudgeHapticToggle = "진동"
+    static let liveMonitorNudgeFooter = "실시간 미소 확인 중, 이 시간만큼 편안한 표정이 이어지면 알려드려요. 얼굴이 보이지 않는 동안은 시간을 세지 않아요."
 }

@@ -15,7 +15,7 @@ struct SplashView: View {
                     .font(.title.bold())
                     .foregroundStyle(SDColor.cream)
 
-                Text("웃다보면 다 좋아질거야")
+                Text("웃다보면 다 잘될거야")
                     .font(.subheadline)
                     .foregroundStyle(SDColor.cream.opacity(0.9))
             }

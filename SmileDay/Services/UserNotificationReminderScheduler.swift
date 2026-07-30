@@ -4,17 +4,10 @@ import CoachingKit
 
 final class UserNotificationReminderScheduler: ReminderScheduling {
     private let center: UNUserNotificationCenter
-    private let calendar: Calendar
-    private let now: () -> Date
 
-    init(
-        center: UNUserNotificationCenter = .current(),
-        calendar: Calendar = .current,
-        now: @escaping () -> Date = Date.init
-    ) {
+    /// 예약이 매일 반복 트리거라 날짜를 직접 계산하지 않는다 — 달력도 현재 시각도 필요 없다.
+    init(center: UNUserNotificationCenter = .current()) {
         self.center = center
-        self.calendar = calendar
-        self.now = now
     }
 
     /// 거부되어도 throw하지 않는다. 화면이 상태를 보고 안내를 띄운다.
@@ -30,33 +23,57 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
         }
     }
 
-    func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async {
-        cancel(id: id)
-
-        let today = calendar.startOfDay(for: now())
-
-        for dayOffset in 0..<days {
-            guard let targetDay = calendar.date(byAdding: .day, value: dayOffset, to: today) else { continue }
-
-            var components = calendar.dateComponents([.year, .month, .day], from: targetDay)
-            components.hour = hour
-            components.minute = minute
-
-            let content = UNMutableNotificationContent()
-            content.title = guide.title
-            content.body = guide.instruction
-            content.sound = .default
-            content.userInfo = ReminderNotificationPayload(reminderID: id, guideID: guide.id).userInfo
-
-            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: false)
-            // 취소가 같은 규칙으로 identifier를 만들어 지운다 — 형식을 바꾸면 재예약이 쌓인다.
-            let request = UNNotificationRequest(identifier: "\(id)-\(dayOffset)", content: content, trigger: trigger)
-            try? await center.add(request)
-        }
-    }
-
+    /// 예전 버전이 하루에 하나씩 미리 예약해둔 알림을 지운다.
+    ///
+    /// 그때와 같은 규칙으로 identifier를 만들어야 지워진다 — 형식을 바꾸면 옛 알림이 계속 울린다.
     func cancel(id: String) {
         let identifiers = (0..<reminderRollingWindowDays).map { "\(id)-\($0)" }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
+    }
+
+    func scheduleDailyPattern(
+        groupID: String,
+        times: [ReminderTime],
+        messages: [ReminderMessage]
+    ) async throws {
+        let availableMessages = messages.isEmpty ? ReminderMessageCatalog.defaults : messages
+        var addedIdentifiers: [String] = []
+        for (index, time) in times.enumerated() {
+            let content = UNMutableNotificationContent()
+            content.title = "스마일데이"
+            content.body = availableMessages[index % availableMessages.count].text
+            content.sound = .default
+            content.userInfo = ReminderNotificationPayload(
+                reminderID: groupID,
+                guideID: SmileGuideCatalog.default.id
+            ).userInfo
+
+            var components = DateComponents()
+            components.hour = time.hour
+            components.minute = time.minute
+            let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
+            let identifier = dailyIdentifier(groupID: groupID, time: time)
+            let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
+            do {
+                try await center.add(request)
+                addedIdentifiers.append(identifier)
+            } catch {
+                center.removePendingNotificationRequests(withIdentifiers: addedIdentifiers)
+                throw error
+            }
+        }
+    }
+
+    func cancelGroup(id: String) {
+        let identifiers = (0..<24).flatMap { hour in
+            (0..<60).map { minute in
+                "\(id)-daily-\(String(format: "%02d", hour))\(String(format: "%02d", minute))"
+            }
+        }
+        center.removePendingNotificationRequests(withIdentifiers: identifiers)
+    }
+
+    private func dailyIdentifier(groupID: String, time: ReminderTime) -> String {
+        "\(groupID)-daily-\(String(format: "%02d", time.hour))\(String(format: "%02d", time.minute))"
     }
 }
