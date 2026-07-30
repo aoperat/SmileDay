@@ -2,13 +2,16 @@ import ARKit
 import AVFoundation
 import Foundation
 import simd
+import CoreImage
+import UIKit
 import CoachingKit
 
 /// TrueDepth 얼굴 추적을 `LiveSmileSample`로 좁혀서 올려보내는 경계.
 ///
-/// 카메라 영상을 화면에 그리지 않는다. `ARFrame.capturedImage`를 읽지 않고,
-/// 프리뷰용 뷰나 Metal/CoreImage 파이프라인도 만들지 않는다. 얼굴에서 꺼내는 값은
-/// 좌우 입꼬리 계수와 고개 각도, 주변 밝기뿐이며 어디에도 저장하지 않는다.
+/// 프레임마다 얼굴에서 꺼내는 값은 좌우 입꼬리 계수와 고개 각도, 주변 밝기뿐이다.
+/// `ARFrame.capturedImage`는 `snapshotImage()`가 분당 1회 축소할 때만 읽으며,
+/// 프레임마다 변환하거나 영상으로 잇지 않는다. 남는 절대 조항은 하나다 —
+/// 어느 값도 저장하거나 전송하지 않는다.
 final class ARKitLiveSmileMonitor: NSObject, LiveSmileMonitoring {
     var onEvent: ((LiveSmileMonitorEvent) -> Void)?
 
@@ -18,6 +21,8 @@ final class ARKitLiveSmileMonitor: NSObject, LiveSmileMonitoring {
     private var latestAmbientIntensity: Double?
     /// 얼굴이 카메라를 보고 있는지 판단하려면 카메라의 현재 위치가 필요하다.
     private var latestCameraTransform: simd_float4x4?
+    /// 매 호출마다 만들면 비싸다. 분당 1회라도 하나만 두고 재사용한다.
+    private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 
     // MARK: - LiveSmileMonitoring
 
@@ -55,6 +60,22 @@ final class ARKitLiveSmileMonitor: NSObject, LiveSmileMonitoring {
 
     /// 프리뷰가 그릴 세션. 사용자가 카메라 화면을 켰을 때만 쓰인다.
     var previewSession: ARSession { session }
+
+    /// 지금 프레임을 축소한 이미지.
+    ///
+    /// 저장 경로가 없다 — 호출자가 메모리에 들고 있다가 버린다. `AVCapturePhotoOutput`으로
+    /// 촬영하는 것이 아니라 이미 돌고 있는 세션의 프레임을 읽으므로 셔터음이 나지 않는다.
+    func snapshotImage(height: CGFloat = 320) -> UIImage? {
+        guard isActive, let frame = session.currentFrame else { return nil }
+
+        // 전면 카메라 버퍼는 가로 방향으로 들어온다. 세로 화면에 맞게 돌린다.
+        let image = CIImage(cvPixelBuffer: frame.capturedImage).oriented(.right)
+        let scale = height / image.extent.height
+        let scaled = image.transformed(by: CGAffineTransform(scaleX: scale, y: scale))
+
+        guard let cgImage = ciContext.createCGImage(scaled, from: scaled.extent) else { return nil }
+        return UIImage(cgImage: cgImage)
+    }
 
     /// 프리뷰 뷰가 세션을 넘겨받으며 delegate를 바꿔도 샘플 전달이 끊기지 않게 되돌린다.
     func reassertSampleDelegate() {
