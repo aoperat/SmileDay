@@ -53,6 +53,8 @@ Expected: `** BUILD SUCCEEDED **`
 
 ### Task 1: 관찰 상태와 요약 타입
 
+> **구현 후 개정 (2026-07-30).** 코드 리뷰에서 `isLowConfidence: Bool`이 측정 0인 세션에서 `true`를 반환하는 문제가 나왔다 — 없는 숫자를 두고 신뢰도를 판정하는 셈이고, 타입만 보고 UI를 쓰면 "측정된 시간이 없어요"와 "이 숫자는 참고만 해주세요"가 함께 뜬다. `LiveSmileSessionConfidence`(`noMeasurement` / `low(ratio:)` / `reliable(ratio:)`)로 대체해 그 조합을 표현할 수 없게 했다. 아래 Step 3·5의 코드 블록은 최초 작성분이며, 실제 결과는 커밋 `89566a7`과 `3e5f5b5`를 본다. **Task 8은 개정된 API를 기준으로 쓰여 있다.**
+
 **Files:**
 
 - Create: `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`
@@ -1110,12 +1112,15 @@ struct LiveSmileSessionSummaryView: View {
             VStack(spacing: 22) {
                 header
 
-                if summary.usableSeconds == 0 {
+                switch summary.confidence {
+                case .noMeasurement:
                     Text(SharedStrings.liveSummaryNoMeasurement)
                         .font(.headline)
                         .foregroundStyle(SDColor.ink)
-                } else {
-                    ratio
+                case .low(let value):
+                    ratio(value, isLowConfidence: true)
+                case .reliable(let value):
+                    ratio(value, isLowConfidence: false)
                 }
 
                 timelineBand
@@ -1152,9 +1157,11 @@ struct LiveSmileSessionSummaryView: View {
         }
     }
 
-    private var ratio: some View {
+    /// `unknownRatio`는 분모가 달라서(전체 시간) 미소 비율과 한 막대에 쌓지 않는다.
+    /// 두 줄로 따로 둔다.
+    private func ratio(_ value: Double, isLowConfidence: Bool) -> some View {
         VStack(spacing: 6) {
-            Text("\(Int(((summary.smilingRatio ?? 0) * 100).rounded()))%")
+            Text("\(Int((value * 100).rounded()))%")
                 .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
                 .foregroundStyle(SDColor.ink)
 
@@ -1166,7 +1173,7 @@ struct LiveSmileSessionSummaryView: View {
                 .font(.caption)
                 .foregroundStyle(SDColor.muted)
 
-            if summary.isLowConfidence {
+            if isLowConfidence {
                 Text(SharedStrings.liveSummaryLowConfidence)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(SDColor.alert)
@@ -1667,7 +1674,7 @@ cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay/CoachingKit
 swift test 2>&1 | grep -E "error:|XCTAssert|Executed [0-9]+ tests|Test Suite 'All tests'" | tail -4
 ```
 
-Expected: `Test Suite 'All tests' passed`. Task 0에서 적어둔 수보다 28개 늘어야 한다 (요약 6 + recorder 16 + ViewModel 6).
+Expected: `Test Suite 'All tests' passed`. Task 0에서 적어둔 수보다 30개 늘어야 한다 (요약 8 + recorder 16 + ViewModel 6). 요약이 6이 아니라 8인 것은 Task 1 리뷰에서 신뢰 상태 테스트와 "한 번도 웃지 않음 = 0%" 테스트를 더했기 때문이다.
 
 - [ ] **Step 2: iOS 17 앱 빌드**
 
