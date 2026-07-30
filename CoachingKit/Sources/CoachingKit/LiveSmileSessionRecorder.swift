@@ -82,6 +82,12 @@ public struct LiveSmileSessionSummary: Equatable, Sendable {
 /// 주입한 `now()`로 전부 테스트된다.
 public final class LiveSmileSessionRecorder {
     public static let bucketDuration: TimeInterval = 1
+    /// 스냅샷 슬롯이 열리는 간격.
+    public static let snapshotInterval: TimeInterval = 60
+    /// 경계 후 이 시간 안에 쓸 프레임이 없으면 그 분은 건너뛴다.
+    public static let snapshotGrace: TimeInterval = 5
+    /// 메모리 상한. 넘으면 사진만 멈추고 타임라인은 계속 쌓는다.
+    public static let maxSnapshots = 120
 
     private let now: () -> Date
 
@@ -95,6 +101,9 @@ public final class LiveSmileSessionRecorder {
     private var smilingFrames = 0
     /// 두 번 부르면 빈 칸이 하나 덧붙는다. 한 번만 확정하게 막는다.
     private var hasFinished = false
+    private var lastObservation: LiveSmileObservation?
+    private var claimedSlot: Int?
+    private var snapshotCount = 0
 
     public init(now: @escaping () -> Date = Date.init) {
         self.now = now
@@ -146,10 +155,33 @@ public final class LiveSmileSessionRecorder {
         return LiveSmileSessionSummary(timeline: timeline)
     }
 
+    /// 지금 사진을 잡아야 하면 true. 분당 최대 한 번만 true를 낸다.
+    ///
+    /// 묻기와 표시하기를 두 단계로 나누지 않는다 — 표시를 잊으면 매 프레임 사진을 찍는다.
+    public func claimSnapshotSlot() -> Bool {
+        guard snapshotCount < Self.maxSnapshots else { return false }
+        guard let startedAt else { return false }
+        // 얼굴이 없거나 각도가 벗어난 프레임으로 남기면 얼굴 없는 사진이 된다.
+        guard let lastObservation, lastObservation != .unknown else { return false }
+
+        let elapsed = now().timeIntervalSince(startedAt)
+        let slot = Int(elapsed / Self.snapshotInterval)
+        guard slot != claimedSlot else { return false }
+
+        // 경계에서 너무 멀어졌으면 이번 분은 포기한다.
+        let sinceSlotStart = elapsed - Double(slot) * Self.snapshotInterval
+        guard sinceSlotStart <= Self.snapshotGrace else { return false }
+
+        claimedSlot = slot
+        snapshotCount += 1
+        return true
+    }
+
     private func count(_ observation: LiveSmileObservation) {
         observedFrames += 1
         if observation != .unknown { usableFrames += 1 }
         if observation == .smiling { smilingFrames += 1 }
+        lastObservation = observation
     }
 
     private func closeCurrentBucket() {

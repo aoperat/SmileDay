@@ -258,4 +258,78 @@ final class LiveSmileSessionRecorderTests: XCTestCase {
         recorder.observe(.notSmiling)
         XCTAssertEqual(recorder.timeline, [.smiling])
     }
+
+    // MARK: - 스냅샷 슬롯
+
+    /// 첫 장은 측정 시작 직후에 잡는다.
+    func test_snapshot_firstSlotOpensImmediately() {
+        let (recorder, _) = makeRecorder()
+
+        recorder.observe(.notSmiling)
+
+        XCTAssertTrue(recorder.claimSnapshotSlot())
+    }
+
+    func test_snapshot_claimsOnlyOncePerMinute() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot())
+        XCTAssertFalse(recorder.claimSnapshotSlot(), "같은 분에 두 번 잡지 않는다")
+
+        clock.date += 60
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot(), "다음 분에는 다시 열린다")
+    }
+
+    /// 판정 불가 프레임으로 사진을 남기면 얼굴 없는 사진이 된다.
+    func test_snapshot_isNotClaimedOnUnknownFrame() {
+        let (recorder, _) = makeRecorder()
+
+        recorder.observe(.unknown)
+
+        XCTAssertFalse(recorder.claimSnapshotSlot())
+    }
+
+    /// 경계 후 5초 안에 쓸 프레임이 없으면 그 분은 건너뛴다.
+    func test_snapshot_skipsMinute_whenNoUsableFrameWithinGrace() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.unknown)
+        clock.date += 6
+        recorder.observe(.notSmiling)
+
+        XCTAssertFalse(recorder.claimSnapshotSlot(), "5초를 넘겼으므로 이 분은 없다")
+
+        clock.date += 54 // 60초 경계
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot())
+    }
+
+    func test_snapshot_stopsAtLimit() {
+        let (recorder, clock) = makeRecorder()
+
+        for _ in 0..<LiveSmileSessionRecorder.maxSnapshots {
+            recorder.observe(.notSmiling)
+            XCTAssertTrue(recorder.claimSnapshotSlot())
+            clock.date += 60
+        }
+
+        recorder.observe(.notSmiling)
+        XCTAssertFalse(recorder.claimSnapshotSlot(), "상한을 넘으면 더 잡지 않는다")
+    }
+
+    /// 사진이 멈춰도 기록은 계속된다.
+    func test_snapshot_limitDoesNotStopTimeline() {
+        let (recorder, clock) = makeRecorder()
+
+        for _ in 0..<LiveSmileSessionRecorder.maxSnapshots {
+            recorder.observe(.notSmiling)
+            _ = recorder.claimSnapshotSlot()
+            clock.date += 60
+        }
+        recorder.observe(.smiling)
+
+        XCTAssertGreaterThan(recorder.finish().totalSeconds, LiveSmileSessionRecorder.maxSnapshots)
+    }
 }
