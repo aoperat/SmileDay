@@ -229,6 +229,12 @@ git commit -m "feat: add live smile session observation and summary types"
 
 ### Task 2: 1초 칸 다수결
 
+> **구현 후 개정 (2026-07-30).** 아래 Step 1의 `test_bucket_isUnknown_whenNoFrameObserved`는 자기모순이었다 — `finish()`가 `now()`를 읽지 않으므로 `count == 6`과 `last == .unknown`이 동시에 성립할 수 없다. 전체 타임라인을 검증하는 형태로 교체했다.
+>
+> 그리고 `finish()`가 **마지막 프레임 이후 종료까지의 시간을 버리고 있었다.** 그 끝머리를 빼면 `unknownRatio`의 분모가 줄어 세션이 실제보다 믿을 만해 보인다. 지금은 종료 시점까지 `unknown`으로 채우고, `finish()`는 idempotent다. Step 3의 코드 블록은 최초 작성분이며 실제 결과는 커밋 `65e3e99`과 `b4ea36e`를 본다.
+>
+> 테스트 시계의 `[unowned self]`도 제거했다. 시계를 `_`로 버리는 테스트에서 즉시 해제되어 크래시한다.
+
 **Files:**
 
 - Modify: `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`
@@ -1674,7 +1680,9 @@ cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay/CoachingKit
 swift test 2>&1 | grep -E "error:|XCTAssert|Executed [0-9]+ tests|Test Suite 'All tests'" | tail -4
 ```
 
-Expected: `Test Suite 'All tests' passed`. Task 0에서 적어둔 수보다 30개 늘어야 한다 (요약 8 + recorder 16 + ViewModel 6). 요약이 6이 아니라 8인 것은 Task 1 리뷰에서 신뢰 상태 테스트와 "한 번도 웃지 않음 = 0%" 테스트를 더했기 때문이다.
+Expected: `Test Suite 'All tests' passed`, 실패 0.
+
+Task 0 기준(170개)에서 최소 33개가 늘어야 한다 — 요약 8, recorder 19, ViewModel 6. 정확한 수를 게이트로 쓰지 않는다. 리뷰에서 놓친 경계가 나오면 테스트가 더 붙기 때문이다. 실제로 Task 1은 6→8, Task 2는 7→10으로 늘었다. **줄어들었다면** 테스트가 사라진 것이므로 그때는 멈추고 확인한다.
 
 - [ ] **Step 2: iOS 17 앱 빌드**
 
