@@ -540,6 +540,27 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.timeline.last, .smiling)
     }
 
+    /// 보정을 끝내는 프레임은 `calibrate(with:)`의 unknown 기록과 `publish(signal:)`의 기록이
+    /// 겹쳐서 두 번 세지면 안 된다. 그 칸에 이미 판정 불가 프레임이 하나 있으면, 이중 계산이
+    /// "판정 가능이 절반 이상"을 "미만"으로 밀어 그 칸을 unknown으로 뒤집는다.
+    func test_calibrationCompletingFrame_isRecordedOnlyOnce() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+
+        monitor.emit(sample(smile: 0.1)) // t=0: 보정 시작 — 0번 칸에 unknown 1개
+        clock.date += 2 // t=2.0 — 2번 칸 경계
+        monitor.emit(.faceLost) // 2번 칸에 판정 불가 프레임이 먼저 하나 쌓인다
+        clock.date += 0.5 // t=2.5 — 여전히 2번 칸. 보정 시작 후 2.5초 지나 보정이 끝난다
+        monitor.emit(sample(smile: 0.1)) // 보정을 끝내는 프레임
+        clock.date += 1 // 2번 칸을 닫기 위해 3번 칸으로 넘어간다
+        monitor.emit(sample(smile: 0.1))
+
+        XCTAssertEqual(
+            viewModel.timeline[2], .notSmiling,
+            "보정을 끝내는 프레임은 publish 경로에서 한 번만 기록돼야 한다"
+        )
+    }
+
     func test_recording_marksQualityIssueSecondsAsUnknown() {
         let (viewModel, monitor, clock, _) = makeViewModel()
         viewModel.start()
@@ -578,7 +599,10 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
         viewModel.start()
         finishCalibration(monitor, clock)
 
-        XCTAssertLessThanOrEqual(viewModel.timeline.count, 3, "이전 세션 칸이 남으면 안 된다")
+        // 두 번째 세션은 finishCalibration이 딱 두 번의 프레임(t, t+2초)만 보내므로 닫힌 칸은
+        // 정확히 2개(0번, 1번)다 — 2번 칸은 보정을 끝내는 프레임이 아직 누적 중이라 열려 있다.
+        // 값이 확정적이므로 느슨한 상한 대신 정확한 값으로 고정한다.
+        XCTAssertEqual(viewModel.timeline.count, 2, "이전 세션 칸이 남으면 안 된다")
     }
 
     /// 슬롯 판정은 프레임 경로에서 끝나야 한다. 시작 직후 첫 프레임이 한 장을 요청한다.

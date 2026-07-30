@@ -179,14 +179,18 @@ public final class LiveSmileMonitorViewModel {
     /// 정상 프레임만 편한 표정 평균에 들어간다.
     private func calibrate(with sample: LiveSmileSample) {
         state = .calibrating
-        record(.unknown)
         calibrationSamples.append(LiveSmileSignalEvaluator.smileMean(sample))
 
         let startedAt = calibrationStartedAt ?? now()
         calibrationStartedAt = startedAt
 
         // 유효 프레임이 드물면 그만큼 보정이 길어진다.
-        guard now().timeIntervalSince(startedAt) >= Self.calibrationDuration else { return }
+        guard now().timeIntervalSince(startedAt) >= Self.calibrationDuration else {
+            // 아직 보정 중인 프레임만 여기서 기록한다. 보정을 끝내는 프레임은 아래
+            // publish(signal:)이 기록하므로, 여기서도 적으면 같은 프레임이 두 번 세어진다.
+            record(.unknown)
+            return
+        }
 
         neutralSmileMean = calibrationSamples.reduce(0, +) / Double(calibrationSamples.count)
         calibrationSamples = []

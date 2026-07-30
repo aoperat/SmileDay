@@ -292,18 +292,107 @@ final class LiveSmileSessionRecorderTests: XCTestCase {
     }
 
     /// 경계 후 5초 안에 쓸 프레임이 없으면 그 분은 건너뛴다.
+    ///
+    /// 첫 슬롯은 판정 가능한 첫 프레임에서 바로 열리므로, 유예 검증은 그다음 분 경계로
+    /// 옮겨서 확인한다 — 첫 프레임 앞에 unknown 구간을 두면 그 자체가 첫 슬롯 기준점이 되어
+    /// "유예를 넘김"을 재현하지 못한다(`test_snapshot_firstSlotUsesFirstJudgeableFrame_evenAfterLeadingUnknownGap` 참고).
     func test_snapshot_skipsMinute_whenNoUsableFrameWithinGrace() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.notSmiling) // 판정 가능 기준점 — 슬롯 0을 바로 잡는다
+        XCTAssertTrue(recorder.claimSnapshotSlot())
+
+        clock.date += 60
+        recorder.observe(.unknown) // 경계에 판정 불가 프레임만 있다
+        clock.date += 6
+        recorder.observe(.notSmiling) // 경계 후 6초 — 유예(5초)를 넘겼다
+
+        XCTAssertFalse(recorder.claimSnapshotSlot(), "5초를 넘겼으므로 이 분은 없다")
+
+        clock.date += 54 // 다음 60초 경계
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot(), "다음 분에는 다시 열린다")
+    }
+
+    /// 회귀 재현: 얼굴 인식 전이나 보정 중처럼 unknown이 여러 초 이어져도, 판정 가능한 첫
+    /// 프레임에서는 슬롯 0을 바로 잡아야 한다.
+    ///
+    /// 예전에는 `startedAt`(첫 프레임 시각, unknown 포함)을 기준으로 유예를 쟀다. 그 사이가
+    /// 5초(`snapshotGrace`)를 넘으면 보정이 막 끝난 순간에도 유예를 넘긴 것으로 취급돼
+    /// 첫 60초 동안 편한 표정 참고 사진을 하나도 못 찍었다.
+    func test_snapshot_firstSlotUsesFirstJudgeableFrame_evenAfterLeadingUnknownGap() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.unknown)
+        clock.date += 6 // 유예(5초)보다 길게 unknown이 이어진다 — 얼굴 인식/보정 지연을 흉내낸다
+        recorder.observe(.notSmiling) // 판정 가능한 첫 프레임
+
+        XCTAssertTrue(
+            recorder.claimSnapshotSlot(),
+            "판정 가능한 첫 프레임은 그 앞의 unknown 구간과 무관하게 슬롯 0을 잡아야 한다"
+        )
+    }
+
+    /// 두 번째 슬롯도 여전히 판정 가능한 첫 프레임을 기준으로 60초마다 열린다.
+    func test_snapshot_slotsOpenPerMinuteFromFirstJudgeableFrame() {
         let (recorder, clock) = makeRecorder()
 
         recorder.observe(.unknown)
         clock.date += 6
-        recorder.observe(.notSmiling)
-
-        XCTAssertFalse(recorder.claimSnapshotSlot(), "5초를 넘겼으므로 이 분은 없다")
-
-        clock.date += 54 // 60초 경계
-        recorder.observe(.notSmiling)
+        recorder.observe(.notSmiling) // 판정 가능 기준점
         XCTAssertTrue(recorder.claimSnapshotSlot())
+
+        clock.date += 59 // 기준점 기준 59초 — 아직 다음 분이 아니다
+        recorder.observe(.notSmiling)
+        XCTAssertFalse(recorder.claimSnapshotSlot())
+
+        clock.date += 1 // 기준점 기준 정확히 60초
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot(), "판정 가능 기준점부터 60초가 지나면 다음 슬롯이 열린다")
+    }
+
+    /// 판정 가능한 프레임이 세션 동안 한 번도 없으면 슬롯이 영영 열리지 않는다.
+    func test_snapshot_neverOpensSlot_whenNoFrameIsEverJudgeable() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.unknown)
+        clock.date += 120
+        recorder.observe(.unknown)
+
+        XCTAssertFalse(recorder.claimSnapshotSlot())
+    }
+
+    // MARK: - 시계 역행
+
+    /// 시계가 거꾸로 가도(NTP 보정 등) 이미 닫힌 칸 수보다 적은 인덱스로 되돌아가지 않는다.
+    func test_observe_backwardClockDoesNotRegressBucketIndex() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        clock.date += 10
+        recorder.observe(.smiling) // 0~9번 칸이 닫히고 10번 칸이 열린다
+        clock.date -= 5 // 시계가 5초 되돌아간다
+        recorder.observe(.smiling)
+
+        let timeline = recorder.finish().timeline
+        XCTAssertEqual(timeline.count, 11, "되돌아간 시계가 이미 닫힌 칸 수를 줄이면 안 된다")
+    }
+
+    /// 슬롯 번호는 반드시 증가해야 한다. `!=` 비교만으로는 시계가 되돌아가 이전 슬롯 번호로
+    /// 돌아왔을 때 이미 잡은 분을 다시 열어준다.
+    func test_snapshot_backwardClockDoesNotReopenAClaimedSlot() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot()) // 슬롯 0
+
+        clock.date += 60
+        recorder.observe(.notSmiling)
+        XCTAssertTrue(recorder.claimSnapshotSlot()) // 슬롯 1
+
+        clock.date -= 60 // 시계가 되돌아가 다시 슬롯 0 경계로 온다
+        recorder.observe(.notSmiling)
+        XCTAssertFalse(recorder.claimSnapshotSlot(), "이미 잡은 슬롯 0을 다시 열면 안 된다")
     }
 
     func test_snapshot_stopsAtLimit() {

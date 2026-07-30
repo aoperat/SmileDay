@@ -95,6 +95,13 @@ public final class LiveSmileSessionRecorder {
     public private(set) var timeline: [LiveSmileObservation] = []
 
     private var startedAt: Date?
+    /// 스냅샷 슬롯의 기준점 — 판정 가능한(=unknown이 아닌) 첫 관찰 시각.
+    ///
+    /// `startedAt`과 의도적으로 분리한다. `startedAt`은 타임라인의 기준점이라 얼굴 인식 전이나
+    /// 보정 중의 unknown 프레임도 그대로 앞당겨 잡아야 한다 — 그래야 그 시간이 "모름"으로
+    /// 정확히 남는다. 반면 첫 스냅샷은 "보정이 끝난 편한 표정"을 담는 것이 목적(§6)이므로,
+    /// 그 앞의 unknown 구간이 길다고 유예를 넘긴 것으로 치면 정작 노려야 할 첫 사진을 놓친다.
+    private var firstJudgeableAt: Date?
     private var currentBucketIndex = 0
     private var observedFrames = 0
     private var usableFrames = 0
@@ -113,6 +120,10 @@ public final class LiveSmileSessionRecorder {
     public func observe(_ observation: LiveSmileObservation) {
         let timestamp = now()
 
+        if firstJudgeableAt == nil, observation != .unknown {
+            firstJudgeableAt = timestamp
+        }
+
         guard let startedAt else {
             self.startedAt = timestamp
             currentBucketIndex = 0
@@ -121,6 +132,8 @@ public final class LiveSmileSessionRecorder {
         }
 
         let index = Int(timestamp.timeIntervalSince(startedAt) / Self.bucketDuration)
+        // 시계가 거꾸로 가도(NTP 보정 등) 이미 닫힌 칸 수보다 앞으로 되돌리지 않는다 —
+        // index가 currentBucketIndex 이하면 그냥 지금 채우고 있는 칸에 더한다.
         if index > currentBucketIndex {
             closeCurrentBucket()
             // 프레임이 오지 않은 칸은 모른다고 적는다.
@@ -160,13 +173,16 @@ public final class LiveSmileSessionRecorder {
     /// 묻기와 표시하기를 두 단계로 나누지 않는다 — 표시를 잊으면 매 프레임 사진을 찍는다.
     public func claimSnapshotSlot() -> Bool {
         guard snapshotCount < Self.maxSnapshots else { return false }
-        guard let startedAt else { return false }
+        // 판정 가능한 프레임이 한 번도 없었으면 기준점 자체가 없다 — 슬롯도 없다.
+        guard let firstJudgeableAt else { return false }
         // 얼굴이 없거나 각도가 벗어난 프레임으로 남기면 얼굴 없는 사진이 된다.
         guard let lastObservation, lastObservation != .unknown else { return false }
 
-        let elapsed = now().timeIntervalSince(startedAt)
+        let elapsed = now().timeIntervalSince(firstJudgeableAt)
         let slot = Int(elapsed / Self.snapshotInterval)
-        guard slot != claimedSlot else { return false }
+        // 슬롯 번호는 반드시 증가해야 한다. `!=` 비교였다면 시계가 되돌아갔을 때 이전 슬롯
+        // 번호로 되돌아와 이미 잡은 분을 다시 열어준다.
+        guard claimedSlot.map({ slot > $0 }) ?? true else { return false }
 
         // 경계에서 너무 멀어졌으면 이번 분은 포기한다.
         let sinceSlotStart = elapsed - Double(slot) * Self.snapshotInterval
