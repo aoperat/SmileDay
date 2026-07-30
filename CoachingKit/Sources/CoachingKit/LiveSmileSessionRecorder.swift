@@ -93,6 +93,8 @@ public final class LiveSmileSessionRecorder {
     private var observedFrames = 0
     private var usableFrames = 0
     private var smilingFrames = 0
+    /// 두 번 부르면 빈 칸이 하나 덧붙는다. 한 번만 확정하게 막는다.
+    private var hasFinished = false
 
     public init(now: @escaping () -> Date = Date.init) {
         self.now = now
@@ -122,11 +124,25 @@ public final class LiveSmileSessionRecorder {
         count(observation)
     }
 
-    /// 마지막 부분 칸을 확정하고 집계한다.
+    /// 마지막 부분 칸을 확정하고, 마지막 프레임 이후 종료까지도 채운 뒤 집계한다.
+    ///
+    /// 끝머리를 빼면 `unknownRatio`의 분모가 줄어 세션이 실제보다 믿을 만해 보인다.
+    /// 숫자를 과신하지 않게 하려고 있는 신호가 거꾸로 작동하는 셈이다.
+    /// 종료를 누르려면 사용자가 있어야 하니 짧다고 단정할 수도 없다 —
+    /// 고개를 돌려 인식이 끊긴 뒤 한참 있다 누를 수 있다.
     public func finish() -> LiveSmileSessionSummary {
-        guard startedAt != nil else { return LiveSmileSessionSummary(timeline: []) }
+        guard let startedAt, !hasFinished else {
+            return LiveSmileSessionSummary(timeline: timeline)
+        }
+        hasFinished = true
 
         closeCurrentBucket()
+
+        let endIndex = Int(now().timeIntervalSince(startedAt) / Self.bucketDuration)
+        while timeline.count <= endIndex {
+            timeline.append(.unknown)
+        }
+
         return LiveSmileSessionSummary(timeline: timeline)
     }
 

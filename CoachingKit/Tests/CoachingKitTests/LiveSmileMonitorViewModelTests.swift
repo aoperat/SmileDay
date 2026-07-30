@@ -16,9 +16,13 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
     }
 
     /// 테스트가 시간을 직접 옮긴다. 실제 시계에 의존하지 않는다.
+    ///
+    /// 클로저가 시계를 강하게 붙든다. 시계를 `_`로 버리는 테스트에서도 살아 있어야 한다 —
+    /// `unowned`로 두면 그런 테스트에서 해제된 참조를 읽고 크래시한다.
+    /// `now`는 저장 프로퍼티가 아니라 계산 프로퍼티라 순환 참조가 생기지 않는다.
     private final class TestClock {
         var date = Date(timeIntervalSince1970: 1_800_000_000)
-        var now: () -> Date { { [unowned self] in self.date } }
+        var now: () -> Date { { self.date } }
     }
 
     /// 알림 호출을 기록만 하는 경계 더블.

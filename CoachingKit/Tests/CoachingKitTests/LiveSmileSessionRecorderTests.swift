@@ -180,4 +180,38 @@ final class LiveSmileSessionRecorderTests: XCTestCase {
             "건너뛴 칸은 안 웃음이 아니라 모른다로 채운다"
         )
     }
+
+    /// 인식이 끊긴 뒤 한참 있다 종료를 눌러도 그 시간이 빠지면 안 된다.
+    /// 빠지면 unknown 비율이 낮아져 세션이 실제보다 믿을 만해 보인다.
+    func test_finish_recordsTheGapBeforeStopping() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        clock.date += 3 // 인식이 끊긴 채 3초 뒤 종료
+
+        XCTAssertEqual(
+            recorder.finish().timeline,
+            [.smiling, .unknown, .unknown, .unknown]
+        )
+    }
+
+    /// 종료 직후 프레임에서 끝나면 채울 것이 없다 — 빈 칸을 덧붙이지 않는다.
+    func test_finish_addsNothing_whenStoppingInTheSameSecond() {
+        let (recorder, _) = makeRecorder()
+
+        recorder.observe(.smiling)
+
+        XCTAssertEqual(recorder.finish().timeline, [.smiling])
+    }
+
+    func test_finish_isIdempotent() {
+        let (recorder, clock) = makeRecorder()
+        recorder.observe(.smiling)
+        clock.date += 2
+
+        let first = recorder.finish().timeline
+        let second = recorder.finish().timeline
+
+        XCTAssertEqual(first, second, "두 번 불러도 칸이 늘지 않는다")
+    }
 }
