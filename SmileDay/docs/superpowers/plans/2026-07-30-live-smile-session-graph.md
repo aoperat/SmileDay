@@ -807,6 +807,11 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no
 ```swift
     /// 측정 중 그래프가 그리는 타임라인. 확정된 1초 칸만 들어 있다.
     public private(set) var timeline: [LiveSmileObservation] = []
+    /// 사진을 집어야 할 때마다 오른다. 화면이 이 변화를 보고 이미지를 만든다.
+    ///
+    /// 판정은 프레임 경로에서 끝났으므로, 화면이 한 박자 뒤에 캡처해도 방금 쓸 만한
+    /// 프레임이 있었다는 사실은 이미 확정돼 있다.
+    public private(set) var snapshotRequestCount = 0
 ```
 
 저장 프로퍼티 영역(`private var lastMonitoringFrameAt: Date?` 아래)에 추가:
@@ -860,8 +865,17 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no
 
 ```swift
     /// recorder에 넘기고, 칸이 새로 확정됐을 때만 화면용 타임라인을 갱신한다.
+    ///
+    /// 스냅샷 슬롯도 여기서 확보한다. `claimSnapshotSlot()`은 마지막으로 넘긴 관찰을 믿으므로
+    /// 프레임 경로 밖에서 부르면 안 된다 — 얼굴이 사라진 뒤에도 낡은 `notSmiling`이 남아
+    /// 가드를 통과하고, 얼굴 없는 사진이 찍힌다.
     private func record(_ observation: LiveSmileObservation) {
         recorder.observe(observation)
+
+        if recorder.claimSnapshotSlot() {
+            snapshotRequestCount += 1
+        }
+
         guard recorder.timeline.count != timeline.count else { return }
         timeline = recorder.timeline
     }
@@ -1411,10 +1425,13 @@ git commit -m "feat: add live smile session summary screen"
 `measuringSection(_:)`의 `.onChange(of: viewModel.nudgeCount)` 아래에 추가:
 
 ```swift
-        .onChange(of: viewModel.timeline.count) { _, _ in
-            captureSnapshotIfDue()
+        .onChange(of: viewModel.snapshotRequestCount) { _, count in
+            guard count > 0 else { return }
+            captureSnapshot()
         }
 ```
+
+슬롯 판정을 `timeline.count` 변화에 걸지 않는다. 그건 초당 한 번, 프레임과 분리돼 돌아가므로 얼굴이 사라진 뒤에도 낡은 관찰로 슬롯이 열린다. 판정은 ViewModel의 프레임 경로에서 끝내고, 여기서는 이미 확보된 슬롯에 대해 이미지만 만든다.
 
 - [ ] **Step 7: 생명주기 메서드를 더한다**
 
@@ -1436,10 +1453,9 @@ git commit -m "feat: add live smile session summary screen"
         snapshots = []
     }
 
-    /// recorder가 슬롯을 열어줄 때만 사진을 집는다.
-    private func captureSnapshotIfDue() {
-        guard let viewModel, let monitor, summary == nil else { return }
-        guard viewModel.claimSnapshotSlot() else { return }
+    /// 슬롯은 ViewModel이 프레임 경로에서 이미 확보했다. 여기서는 이미지만 만든다.
+    private func captureSnapshot() {
+        guard let monitor, summary == nil else { return }
         guard let image = monitor.snapshotImage() else { return }
         snapshots.append(image)
     }
@@ -1465,18 +1481,7 @@ git commit -m "feat: add live smile session summary screen"
         summary = nil
 ```
 
-- [ ] **Step 9: ViewModel에 슬롯 요청을 노출한다**
-
-`CoachingKit/Sources/CoachingKit/LiveSmileMonitorViewModel.swift`의 `finishSession()` 아래에 추가. 앱 타깃이 recorder를 직접 들지 않게 한다:
-
-```swift
-    /// 지금 사진을 집어야 하는지. 앱 타깃이 이미지를 만들기 전에 묻는다.
-    public func claimSnapshotSlot() -> Bool {
-        recorder.claimSnapshotSlot()
-    }
-```
-
-- [ ] **Step 10: 빌드를 확인한다**
+- [ ] **Step 9: 빌드를 확인한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1487,7 +1492,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 11: 패키지 테스트를 확인한다**
+- [ ] **Step 10: 패키지 테스트를 확인한다**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test Suite 'All tests'" | tail -3
@@ -1495,7 +1500,7 @@ cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test S
 
 Expected: `Test Suite 'All tests' passed`
 
-- [ ] **Step 12: 커밋**
+- [ ] **Step 11: 커밋**
 
 ```bash
 git add SmileDay/Views/Coaching/LiveSmileMonitorView.swift \
