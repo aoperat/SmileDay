@@ -993,10 +993,12 @@ Expected: `** BUILD SUCCEEDED **`
 
 ```bash
 rg -n 'AVCapturePhotoOutput|UIImageWriteToSavedPhotosAlbum|PHPhotoLibrary|FileManager' \
-  SmileDay/Services/ARKitLiveSmileMonitor.swift
+  SmileDay/Services/ARKitLiveSmileMonitor.swift | grep -v '///'
 ```
 
 Expected: 결과 없음 — 촬영·저장 경로가 없다.
+
+`grep -v '///'`가 필요하다. Step 3의 문서 주석이 "`AVCapturePhotoOutput`으로 촬영하는 것이 아니다"라고 설명하며 그 이름을 그대로 담고 있어서, 걸러내지 않으면 프라이버시 검사가 자기 주석에 걸려 절대 비지 않는다.
 
 - [ ] **Step 6: 커밋**
 
@@ -1710,12 +1712,15 @@ Expected: `** BUILD SUCCEEDED **`
 
 ```bash
 rg -n 'PHPhotoLibrary|UIImageWriteToSavedPhotosAlbum|AVCapturePhotoOutput|write\(to:|URLSession' \
-  SmileDay/Views/Coaching CoachingKit/Sources/CoachingKit --glob '*.swift'
+  SmileDay/Views/Coaching SmileDay/Services CoachingKit/Sources/CoachingKit --glob '*.swift' \
+  | grep -v '///'
 
 rg -n 'UIImage|Data\(' CoachingKit/Sources/CoachingKit --glob '*.swift'
 ```
 
 Expected: 두 검색 모두 결과 없음 — 저장·전송 경로가 없고, 패키지는 이미지를 들지 않는다.
+
+`SmileDay/Services`가 검색 대상에 들어가야 한다. 카메라를 만지는 유일한 파일이 거기 있으므로, 빼면 저장 경로가 생겨도 이 검사가 못 잡는다. `grep -v '///'`는 문서 주석이 API 이름을 언급하는 것을 걸러낸다.
 
 - [ ] **Step 4: 측정값이 스키마에 들어가지 않았는지 확인한다**
 
@@ -1753,7 +1758,12 @@ Expected: `git diff --check` 결과 없음.
 - [ ] 종료를 누르면 요약이 나오고, 헤더의 측정 시간이 띠 길이와 맞는다
 - [ ] **셔터음이 나지 않는다** (무음 모드가 아닌 상태에서 확인)
 - [ ] 스냅샷이 얼굴을 담고 있다 — 눈 감은 사진이나 빈 화면이 아니다
-- [ ] **스냅샷 방향이 맞다.** 틀어져 있으면 `ARKitLiveSmileMonitor.snapshotImage()`의 `.oriented(.right)` 값을 조정한다 (후보: `.right`, `.left`, `.up`, `.down`)
+- [ ] **스냅샷이 프리뷰와 같은 상을 보여준다.** 이게 방향 확인의 기준이다 — 단순히 "똑바로 서 있나"가 아니다. 프리뷰를 켠 채로 측정하고, 요약의 사진과 방금 본 프리뷰를 나란히 비교한다.
+- [ ] **둘 다 좌우반전이 없다.** 프리뷰 반전은 이 세션에서 명시적으로 제거했으므로 스냅샷도 반전이 없어야 한다.
+- [ ] 어긋나면 `ARKitLiveSmileMonitor.snapshotImage()`의 `.oriented(.right)`를 조정한다. **후보에 반전형이 반드시 들어간다** — `.right`, `.left`, `.rightMirrored`, `.leftMirrored`. 회전형(`.right`/`.left`/`.up`/`.down`)만으로는 좌우반전을 고칠 수 없다.
+- [ ] 프리뷰 쪽이 반전돼 있으면 그건 별개 결함이다. `ARSCNView`가 자체적으로 미러링해 그린다는 뜻이고, 사장님이 요청한 "반전 없음"과 어긋난다. 그때는 스냅샷을 맞추지 말고 프리뷰를 고친다.
+
+> 이 저장소에는 같은 전면 카메라 버퍼에 대해 상반된 기록이 둘 있다 — `specs/2026-07-23-camera-glow-filter-design.md`는 `.leftMirrored`가 `ARSCNView` 프리뷰와 맞다고 적었고, `specs/2026-07-24-remove-beauty-filter-design.md`는 출시 코드가 `.right`를 썼다고 적었다. 둘은 수평 뒤집기만큼 다르다. 실기기에서 확인해 이 항목의 결론을 남기고, 틀린 쪽 문서를 정정한다.
 - [ ] 프리뷰를 끈 상태에서도 사진이 남는다
 - [ ] 10분 측정 시 사진이 11장 안팎이다 (시작 직후 1장 + 매 분)
 - [ ] 얼굴을 30초 가리면 그 구간이 띠에서 `알 수 없음`으로 보인다
