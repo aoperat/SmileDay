@@ -79,3 +79,105 @@ final class LiveSmileSessionSummaryTests: XCTestCase {
         XCTAssertEqual(exactlyHalf.confidence, .reliable(ratio: 1), "초과일 때만 낮은 신뢰다")
     }
 }
+
+final class LiveSmileSessionRecorderTests: XCTestCase {
+    /// 테스트가 시간을 직접 옮긴다. 실제 시계에 의존하지 않는다.
+    ///
+    /// 클로저가 시계를 강하게 붙든다. 시계를 `_`로 버리는 테스트에서도 살아 있어야 한다.
+    /// `now`는 저장 프로퍼티가 아니라 계산 프로퍼티라 순환 참조가 생기지 않는다.
+    private final class TestClock {
+        var date = Date(timeIntervalSince1970: 1_800_000_000)
+        var now: () -> Date { { self.date } }
+    }
+
+    private func makeRecorder() -> (LiveSmileSessionRecorder, TestClock) {
+        let clock = TestClock()
+        return (LiveSmileSessionRecorder(now: clock.now), clock)
+    }
+
+    /// 그 1초의 프레임 다수결로 칸이 정해진다.
+    func test_bucket_takesMajorityOfThatSecondsFrames() {
+        let (recorder, clock) = makeRecorder()
+
+        // 0초 칸: 미소 4 / 안 웃음 1
+        for observation in [LiveSmileObservation.smiling, .smiling, .smiling, .smiling, .notSmiling] {
+            recorder.observe(observation)
+        }
+        clock.date += 1
+        recorder.observe(.notSmiling)
+
+        XCTAssertEqual(recorder.finish().timeline, [.smiling, .notSmiling])
+    }
+
+    /// 프레임 하나가 튀어도 칸은 흔들리지 않는다.
+    func test_bucket_ignoresSingleStrayFrame() {
+        let (recorder, _) = makeRecorder()
+
+        recorder.observe(.notSmiling)
+        recorder.observe(.notSmiling)
+        recorder.observe(.smiling)
+
+        XCTAssertEqual(recorder.finish().timeline, [.notSmiling])
+    }
+
+    /// 동수면 안 웃음으로 본다 — 숫자를 부풀리지 않는 쪽으로 기운다.
+    func test_bucket_breaksTieTowardNotSmiling() {
+        let (recorder, _) = makeRecorder()
+
+        recorder.observe(.smiling)
+        recorder.observe(.notSmiling)
+
+        XCTAssertEqual(recorder.finish().timeline, [.notSmiling])
+    }
+
+    /// 판정 가능 프레임이 절반 미만이면 그 칸은 모른다.
+    func test_bucket_isUnknown_whenUsableFramesBelowHalf() {
+        let (recorder, _) = makeRecorder()
+
+        // 관측 5개 중 판정 가능 2개 → 2 < 2.5
+        recorder.observe(.smiling)
+        recorder.observe(.smiling)
+        recorder.observe(.unknown)
+        recorder.observe(.unknown)
+        recorder.observe(.unknown)
+
+        XCTAssertEqual(recorder.finish().timeline, [.unknown])
+    }
+
+    /// 정확히 절반이면 모른다고 하지 않는다.
+    func test_bucket_isDecided_whenUsableFramesExactlyHalf() {
+        let (recorder, _) = makeRecorder()
+
+        // 관측 4개 중 판정 가능 2개 → 2 >= 2.0
+        recorder.observe(.smiling)
+        recorder.observe(.smiling)
+        recorder.observe(.unknown)
+        recorder.observe(.unknown)
+
+        XCTAssertEqual(recorder.finish().timeline, [.smiling])
+    }
+
+    func test_finish_withoutAnyFrame_returnsEmptyTimeline() {
+        let (recorder, _) = makeRecorder()
+
+        XCTAssertEqual(recorder.finish().timeline, [])
+    }
+
+    /// 프레임이 하나도 없는 칸은 모른다. 인식이 끊긴 사이의 시간이 그렇다.
+    ///
+    /// 끊김 뒤의 프레임이 5번 칸에 들어가는 것까지 함께 확인한다. 건너뛴 칸을 채우면서
+    /// 그 프레임을 바로 이어 붙이면 타임라인이 실제 시간보다 짧아진다.
+    func test_bucket_isUnknown_whenNoFrameObserved() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        clock.date += 5 // 1~4번 칸을 건너뛰고 5번 칸으로 넘어간다
+        recorder.observe(.smiling)
+
+        XCTAssertEqual(
+            recorder.finish().timeline,
+            [.smiling, .unknown, .unknown, .unknown, .unknown, .smiling],
+            "건너뛴 칸은 안 웃음이 아니라 모른다로 채운다"
+        )
+    }
+}

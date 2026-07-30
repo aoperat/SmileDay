@@ -74,3 +74,80 @@ public struct LiveSmileSessionSummary: Equatable, Sendable {
         return isReliable ? .reliable(ratio: smilingRatio) : .low(ratio: smilingRatio)
     }
 }
+
+/// 프레임을 1초 칸으로 접는다.
+///
+/// 타이머를 쓰지 않는다. 프레임이 도착할 때 몇 번째 초 칸인지 계산하고, 건너뛴 칸은
+/// `unknown`으로 채운다. 별도 처리 없이 "그 시간은 모른다"가 정확히 표현되고,
+/// 주입한 `now()`로 전부 테스트된다.
+public final class LiveSmileSessionRecorder {
+    public static let bucketDuration: TimeInterval = 1
+
+    private let now: () -> Date
+
+    /// 확정된 칸들. 측정 중 그래프가 이 값을 그린다.
+    public private(set) var timeline: [LiveSmileObservation] = []
+
+    private var startedAt: Date?
+    private var currentBucketIndex = 0
+    private var observedFrames = 0
+    private var usableFrames = 0
+    private var smilingFrames = 0
+
+    public init(now: @escaping () -> Date = Date.init) {
+        self.now = now
+    }
+
+    /// 프레임마다 부른다.
+    public func observe(_ observation: LiveSmileObservation) {
+        let timestamp = now()
+
+        guard let startedAt else {
+            self.startedAt = timestamp
+            currentBucketIndex = 0
+            count(observation)
+            return
+        }
+
+        let index = Int(timestamp.timeIntervalSince(startedAt) / Self.bucketDuration)
+        if index > currentBucketIndex {
+            closeCurrentBucket()
+            // 프레임이 오지 않은 칸은 모른다고 적는다.
+            while timeline.count < index {
+                timeline.append(.unknown)
+            }
+            currentBucketIndex = index
+        }
+
+        count(observation)
+    }
+
+    /// 마지막 부분 칸을 확정하고 집계한다.
+    public func finish() -> LiveSmileSessionSummary {
+        guard startedAt != nil else { return LiveSmileSessionSummary(timeline: []) }
+
+        closeCurrentBucket()
+        return LiveSmileSessionSummary(timeline: timeline)
+    }
+
+    private func count(_ observation: LiveSmileObservation) {
+        observedFrames += 1
+        if observation != .unknown { usableFrames += 1 }
+        if observation == .smiling { smilingFrames += 1 }
+    }
+
+    private func closeCurrentBucket() {
+        timeline.append(decideCurrentBucket())
+        observedFrames = 0
+        usableFrames = 0
+        smilingFrames = 0
+    }
+
+    private func decideCurrentBucket() -> LiveSmileObservation {
+        guard observedFrames > 0 else { return .unknown }
+        // 절반 미만만 판정 가능하면 그 1초는 믿지 않는다.
+        guard Double(usableFrames) >= Double(observedFrames) / 2 else { return .unknown }
+        // 동수는 안 웃음으로 — 적게 세는 쪽으로 기운다.
+        return smilingFrames * 2 > usableFrames ? .smiling : .notSmiling
+    }
+}
