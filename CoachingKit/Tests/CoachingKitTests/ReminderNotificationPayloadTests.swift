@@ -10,7 +10,7 @@ final class ReminderNotificationPayloadTests: XCTestCase {
         XCTAssertEqual(decoded, payload)
     }
 
-    /// payload는 ID만 나른다. 카드 해석은 `SmileGuideLibrary`가 해야 사용자가 만든 카드도 열린다.
+    /// payload는 예약 당시의 ID를 손대지 않고 나른다. 지금 화면을 고르는 데는 쓰지 않는다.
     func test_carriesGuideIDVerbatim() {
         let payload = ReminderNotificationPayload(reminderID: "reminder-1", guideID: "my-custom-card")
 
@@ -52,6 +52,24 @@ final class ReminderNotificationPayloadTests: XCTestCase {
     /// 알 수 없는 bucket rawValue여도 기본 가이드로 연결한다 — 예전처럼 조용히 버리지 않는다.
     func test_init_convertsLegacyPayload_whenBucketRawValueUnknown() {
         XCTAssertEqual(ReminderNotificationPayload(userInfo: ["bucket": "midnight"])?.guideID, "anytime-soft")
+    }
+
+    // MARK: - 미소 시작 신호
+
+    /// 홈은 payload의 ID를 읽지 않고 "열리는가"만 본다.
+    /// 새 알림이든 옛 알림이든 탭하면 5초 미소 화면이 떠야 한다.
+    func test_everySupportedPayloadShape_opensSmileGuide() {
+        let recognized: [[AnyHashable: Any]] = [
+            ["reminderID": "reminder-1", "guideID": "anytime-soft"],
+            ["guideID": "retired-guide"],
+            ["bucket": "morning", "promptText": "오늘 어때요?"],
+            ["bucket": "evening"],
+            ["promptText": "잠깐 웃어볼까요?"],
+        ]
+
+        for userInfo in recognized {
+            XCTAssertNotNil(ReminderNotificationPayload(userInfo: userInfo), "\(userInfo)")
+        }
     }
 
     // MARK: - 열 수 없는 payload

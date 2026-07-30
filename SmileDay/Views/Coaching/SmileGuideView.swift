@@ -9,7 +9,7 @@ struct SmileGuideView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    let guide: SmileGuide
+    let cue: SmileCue
     let source: SmileMomentSource
     let repository: SmileMomentRepository
     let onCompleted: () -> Void
@@ -40,7 +40,7 @@ struct SmileGuideView: View {
         .onAppear {
             guard viewModel == nil else { return }
             viewModel = SmileGuideViewModel(
-                guide: guide,
+                guide: SmileGuideCatalog.default,
                 source: source,
                 repository: repository,
                 onCompleted: onCompleted
@@ -59,13 +59,15 @@ struct SmileGuideView: View {
                 .accessibilityHidden(true)
 
             VStack(spacing: 10) {
-                Text(guide.title)
-                    .font(.title2.bold())
+                Text(cue.text)
+                    .font(.title3.bold())
                     .foregroundStyle(SDColor.ink)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal, 28)
 
-                Text(guide.instruction)
+                Text("턱과 어깨 힘을 빼고 편안하게 미소 지어보세요.")
                     .font(.body)
-                    .foregroundStyle(SDColor.ink)
+                    .foregroundStyle(SDColor.muted)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 32)
             }
@@ -81,7 +83,7 @@ struct SmileGuideView: View {
         switch viewModel.phase {
         case .ready:
             VStack(spacing: 12) {
-                Text("\(guide.durationSeconds)초 동안 함께 있어요")
+                Text("\(SmileGuideCatalog.default.durationSeconds)초 동안 함께 있어요")
                     .font(.footnote)
                     .foregroundStyle(SDColor.muted)
 

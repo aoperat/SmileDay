@@ -5,11 +5,8 @@ import Foundation
 public enum SDPalette {
     public static let coral: UInt32 = 0xF65D73
     public static let coralDeep: UInt32 = 0xE04360
-    public static let coralWarm: UInt32 = 0xFB7E62
     public static let apricot: UInt32 = 0xFFA94D
     public static let sun: UInt32 = 0xFFC93C
-    public static let mint: UInt32 = 0x3BAF8C
-    public static let lilac: UInt32 = 0xB79CE4
     public static let cream: UInt32 = 0xFFF6EE
     public static let ink: UInt32 = 0x46323C
     /// 보조 텍스트. 흰 배경과 크림 배경 모두에서 본문 기준을 넘겨야 한다.
@@ -24,7 +21,7 @@ public enum SDPalette {
     /// 흰 글자를 얹는 배경. 굵은 버튼 글자 기준 3:1 이상이어야 한다.
     public static let whiteOnColorBackgrounds: [UInt32] = [coral, coralDeep]
     /// ink 글리프를 얹는 아이콘 칩 배경. 비텍스트 기준 3:1 이상이어야 한다.
-    public static let inkOnChipBackgrounds: [UInt32] = [apricot, sun, mint, lilac, coral, shell]
+    public static let inkOnChipBackgrounds: [UInt32] = [apricot, sun, coral, shell]
 
     /// WCAG 2.1 상대휘도.
     public static func relativeLuminance(_ hex: UInt32) -> Double {

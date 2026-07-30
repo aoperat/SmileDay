@@ -180,16 +180,5 @@ final class SmileMomentRepositoryTests: XCTestCase {
         XCTAssertEqual(try repository.weekActiveDayCount(endingOn: date(2026, 7, 28), calendar: calendar), 0)
     }
 
-    // MARK: - 기존 모델 보존
-
-    /// 새 모델을 넣어도 기존 스키마가 함께 열려야 한다.
-    func test_schema_stillContainsLegacyModels() {
-        let names = PersistenceSchema.models.map { String(describing: $0) }
-
-        XCTAssertTrue(names.contains("Baseline"))
-        XCTAssertTrue(names.contains("CheckInSession"))
-        XCTAssertTrue(names.contains("ReminderSetting"))
-        XCTAssertTrue(names.contains("CareSession"))
-        XCTAssertTrue(names.contains("SmileMoment"))
-    }
+    // 스키마 등록과 기존 저장소 재열기는 `PersistenceSchemaMigrationTests`가 맡는다.
 }

@@ -33,8 +33,7 @@ final class SmileMomentTests: XCTestCase {
         XCTAssertEqual(moment.sourceRawValue, "notification")
     }
 
-    /// 카드 이름은 저장하지 않는다. 기록은 ID만 들고 있고 이름 해석은 `SmileGuideLibrary`가 한다.
-    /// 그래야 사용자가 만든 카드로 남긴 기록도 이름을 찾을 수 있다.
+    /// 기록은 ID만 들고 있다. 지난 버전이 남긴 ID여도 손대지 않고 그대로 보관한다.
     func test_storesGuideIDVerbatim() {
         let moment = SmileMoment(date: Date(), guideID: "removed-guide", source: .manual)
 

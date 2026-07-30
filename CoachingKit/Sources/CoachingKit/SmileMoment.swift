@@ -26,6 +26,6 @@ public final class SmileMoment {
         set { sourceRawValue = newValue.rawValue }
     }
 
-    // 카드 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 여기에 편의 프로퍼티를 두면
-    // 사용자가 만든 카드를 못 찾고 조용히 기본 카드로 떨어진다.
+    // `guideID`는 기록을 남긴 시점의 가이드 ID다. 화면에 이름을 보여주지 않으므로
+    // 여기서 해석하지 않고, 지난 버전이 남긴 값도 그대로 보관한다.
 }

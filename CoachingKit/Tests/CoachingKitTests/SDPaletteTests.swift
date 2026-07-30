@@ -37,7 +37,7 @@ final class SDPaletteTests: XCTestCase {
 
     /// 흰 글자를 쓰면 안 되는 밝은 배경이 whiteOnColorBackgrounds에 섞여 들어오지 않게 한다.
     func test_lightChipBackgrounds_areNotUsedForWhiteText() {
-        for background in [SDPalette.sun, SDPalette.apricot, SDPalette.lilac, SDPalette.mint, SDPalette.coralWarm] {
+        for background in [SDPalette.sun, SDPalette.apricot] {
             XCTAssertFalse(
                 SDPalette.whiteOnColorBackgrounds.contains(background),
                 "\(name(background))는 흰 글자를 받기에 너무 밝다"
@@ -47,5 +47,18 @@ final class SDPaletteTests: XCTestCase {
 
     func test_countdownColor_isReadableOnCream() {
         XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.ink, SDPalette.cream), 4.5)
+    }
+
+    /// 시작 화면과 새 핵심 화면의 제목·보조 문구 조합.
+    func test_reachableScreenText_isReadableOnCreamAndCards() {
+        for textColor in [SDPalette.ink, SDPalette.muted] {
+            XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(textColor, SDPalette.cream), 4.5)
+            XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(textColor, SDPalette.white), 4.5)
+        }
+    }
+
+    func test_coralDeepDecorativeIcons_areVisibleOnLightSurfaces() {
+        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.coralDeep, SDPalette.cream), 3.0)
+        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.coralDeep, SDPalette.white), 3.0)
     }
 }

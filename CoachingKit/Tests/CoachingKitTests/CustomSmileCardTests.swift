@@ -1,62 +1,52 @@
 import XCTest
+import SwiftData
 @testable import CoachingKit
 
+/// `CustomSmileCard`는 새 흐름에서 읽지 않는 호환 모델이다.
+/// 카드 해석 로직 대신 저장 프로퍼티가 그대로 오가는지만 확인한다.
 final class CustomSmileCardTests: XCTestCase {
-    func test_guide_usesTypedInstruction() {
-        let card = CustomSmileCard(title: "엘리베이터에서 웃기", instructionText: "문이 닫히면 한 번 웃어보세요.", slot: .anytime)
-
-        XCTAssertEqual(card.guide.instruction, "문이 닫히면 한 번 웃어보세요.")
-        XCTAssertEqual(card.guide.title, "엘리베이터에서 웃기")
-        XCTAssertFalse(card.guide.isBuiltIn)
+    private func makeContext() throws -> ModelContext {
+        let schema = PersistenceSchema.schema
+        let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
+        return ModelContext(try ModelContainer(for: schema, configurations: [configuration]))
     }
 
-    func test_guide_fallsBackToDefaultInstruction_whenNil() {
-        let card = CustomSmileCard(title: "엘리베이터에서 웃기", instructionText: nil, slot: .anytime)
+    func test_storedProperties_roundTripThroughContext() throws {
+        let context = try makeContext()
+        let createdAt = Date(timeIntervalSince1970: 1_700_000_000)
+        context.insert(CustomSmileCard(
+            id: "card-1",
+            title: "엘리베이터에서 웃기",
+            instructionText: "문이 닫히면 한 번 웃어보세요.",
+            slotRawValue: "evening",
+            createdAt: createdAt
+        ))
+        try context.save()
 
-        XCTAssertEqual(card.guide.instruction, SmileGuideCatalog.defaultInstruction)
-    }
+        let card = try XCTUnwrap(context.fetch(FetchDescriptor<CustomSmileCard>()).first)
 
-    func test_guide_lastsFiveSeconds() {
-        XCTAssertEqual(CustomSmileCard(title: "제목", slot: .morning).guide.durationSeconds, 5)
-    }
-
-    func test_guide_keepsSlot() {
-        XCTAssertEqual(CustomSmileCard(title: "제목", slot: .evening).guide.slot, .evening)
-    }
-
-    func test_guide_idMatchesCardID() {
-        let card = CustomSmileCard(title: "제목", slot: .anytime)
-
-        XCTAssertEqual(card.guide.id, card.id)
-    }
-
-    func test_slot_roundTrips() {
-        for slot in DaySlot.allCases {
-            XCTAssertEqual(CustomSmileCard(title: "제목", slot: slot).slot, slot)
-        }
-    }
-
-    func test_slot_fallsBackToAnytime_whenRawValueUnknown() {
-        let card = CustomSmileCard(title: "제목", slot: .morning)
-
-        card.slotRawValue = "midnight"
-
-        XCTAssertEqual(card.slot, .anytime)
-    }
-
-    func test_slot_setter_updatesRawValue() {
-        let card = CustomSmileCard(title: "제목", slot: .morning)
-
-        card.slot = .evening
-
+        XCTAssertEqual(card.id, "card-1")
+        XCTAssertEqual(card.title, "엘리베이터에서 웃기")
+        XCTAssertEqual(card.instructionText, "문이 닫히면 한 번 웃어보세요.")
         XCTAssertEqual(card.slotRawValue, "evening")
+        XCTAssertEqual(card.createdAt, createdAt)
     }
 
-    func test_schema_containsCustomSmileCard_andKeepsLegacyModels() {
-        let names = PersistenceSchema.models.map { String(describing: $0) }
+    /// 안내 문구를 비운 채 저장한 카드는 nil로 남는다. 기본 문구로 덮어쓰지 않는다.
+    func test_instructionText_staysNil_whenNotProvided() throws {
+        let context = try makeContext()
+        context.insert(CustomSmileCard(title: "제목", slotRawValue: "anytime"))
+        try context.save()
 
-        for expected in ["Baseline", "CheckInSession", "ReminderSetting", "CareSession", "SmileMoment", "CustomSmileCard"] {
-            XCTAssertTrue(names.contains(expected), expected)
-        }
+        XCTAssertNil(try context.fetch(FetchDescriptor<CustomSmileCard>()).first?.instructionText)
+    }
+
+    /// 사라진 `DaySlot`의 원문은 해석하지 않고 그대로 보관한다.
+    func test_slotRawValue_isStoredVerbatim() throws {
+        let context = try makeContext()
+        context.insert(CustomSmileCard(title: "제목", slotRawValue: "midnight"))
+        try context.save()
+
+        XCTAssertEqual(try context.fetch(FetchDescriptor<CustomSmileCard>()).first?.slotRawValue, "midnight")
     }
 }

@@ -1,6 +1,8 @@
 import Foundation
 import SwiftData
 
+/// 기준선 촬영 시절의 기록. 새 흐름은 얼굴을 측정하지 않아 더 쓰지 않지만,
+/// 기존 저장소를 열려면 스키마에 남아 있어야 한다.
 @Model
 public final class Baseline {
     public var capturedAt: Date
@@ -24,24 +26,5 @@ public final class Baseline {
         self.browTension = browTension
         self.lightingQuality = lightingQuality
         self.deviceAngleOK = deviceAngleOK
-    }
-
-    public var measurement: FaceMeasurement {
-        FaceMeasurement(mouthCornerLeft: mouthCornerLeft, mouthCornerRight: mouthCornerRight, browTension: browTension)
-    }
-}
-
-public extension Baseline {
-    /// 이 이상 경과하면 재설정을 권장한다.
-    static let recommendResetThresholdWeeks = 4
-
-    /// 촬영 후 경과한 완전한 주 수.
-    func ageWeeks(now: Date = Date(), calendar: Calendar = .current) -> Int {
-        max(calendar.dateComponents([.weekOfYear], from: capturedAt, to: now).weekOfYear ?? 0, 0)
-    }
-
-    /// 재설정을 권장할 시점이 됐는지.
-    func isOverdueForReset(now: Date = Date(), calendar: Calendar = .current) -> Bool {
-        ageWeeks(now: now, calendar: calendar) >= Self.recommendResetThresholdWeeks
     }
 }
