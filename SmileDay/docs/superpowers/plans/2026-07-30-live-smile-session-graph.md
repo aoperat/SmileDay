@@ -20,7 +20,7 @@
 - Read: `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
 - Read: `AGENTS.md`
 
-- [ ] **Step 1: 작업 트리 상태를 기록한다**
+- [x] **Step 1: 작업 트리 상태를 기록한다**
 
 이 저장소는 미커밋 변경이 많다. 내 변경과 남의 변경을 섞지 않기 위해 시작 시점을 남긴다.
 
@@ -30,7 +30,7 @@ git status --short > /tmp/live-graph-baseline.txt
 wc -l /tmp/live-graph-baseline.txt
 ```
 
-- [ ] **Step 2: 패키지 테스트 기준을 기록한다**
+- [x] **Step 2: 패키지 테스트 기준을 기록한다**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "Executed [0-9]+ tests|Test Suite 'All tests'"
@@ -38,7 +38,7 @@ cd CoachingKit && swift test 2>&1 | grep -E "Executed [0-9]+ tests|Test Suite 'A
 
 Expected: `Test Suite 'All tests' passed`. 테스트 수를 적어둔다 (이 계획 작성 시점 161개).
 
-- [ ] **Step 3: 앱 빌드 기준을 기록한다**
+- [x] **Step 3: 앱 빌드 기준을 기록한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -60,7 +60,7 @@ Expected: `** BUILD SUCCEEDED **`
 - Create: `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`
 - Create: `CoachingKit/Tests/CoachingKitTests/LiveSmileSessionRecorderTests.swift`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `CoachingKit/Tests/CoachingKitTests/LiveSmileSessionRecorderTests.swift`:
 
@@ -109,7 +109,7 @@ final class LiveSmileSessionSummaryTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
@@ -117,7 +117,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
 
 Expected: 컴파일 실패 — `cannot find 'LiveSmileObservation' in scope`
 
-- [ ] **Step 3: 최소 구현을 쓴다**
+- [x] **Step 3: 최소 구현을 쓴다**
 
 `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`:
 
@@ -173,7 +173,7 @@ public struct LiveSmileSessionSummary: Equatable, Sendable {
 }
 ```
 
-- [ ] **Step 4: 통과를 확인한다**
+- [x] **Step 4: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
@@ -181,7 +181,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
 
 Expected: `Executed 4 tests, with 0 failures`
 
-- [ ] **Step 5: 낮은 신뢰 경계 테스트를 더한다**
+- [x] **Step 5: 낮은 신뢰 경계 테스트를 더한다**
 
 `LiveSmileSessionSummaryTests`에 추가:
 
@@ -209,7 +209,7 @@ Expected: `Executed 4 tests, with 0 failures`
     }
 ```
 
-- [ ] **Step 6: 통과를 확인한다**
+- [x] **Step 6: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
@@ -217,7 +217,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionSummaryTests
 
 Expected: `Executed 6 tests, with 0 failures`
 
-- [ ] **Step 7: 커밋**
+- [x] **Step 7: 커밋**
 
 ```bash
 git add CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift \
@@ -240,7 +240,7 @@ git commit -m "feat: add live smile session observation and summary types"
 - Modify: `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/LiveSmileSessionRecorderTests.swift`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `LiveSmileSessionRecorderTests.swift`에 새 클래스를 추가한다:
 
@@ -342,7 +342,7 @@ final class LiveSmileSessionRecorderTests: XCTestCase {
 }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
@@ -350,7 +350,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
 
 Expected: 컴파일 실패 — `cannot find 'LiveSmileSessionRecorder' in scope`
 
-- [ ] **Step 3: 최소 구현을 쓴다**
+- [x] **Step 3: 최소 구현을 쓴다**
 
 `LiveSmileSessionRecorder.swift` 파일 끝에 추가:
 
@@ -433,7 +433,7 @@ public final class LiveSmileSessionRecorder {
 }
 ```
 
-- [ ] **Step 4: 통과를 확인한다**
+- [x] **Step 4: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
@@ -441,7 +441,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
 
 Expected: `Executed 7 tests, with 0 failures`
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift \
@@ -459,7 +459,7 @@ git commit -m "feat: fold live smile frames into one-second buckets by majority"
 
 구현은 Task 2에서 이미 들어갔다. 이 Task는 그 동작을 테스트로 고정한다 — 이 기능의 존재 이유가 여기다.
 
-- [ ] **Step 1: 테스트를 쓴다**
+- [x] **Step 1: 테스트를 쓴다**
 
 `LiveSmileSessionRecorderTests`에 추가:
 
@@ -509,7 +509,7 @@ git commit -m "feat: fold live smile frames into one-second buckets by majority"
     }
 ```
 
-- [ ] **Step 2: 통과를 확인한다**
+- [x] **Step 2: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
@@ -517,7 +517,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
 
 Expected: `Executed 10 tests, with 0 failures`
 
-- [ ] **Step 3: 커밋**
+- [x] **Step 3: 커밋**
 
 ```bash
 git add CoachingKit/Tests/CoachingKitTests/LiveSmileSessionRecorderTests.swift
@@ -533,7 +533,7 @@ git commit -m "test: pin that interrupted seconds are recorded as unknown"
 - Modify: `CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/LiveSmileSessionRecorderTests.swift`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `LiveSmileSessionRecorderTests`에 추가:
 
@@ -613,7 +613,7 @@ git commit -m "test: pin that interrupted seconds are recorded as unknown"
     }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
@@ -621,7 +621,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
 
 Expected: 컴파일 실패 — `value of type 'LiveSmileSessionRecorder' has no member 'claimSnapshotSlot'`
 
-- [ ] **Step 3: 구현을 더한다**
+- [x] **Step 3: 구현을 더한다**
 
 `LiveSmileSessionRecorder`에 상수와 상태를 추가한다. 기존 `public static let bucketDuration` 아래:
 
@@ -679,7 +679,7 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileSessionRecorder' has no 
     }
 ```
 
-- [ ] **Step 4: 통과를 확인한다**
+- [x] **Step 4: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
@@ -687,7 +687,7 @@ cd CoachingKit && swift test --filter LiveSmileSessionRecorderTests
 
 Expected: `Executed 16 tests, with 0 failures`
 
-- [ ] **Step 5: 커밋**
+- [x] **Step 5: 커밋**
 
 ```bash
 git add CoachingKit/Sources/CoachingKit/LiveSmileSessionRecorder.swift \
@@ -704,7 +704,7 @@ git commit -m "feat: open one live smile snapshot slot per minute"
 - Modify: `CoachingKit/Sources/CoachingKit/LiveSmileMonitorViewModel.swift`
 - Modify: `CoachingKit/Tests/CoachingKitTests/LiveSmileMonitorViewModelTests.swift`
 
-- [ ] **Step 1: 실패하는 테스트를 쓴다**
+- [x] **Step 1: 실패하는 테스트를 쓴다**
 
 `LiveSmileMonitorViewModelTests`의 마지막 `}` 앞에 추가:
 
@@ -792,7 +792,7 @@ git commit -m "feat: open one live smile snapshot slot per minute"
     }
 ```
 
-- [ ] **Step 2: 실패를 확인한다**
+- [x] **Step 2: 실패를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileMonitorViewModelTests
@@ -800,7 +800,7 @@ cd CoachingKit && swift test --filter LiveSmileMonitorViewModelTests
 
 Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no member 'timeline'`
 
-- [ ] **Step 3: 관찰 상태를 만드는 코드를 더한다**
+- [x] **Step 3: 관찰 상태를 만드는 코드를 더한다**
 
 `LiveSmileMonitorViewModel.swift`에서 관찰 프로퍼티 아래(`public private(set) var nudgeCount = 0` 다음)에 추가:
 
@@ -833,7 +833,7 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no
         recorder = LiveSmileSessionRecorder(now: now)
 ```
 
-- [ ] **Step 4: 프레임마다 recorder에 넘긴다**
+- [x] **Step 4: 프레임마다 recorder에 넘긴다**
 
 `reportQualityIssue(_:)` 맨 앞에 한 줄 추가한다. 품질 문제 프레임은 모른다고 적는다:
 
@@ -881,7 +881,7 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no
     }
 ```
 
-- [ ] **Step 5: 세션을 끝내는 메서드를 더한다**
+- [x] **Step 5: 세션을 끝내는 메서드를 더한다**
 
 `recalibrate()` 아래에 추가:
 
@@ -902,7 +902,7 @@ Expected: 컴파일 실패 — `value of type 'LiveSmileMonitorViewModel' has no
         timeline = []
 ```
 
-- [ ] **Step 6: 통과를 확인한다**
+- [x] **Step 6: 통과를 확인한다**
 
 ```bash
 cd CoachingKit && swift test --filter LiveSmileMonitorViewModelTests
@@ -910,7 +910,7 @@ cd CoachingKit && swift test --filter LiveSmileMonitorViewModelTests
 
 Expected: `Executed 38 tests, with 0 failures`
 
-- [ ] **Step 7: 패키지 전체 테스트**
+- [x] **Step 7: 패키지 전체 테스트**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test Suite 'All tests'" | tail -3
@@ -918,7 +918,7 @@ cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test S
 
 Expected: `Test Suite 'All tests' passed`
 
-- [ ] **Step 8: 커밋**
+- [x] **Step 8: 커밋**
 
 ```bash
 git add CoachingKit/Sources/CoachingKit/LiveSmileMonitorViewModel.swift \
@@ -936,7 +936,7 @@ git commit -m "feat: record live smile seconds while monitoring"
 
 패키지는 UIKit을 import하지 않으므로 이미지는 앱 타깃이 만든다. 테스트가 없어 빌드로만 검증한다.
 
-- [ ] **Step 1: import를 더한다**
+- [x] **Step 1: import를 더한다**
 
 파일 맨 위 `import simd` 아래에 추가:
 
@@ -945,7 +945,7 @@ import CoreImage
 import UIKit
 ```
 
-- [ ] **Step 2: 재사용할 CIContext를 둔다**
+- [x] **Step 2: 재사용할 CIContext를 둔다**
 
 `private var latestCameraTransform: simd_float4x4?` 아래에 추가:
 
@@ -954,7 +954,7 @@ import UIKit
     private let ciContext = CIContext(options: [.useSoftwareRenderer: false])
 ```
 
-- [ ] **Step 3: 축소 이미지를 내는 메서드를 더한다**
+- [x] **Step 3: 축소 이미지를 내는 메서드를 더한다**
 
 `previewSession` 프로퍼티 아래에 추가:
 
@@ -978,7 +978,7 @@ import UIKit
 
 설계 문서는 크기를 `240×320`으로 적었다. 여기서는 **높이만 320으로 맞추고 너비는 비율에 맡긴다** — ARKit 버퍼의 종횡비가 기기마다 다르므로 너비를 고정하면 얼굴이 늘어난다. 4:3 버퍼에서는 정확히 240이 되고, 16:9에서는 더 좁아진다. 메모리 추정(장당 약 25KB)은 어느 쪽이든 상한 안이다.
 
-- [ ] **Step 4: 빌드를 확인한다**
+- [x] **Step 4: 빌드를 확인한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -989,7 +989,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 5: 프리뷰 경로가 늘지 않았는지 확인한다**
+- [x] **Step 5: 프리뷰 경로가 늘지 않았는지 확인한다**
 
 ```bash
 rg -n 'AVCapturePhotoOutput|UIImageWriteToSavedPhotosAlbum|PHPhotoLibrary|FileManager' \
@@ -1000,7 +1000,7 @@ Expected: 결과 없음 — 촬영·저장 경로가 없다.
 
 `grep -v '///'`가 필요하다. Step 3의 문서 주석이 "`AVCapturePhotoOutput`으로 촬영하는 것이 아니다"라고 설명하며 그 이름을 그대로 담고 있어서, 걸러내지 않으면 프라이버시 검사가 자기 주석에 걸려 절대 비지 않는다.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add SmileDay/Services/ARKitLiveSmileMonitor.swift
@@ -1016,7 +1016,7 @@ git commit -m "feat: expose a downscaled frame image for live smile snapshots"
 - Modify: `SmileDay/Views/SharedStrings.swift`
 - Modify: `SmileDay/Views/Settings/SmileMVPSettingsView.swift:235`
 
-- [ ] **Step 1: 설정 화면의 거짓 문구를 고친다**
+- [x] **Step 1: 설정 화면의 거짓 문구를 고친다**
 
 `SmileMVPSettingsView.swift` 235번째 줄을 바꾼다.
 
@@ -1032,7 +1032,7 @@ git commit -m "feat: expose a downscaled frame image for live smile snapshots"
             Text("완료한 시각만 저장해요. 실시간 확인 중 집는 사진은 화면을 닫으면 사라지고, 저장하거나 전송하지 않아요.")
 ```
 
-- [ ] **Step 2: 시작 전 안내에 사진 항목을 더한다**
+- [x] **Step 2: 시작 전 안내에 사진 항목을 더한다**
 
 `SharedStrings.swift`의 `liveMonitorIntroPoints`를 바꾼다.
 
@@ -1059,7 +1059,7 @@ git commit -m "feat: expose a downscaled frame image for live smile snapshots"
     ]
 ```
 
-- [ ] **Step 3: 요약 화면 문구를 더한다**
+- [x] **Step 3: 요약 화면 문구를 더한다**
 
 `SharedStrings.swift`의 `liveMonitorNudgeFooter` 아래, `enum`의 마지막 `}` 앞에 추가:
 
@@ -1080,7 +1080,7 @@ git commit -m "feat: expose a downscaled frame image for live smile snapshots"
     static let liveSummaryMeaning = "이 비율은 웃음의 좋고 나쁨이 아니라, 카메라가 입꼬리 움직임을 감지한 시간의 비율이에요."
 ```
 
-- [ ] **Step 4: 빌드를 확인한다**
+- [x] **Step 4: 빌드를 확인한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1091,7 +1091,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 5: 남은 거짓 문구가 없는지 확인한다**
+- [x] **Step 5: 남은 거짓 문구가 없는지 확인한다**
 
 ```bash
 rg -n '찍지도' SmileDay CoachingKit --glob '*.swift'
@@ -1099,7 +1099,7 @@ rg -n '찍지도' SmileDay CoachingKit --glob '*.swift'
 
 Expected: 결과 없음.
 
-- [ ] **Step 6: 커밋**
+- [x] **Step 6: 커밋**
 
 ```bash
 git add SmileDay/Views/SharedStrings.swift SmileDay/Views/Settings/SmileMVPSettingsView.swift
@@ -1114,7 +1114,7 @@ git commit -m "docs: say that live mode takes snapshots without keeping them"
 
 - Create: `SmileDay/Views/Coaching/LiveSmileSessionSummaryView.swift`
 
-- [ ] **Step 1: 화면을 만든다**
+- [x] **Step 1: 화면을 만든다**
 
 ```swift
 import SwiftUI
@@ -1286,7 +1286,7 @@ struct LiveSmileTimelineBand: View {
 }
 ```
 
-- [ ] **Step 2: 빌드를 확인한다**
+- [x] **Step 2: 빌드를 확인한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1297,7 +1297,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 3: 커밋**
+- [x] **Step 3: 커밋**
 
 ```bash
 git add SmileDay/Views/Coaching/LiveSmileSessionSummaryView.swift
@@ -1312,7 +1312,7 @@ git commit -m "feat: add live smile session summary screen"
 
 - Modify: `SmileDay/Views/Coaching/LiveSmileMonitorView.swift`
 
-- [ ] **Step 1: 상태를 더한다**
+- [x] **Step 1: 상태를 더한다**
 
 `@State private var previousIdleTimerDisabled = false` 아래에 추가:
 
@@ -1323,7 +1323,7 @@ git commit -m "feat: add live smile session summary screen"
     @State private var snapshots: [UIImage] = []
 ```
 
-- [ ] **Step 2: 요약 분기를 가장 앞에 둔다**
+- [x] **Step 2: 요약 분기를 가장 앞에 둔다**
 
 `content(_:)`의 분기를 바꾼다.
 
@@ -1352,7 +1352,7 @@ git commit -m "feat: add live smile session summary screen"
             } else if !hasStarted {
 ```
 
-- [ ] **Step 3: 종료 버튼이 요약을 띄우게 한다**
+- [x] **Step 3: 종료 버튼이 요약을 띄우게 한다**
 
 `measuringSection(_:)` 안의 종료 버튼을 바꾼다.
 
@@ -1375,7 +1375,7 @@ git commit -m "feat: add live smile session summary screen"
                 .buttonStyle(SDPrimaryButtonStyle())
 ```
 
-- [ ] **Step 4: 좌상단 닫기도 측정한 게 있으면 요약을 거치게 한다**
+- [x] **Step 4: 좌상단 닫기도 측정한 게 있으면 요약을 거치게 한다**
 
 `header`를 바꾼다. 측정한 것을 말없이 버리지 않는다.
 
@@ -1410,7 +1410,7 @@ git commit -m "feat: add live smile session summary screen"
         }
 ```
 
-- [ ] **Step 5: 측정 중 띠를 더한다**
+- [x] **Step 5: 측정 중 띠를 더한다**
 
 `measuringSection(_:)`의 `levelMeter(viewModel.level)` 바로 아래에 추가. 경과 시간은 넣지 않는다 — 설계 §7에서 측정 화면을 조용하게 두기로 했다:
 
@@ -1422,7 +1422,7 @@ git commit -m "feat: add live smile session summary screen"
             }
 ```
 
-- [ ] **Step 6: 스냅샷을 모은다**
+- [x] **Step 6: 스냅샷을 모은다**
 
 `measuringSection(_:)`의 `.onChange(of: viewModel.nudgeCount)` 아래에 추가:
 
@@ -1439,7 +1439,7 @@ git commit -m "feat: add live smile session summary screen"
 
 그리고 `timeline`에는 **진행 중인 초가 들어 있지 않다.** 확정된 칸만 노출하므로 띠는 실제보다 최대 1초 뒤처지고, 마지막 부분 초는 `finishSession()`의 요약에만 나타난다. 띠 끝이 비어 보이는 것은 버그가 아니다.
 
-- [ ] **Step 7: 생명주기 메서드를 더한다**
+- [x] **Step 7: 생명주기 메서드를 더한다**
 
 `shutDown()` 위에 추가:
 
@@ -1467,7 +1467,7 @@ git commit -m "feat: add live smile session summary screen"
     }
 ```
 
-- [ ] **Step 8: shutDown이 사진도 비우게 한다**
+- [x] **Step 8: shutDown이 사진도 비우게 한다**
 
 `shutDown()`의 `isShowingNudgeCue = false` 아래에 추가:
 
@@ -1475,7 +1475,7 @@ git commit -m "feat: add live smile session summary screen"
         snapshots = []
 ```
 
-- [ ] **Step 8b: 재시작이 새 세션이 되게 한다**
+- [x] **Step 8b: 재시작이 새 세션이 되게 한다**
 
 백그라운드로 나가면 `pauseForSceneChange()`가 세션만 멈추고 사진은 남긴다. 그 상태에서 재시작하면 `viewModel.start()`가 새 recorder를 만들지만 **이전 세션 사진이 그대로 이어져** 새 세션 사진에 섞인다.
 
@@ -1487,7 +1487,7 @@ git commit -m "feat: add live smile session summary screen"
         summary = nil
 ```
 
-- [ ] **Step 9: 빌드를 확인한다**
+- [x] **Step 9: 빌드를 확인한다**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1498,7 +1498,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 10: 패키지 테스트를 확인한다**
+- [x] **Step 10: 패키지 테스트를 확인한다**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test Suite 'All tests'" | tail -3
@@ -1506,7 +1506,7 @@ cd CoachingKit && swift test 2>&1 | grep -E "error:|Executed [0-9]+ tests|Test S
 
 Expected: `Test Suite 'All tests' passed`
 
-- [ ] **Step 11: 커밋**
+- [x] **Step 11: 커밋**
 
 ```bash
 git add SmileDay/Views/Coaching/LiveSmileMonitorView.swift \
@@ -1528,7 +1528,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - Modify: `CLAUDE.md`
 - Modify: `CLAUDE.ko.md`
 
-- [ ] **Step 1: 상위 설계에 5차 개정 이력을 더한다**
+- [x] **Step 1: 상위 설계에 5차 개정 이력을 더한다**
 
 `2026-07-29-live-smile-monitor-design.md`의 `## 0. 개정 이력` 바로 아래에 추가:
 
@@ -1548,7 +1548,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 절대 조항으로 남는 것은 저장·전송 금지뿐이다.
 ```
 
-- [ ] **Step 2: §8의 capturedImage 조항을 고친다**
+- [x] **Step 2: §8의 capturedImage 조항을 고친다**
 
 이전:
 
@@ -1563,7 +1563,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - `ARFrame.capturedImage`는 **분당 1회 스냅샷을 축소 변환할 때만** 읽는다. 프레임마다 변환하거나 영상으로 잇지 않는다.
 ```
 
-- [ ] **Step 3: §13 범위 제외를 고친다**
+- [x] **Step 3: §13 범위 제외를 고친다**
 
 이전:
 
@@ -1578,7 +1578,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - 고정 창(1분/5분/10분/1시간), 발생 횟수, 날짜별 비교
 ```
 
-- [ ] **Step 4: 루트 AGENTS.md의 절대 조항을 좁힌다**
+- [x] **Step 4: 루트 AGENTS.md의 절대 조항을 좁힌다**
 
 `AGENTS.md`의 "Optional Live Mode Guardrails"에서 바꾼다.
 
@@ -1596,7 +1596,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - Three claims are now separate in copy — "we don't display it", "we don't take it", "we don't keep it". Only the last is absolute. Do not merge them back into one sentence.
 ```
 
-- [ ] **Step 5: Coaching AGENTS.md를 고친다**
+- [x] **Step 5: Coaching AGENTS.md를 고친다**
 
 `SmileDay/Views/Coaching/AGENTS.md`에서 바꾼다.
 
@@ -1614,7 +1614,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - The summary screen owns the snapshot array. Closing it must clear both the array and the summary — that is the only thing standing between "session only" and "stored".
 ```
 
-- [ ] **Step 6: 패키지 AGENTS.md에 새 타입을 더한다**
+- [x] **Step 6: 패키지 AGENTS.md에 새 타입을 더한다**
 
 `CoachingKit/Sources/CoachingKit/AGENTS.md`의 "Live mode logic" 표에 행을 더한다:
 
@@ -1629,7 +1629,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - The ratio denominator is usable time, not total time. Changing it to total time would report time away from the camera as time not smiling.
 ```
 
-- [ ] **Step 7: 테스트 AGENTS.md에 행을 더한다**
+- [x] **Step 7: 테스트 AGENTS.md에 행을 더한다**
 
 `CoachingKit/Tests/CoachingKitTests/AGENTS.md`의 표에 추가:
 
@@ -1637,7 +1637,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 | `LiveSmileSessionRecorderTests` | Bucket majority (including the exactly-half and tie boundaries), gaps filled with unknown, ratio excluding unknown, empty-session divide-by-zero guards, snapshot slots (one per minute, skipped when no usable frame, stops at the limit without stopping the timeline) |
 ```
 
-- [ ] **Step 8: CLAUDE.md와 CLAUDE.ko.md를 고친다**
+- [x] **Step 8: CLAUDE.md와 CLAUDE.ko.md를 고친다**
 
 `CLAUDE.md`에서 바꾼다.
 
@@ -1669,7 +1669,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - 저장도 전송도 하지 않습니다 — 사진·영상·blend shape·단계·타임라인·측정 시간이 SwiftData·UserDefaults·파일 시스템·네트워크로 나가지 않습니다. 촬영·내보내기·공유 경로가 없습니다.
 ```
 
-- [ ] **Step 9: 커밋**
+- [x] **Step 9: 커밋**
 
 ```bash
 git add SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md \
@@ -1684,7 +1684,7 @@ git commit -m "docs: narrow the live mode absolute to storage and transmission"
 
 ### Task 11: 전체 검증
 
-- [ ] **Step 1: 패키지 전체 테스트**
+- [x] **Step 1: 패키지 전체 테스트**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay/CoachingKit
@@ -1695,7 +1695,7 @@ Expected: `Test Suite 'All tests' passed`, 실패 0.
 
 Task 0 기준(170개)에서 최소 33개가 늘어야 한다 — 요약 8, recorder 19, ViewModel 6. 정확한 수를 게이트로 쓰지 않는다. 리뷰에서 놓친 경계가 나오면 테스트가 더 붙기 때문이다. 실제로 Task 1은 6→8, Task 2는 7→10으로 늘었다. **줄어들었다면** 테스트가 사라진 것이므로 그때는 멈추고 확인한다.
 
-- [ ] **Step 2: iOS 17 앱 빌드**
+- [x] **Step 2: iOS 17 앱 빌드**
 
 ```bash
 cd /Users/ijonghwan/Documents/WorkSpaces/smileDay/SmileDay
@@ -1706,7 +1706,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 Expected: `** BUILD SUCCEEDED **`
 
-- [ ] **Step 3: 저장 경로가 생기지 않았는지 확인한다**
+- [x] **Step 3: 저장 경로가 생기지 않았는지 확인한다**
 
 이 기능의 핵심 약속이다.
 
@@ -1722,7 +1722,7 @@ Expected: 두 검색 모두 결과 없음 — 저장·전송 경로가 없고, �
 
 `SmileDay/Services`가 검색 대상에 들어가야 한다. 카메라를 만지는 유일한 파일이 거기 있으므로, 빼면 저장 경로가 생겨도 이 검사가 못 잡는다. `grep -v '///'`는 문서 주석이 API 이름을 언급하는 것을 걸러낸다.
 
-- [ ] **Step 4: 측정값이 스키마에 들어가지 않았는지 확인한다**
+- [x] **Step 4: 측정값이 스키마에 들어가지 않았는지 확인한다**
 
 ```bash
 rg -n 'LiveSmile' CoachingKit/Sources/CoachingKit/PersistenceSchema.swift || echo "(스키마에 없음 — 정상)"
@@ -1731,7 +1731,7 @@ rg -n 'liveSmile|liveSummary' CoachingKit/Sources/CoachingKit/LiveSmileSessionRe
 
 Expected: 둘 다 "정상" 출력.
 
-- [ ] **Step 5: 금지 표현을 검사한다**
+- [x] **Step 5: 금지 표현을 검사한다**
 
 ```bash
 rg -n '리프팅|젊어진다|교정한다|치료|잘 웃|못 웃|예뻐' SmileDay CoachingKit --glob '*.swift'
@@ -1739,7 +1739,7 @@ rg -n '리프팅|젊어진다|교정한다|치료|잘 웃|못 웃|예뻐' SmileD
 
 Expected: `SmileCueTests`의 금지어 목록과 온보딩의 "평소 잘 웃지 않는" 외에는 없다.
 
-- [ ] **Step 6: diff 검증**
+- [x] **Step 6: diff 검증**
 
 ```bash
 git diff --check
@@ -1760,7 +1760,7 @@ Expected: `git diff --check` 결과 없음.
 - [ ] 스냅샷이 얼굴을 담고 있다 — 눈 감은 사진이나 빈 화면이 아니다
 - [ ] **스냅샷이 프리뷰와 같은 상을 보여준다.** 이게 방향 확인의 기준이다 — 단순히 "똑바로 서 있나"가 아니다. 프리뷰를 켠 채로 측정하고, 요약의 사진과 방금 본 프리뷰를 나란히 비교한다.
 - [ ] **둘 다 좌우반전이 없다.** 프리뷰 반전은 이 세션에서 명시적으로 제거했으므로 스냅샷도 반전이 없어야 한다.
-- [ ] 어긋나면 `ARKitLiveSmileMonitor.snapshotImage()`의 `.oriented(.right)`를 조정한다. **후보에 반전형이 반드시 들어간다** — `.right`, `.left`, `.rightMirrored`, `.leftMirrored`. 회전형(`.right`/`.left`/`.up`/`.down`)만으로는 좌우반전을 고칠 수 없다.
+- [ ] 어긋나면 `ARKitLiveSmileMonitor.snapshotJPEGData()`의 `.oriented(.right)`를 조정한다. **후보에 반전형이 반드시 들어간다** — `.right`, `.left`, `.rightMirrored`, `.leftMirrored`. 회전형(`.right`/`.left`/`.up`/`.down`)만으로는 좌우반전을 고칠 수 없다.
 - [ ] 프리뷰 쪽이 반전돼 있으면 그건 별개 결함이다. `ARSCNView`가 자체적으로 미러링해 그린다는 뜻이고, 사장님이 요청한 "반전 없음"과 어긋난다. 그때는 스냅샷을 맞추지 말고 프리뷰를 고친다.
 
 > 이 저장소에는 같은 전면 카메라 버퍼에 대해 상반된 기록이 둘 있다 — `specs/2026-07-23-camera-glow-filter-design.md`는 `.leftMirrored`가 `ARSCNView` 프리뷰와 맞다고 적었고, `specs/2026-07-24-remove-beauty-filter-design.md`는 출시 코드가 `.right`를 썼다고 적었다. 둘은 수평 뒤집기만큼 다르다. 실기기에서 확인해 이 항목의 결론을 남기고, 틀린 쪽 문서를 정정한다.
@@ -1774,6 +1774,7 @@ Expected: `git diff --check` 결과 없음.
 - [ ] 앱을 종료·재실행해도 측정 기록이 없다
 - [ ] 좌상단 X를 눌렀을 때도 측정한 게 있으면 요약을 거친다
 - [ ] 30분 측정 시 발열·메모리가 견딜 수준이다 (Xcode 메모리 그래프로 상한 3MB 안쪽 확인)
+- [ ] **사진 한 장의 실제 JPEG 크기를 잰다.** 설계 §10은 장당 25KB로 120장 3MB를 잡았다. 합성 이미지로 인코딩만 재봤을 때는 장당 약 35KB가 나왔고(노이즈가 많아 JPEG 최악 조건이다), 그 값이면 상한에서 4.2MB가 되어 게이트를 넘는다. 실기기 값이 25KB를 넘으면 `LiveSmileSessionRecorder.maxSnapshots`를 낮추거나 §10의 예산을 실제 값으로 고친다 — 둘 중 하나는 해야 한다.
 - [ ] 백그라운드로 나갔다 복귀하면 새 세션으로 시작한다
 - [ ] VoiceOver가 요약의 비율과 측정 시간을 읽고, 사진 격자는 건너뛴다
 
@@ -1784,16 +1785,16 @@ Expected: `git diff --check` 결과 없음.
 ## 완료 체크리스트
 
 - [ ] 대응 Design Spec `2026-07-30-live-smile-session-graph-design.md`의 완료 기준을 모두 충족함
-- [ ] 1초 칸이 다수결로 확정되고 끊긴 구간이 `unknown`으로 채워짐
-- [ ] 비율 분모가 판정 가능한 시간이고 `unknown` 비율이 함께 표시됨
-- [ ] 판정 가능 시간 0과 세션 길이 0에서 0으로 나누지 않음
-- [ ] 측정 중에는 띠만 자라고 비율·경과 시간은 종료 후에만 나옴
-- [ ] 스냅샷이 분당 1장, 판정 가능 프레임에서만, 색 판정 없이 잡힘
-- [ ] 요약을 닫으면 타임라인과 사진이 해제됨
-- [ ] SwiftData·UserDefaults·파일 시스템·네트워크에 측정값이 나가지 않음
-- [ ] 설정 화면의 "찍지도 않아요"가 사실에 맞게 수정됨
-- [ ] AGENTS.md의 절대 조항이 저장·전송으로 좁혀짐
-- [ ] `CoachingKit` 전체 테스트 통과
-- [ ] iOS 17 앱 빌드 통과
-- [ ] `git diff --check` 통과
+- [x] 1초 칸이 다수결로 확정되고 끊긴 구간이 `unknown`으로 채워짐
+- [x] 비율 분모가 판정 가능한 시간이고 `unknown` 비율이 함께 표시됨
+- [x] 판정 가능 시간 0과 세션 길이 0에서 0으로 나누지 않음
+- [x] 측정 중에는 띠만 자라고 비율·경과 시간은 종료 후에만 나옴
+- [x] 스냅샷이 분당 1장, 판정 가능 프레임에서만, 색 판정 없이 잡힘
+- [x] 요약을 닫으면 타임라인과 사진이 해제됨
+- [x] SwiftData·UserDefaults·파일 시스템·네트워크에 측정값이 나가지 않음
+- [x] 설정 화면의 "찍지도 않아요"가 사실에 맞게 수정됨
+- [x] AGENTS.md의 절대 조항이 저장·전송으로 좁혀짐
+- [x] `CoachingKit` 전체 테스트 통과
+- [x] iOS 17 앱 빌드 통과
+- [x] `git diff --check` 통과
 - [ ] TrueDepth 실기기 QA 기록 완료
