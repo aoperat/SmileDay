@@ -214,4 +214,48 @@ final class LiveSmileSessionRecorderTests: XCTestCase {
 
         XCTAssertEqual(first, second, "두 번 불러도 칸이 늘지 않는다")
     }
+
+    /// 프레임이 끊긴 30초가 "안 웃은 30초"로 남으면 안 된다.
+    func test_gap_fillsSkippedSecondsWithUnknown() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        clock.date += 30
+        recorder.observe(.smiling)
+
+        let timeline = recorder.finish().timeline
+
+        XCTAssertEqual(timeline.count, 31)
+        XCTAssertEqual(timeline.first, .smiling)
+        XCTAssertEqual(timeline.last, .smiling)
+        XCTAssertEqual(timeline.dropFirst().dropLast(), Array(repeating: .unknown, count: 29)[...])
+    }
+
+    /// 끊긴 시간은 비율 분모에 들어가지 않는다.
+    func test_gap_doesNotLowerTheRatio() throws {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        clock.date += 10
+        recorder.observe(.smiling)
+
+        let summary = recorder.finish()
+
+        XCTAssertEqual(try XCTUnwrap(summary.smilingRatio), 1.0, accuracy: 0.0001,
+                       "웃은 두 칸만 판정 가능하므로 100%다")
+        XCTAssertEqual(summary.totalSeconds, 11)
+        XCTAssertEqual(summary.usableSeconds, 2)
+    }
+
+    /// 측정 중에는 확정된 칸만 그래프에 나간다.
+    func test_timeline_exposesOnlyClosedBuckets() {
+        let (recorder, clock) = makeRecorder()
+
+        recorder.observe(.smiling)
+        XCTAssertEqual(recorder.timeline, [], "첫 칸은 아직 진행 중이다")
+
+        clock.date += 1
+        recorder.observe(.notSmiling)
+        XCTAssertEqual(recorder.timeline, [.smiling])
+    }
 }
