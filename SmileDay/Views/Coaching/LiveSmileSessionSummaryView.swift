@@ -7,7 +7,7 @@ import CoachingKit
 /// 사진에 미소 여부 색을 칠하지 않는다 — 한 장마다 판정을 붙이면 "안 웃은 나"의 격자가 된다.
 struct LiveSmileSessionSummaryView: View {
     let summary: LiveSmileSessionSummary
-    let snapshots: [UIImage]
+    let snapshots: [Data]
     let onClose: () -> Void
 
     var body: some View {
@@ -119,24 +119,29 @@ struct LiveSmileSessionSummaryView: View {
     private var snapshotStrip: some View {
         VStack(alignment: .leading, spacing: 8) {
             // 사진에 판정을 붙이지 않는다. 개수만 알려준다.
-            Text("1분마다 \(snapshots.count)장")
+            Text("1분에 1장씩, 총 \(snapshots.count)장")
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(SDColor.muted)
 
             LazyVGrid(columns: Array(repeating: GridItem(spacing: 4), count: 5), spacing: 4) {
                 // 사진 자체는 읽어줄 것이 없다. 대신 위의 장수는 남겨둔다.
-                ForEach(Array(snapshots.enumerated()), id: \.offset) { _, image in
+                // `LazyVGrid`는 보이는 셀만 만들므로, 120장을 압축 해제해 들고 있는 대신
+                // 셀마다 그때 필요한 것만 디코드한다.
+                ForEach(Array(snapshots.enumerated()), id: \.offset) { _, data in
                     // 사진에 높이만 주면 프레임이 `scaledToFill`이 넘긴 폭을 그대로 물려받아
                     // 셀이 열 너비를 벗어나고 `clipped()`도 잘라내지 못한다 —
                     // 65pt 열에서 98pt로 측정된다. 크기는 빈 사각형이 정하고 사진은 그 위에 채운다.
                     Rectangle()
                         .fill(SDColor.shell)
                         .frame(height: 74)
-                        .overlay(
-                            Image(uiImage: image)
-                                .resizable()
-                                .scaledToFill()
-                        )
+                        .overlay {
+                            // 디코드가 실패해도(손상된 바이트) 빈 사각형이 자리를 지킨다.
+                            if let image = UIImage(data: data) {
+                                Image(uiImage: image)
+                                    .resizable()
+                                    .scaledToFill()
+                            }
+                        }
                         .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
                 }
             }
@@ -179,7 +184,11 @@ struct LiveSmileTimelineBand: View {
                 // 열이 1초보다 좁아도(짧은 세션) 최소 한 칸은 본다.
                 let end = min(max(Int(Double(column + 1) * secondsPerColumn), start + 1), timeline.count)
 
-                let rect = CGRect(x: CGFloat(column), y: 0, width: 1, height: size.height)
+                // 너비가 정수가 아니면 칸 폭의 합이 size.width에 못 미쳐 오른쪽 끝에
+                // 배경색이 실오라기처럼 남는다. 마지막 칸만 남는 소수점 폭까지 채운다.
+                let x = CGFloat(column)
+                let width = column == columns - 1 ? size.width - x : 1
+                let rect = CGRect(x: x, y: 0, width: width, height: size.height)
                 context.fill(Path(rect), with: .color(color(of: timeline[start..<end])))
             }
         }

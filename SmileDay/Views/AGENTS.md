@@ -31,7 +31,7 @@ SwiftUI screens for the frequency-first flow. `RootView` gates splash → remind
 - Only `NotificationRouter` comes through the SwiftUI environment (`@Environment(NotificationRouter.self)`); results flow back up via closures (`onCompleted`, `onFinished`, ...).
 - Home presents `SmileGuideView` as a full-screen cover for both manual starts and notification taps, and `LiveSmileMonitorView` as a separate cover for the optional live mode. Notification taps must keep going to the guide, never to the camera.
 - All copy is inline Korean string literals; keep it that way unless a string is reused (then `SharedStrings`).
-- The only camera view in the app is `LiveSmileCameraPreview`, and only the live monitor may show it — off by default, behind a user toggle. No other screen renders camera output. The live monitor does take one snapshot per minute, but nothing anywhere saves, exports, or transmits it — it lives only in the summary screen's in-memory array until that screen closes.
+- The only camera view in the app is `LiveSmileCameraPreview`, and only the live monitor may show it — off by default, behind a user toggle. No other screen renders camera output. The live monitor does take one JPEG snapshot per minute, but nothing anywhere saves, exports, or transmits it — it lives only in `LiveSmileMonitorView`'s in-memory `[Data]` array (passed down to the summary screen as a `let`) until that screen closes.
 - Any screen that turns the camera on must stop it on close, background, and scene inactive, and must restore `isIdleTimerDisabled` on every exit path.
 
 ### Testing Requirements
