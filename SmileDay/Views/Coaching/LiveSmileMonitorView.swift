@@ -23,6 +23,10 @@ struct LiveSmileMonitorView: View {
     /// 백그라운드로 나가며 멈춘 뒤에는 자동 재개하지 않고 사용자의 재시작을 받는다.
     @State private var needsRestart = false
     @State private var previousIdleTimerDisabled = false
+    /// 종료를 누른 뒤 보여줄 요약. 화면을 닫으면 사라진다.
+    @State private var summary: LiveSmileSessionSummary?
+    /// 분당 1장. 저장 경로가 없고 이 배열이 사라지면 사진도 사라진다.
+    @State private var snapshots: [UIImage] = []
 
     var body: some View {
         ZStack {
@@ -63,8 +67,13 @@ struct LiveSmileMonitorView: View {
     private var header: some View {
         HStack {
             SDCloseButton {
-                shutDown()
-                dismiss()
+                // 측정한 게 있으면 말없이 버리지 않고 요약을 먼저 보여준다.
+                if let viewModel, hasStarted, summary == nil, !viewModel.timeline.isEmpty {
+                    finishAndShowSummary(viewModel)
+                } else {
+                    releaseSession()
+                    dismiss()
+                }
             }
             Spacer()
         }
@@ -77,7 +86,16 @@ struct LiveSmileMonitorView: View {
         VStack(spacing: 24) {
             Spacer(minLength: 8)
 
-            if case .failed(let failure) = viewModel.state {
+            if let summary {
+                LiveSmileSessionSummaryView(
+                    summary: summary,
+                    snapshots: snapshots,
+                    onClose: {
+                        releaseSession()
+                        dismiss()
+                    }
+                )
+            } else if case .failed(let failure) = viewModel.state {
                 failureSection(failure)
             } else if !hasStarted {
                 introSection
@@ -151,6 +169,12 @@ struct LiveSmileMonitorView: View {
 
             levelMeter(viewModel.level)
 
+            if !viewModel.timeline.isEmpty {
+                LiveSmileTimelineBand(timeline: viewModel.timeline)
+                    .frame(height: 12)
+                    .accessibilityHidden(true)
+            }
+
             if isShowingNudgeCue {
                 nudgeCue
             } else {
@@ -170,8 +194,7 @@ struct LiveSmileMonitorView: View {
                 .buttonStyle(SDInkButtonStyle())
 
                 Button(SharedStrings.liveMonitorCloseAction) {
-                    shutDown()
-                    dismiss()
+                    finishAndShowSummary(viewModel)
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
             }
@@ -181,6 +204,10 @@ struct LiveSmileMonitorView: View {
         .onChange(of: viewModel.nudgeCount) { _, count in
             guard count > 0 else { return }
             showNudgeCue()
+        }
+        .onChange(of: viewModel.snapshotRequestCount) { _, count in
+            guard count > 0 else { return }
+            captureSnapshot()
         }
     }
 
@@ -389,6 +416,9 @@ struct LiveSmileMonitorView: View {
 
     private func startMeasuring() {
         hasStarted = true
+        // start()가 새 recorder를 만든다. 이전 세션 사진이 섞이지 않게 함께 버린다.
+        snapshots = []
+        summary = nil
         previousIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
         // 세워두고 보는 화면이라 측정 중에만 자동 잠금을 막는다.
         UIApplication.shared.isIdleTimerDisabled = true
@@ -401,6 +431,28 @@ struct LiveSmileMonitorView: View {
         needsRestart = true
     }
 
+    /// 측정을 끝내고 요약으로 넘어간다. 세션은 멈추지만 화면은 닫지 않는다.
+    private func finishAndShowSummary(_ viewModel: LiveSmileMonitorViewModel) {
+        let result = viewModel.finishSession()
+        isShowingPreview = false
+        restoreIdleTimer()
+        summary = result
+    }
+
+    /// 요약까지 끝난 뒤 전부 버린다.
+    private func releaseSession() {
+        shutDown()
+        summary = nil
+        snapshots = []
+    }
+
+    /// 슬롯은 ViewModel이 프레임 경로에서 이미 확보했다. 여기서는 이미지만 만든다.
+    private func captureSnapshot() {
+        guard let monitor, summary == nil else { return }
+        guard let image = monitor.snapshotImage() else { return }
+        snapshots.append(image)
+    }
+
     /// 닫기·화면 이탈·실패 등 모든 종료 경로에서 카메라와 자동 잠금을 원래대로 되돌린다.
     private func shutDown() {
         viewModel?.stop()
@@ -410,6 +462,7 @@ struct LiveSmileMonitorView: View {
         // 다음 세션도 카메라 화면이 꺼진 상태로 시작한다.
         isShowingPreview = false
         isShowingNudgeCue = false
+        snapshots = []
     }
 
     private func restoreIdleTimer() {
