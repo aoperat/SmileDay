@@ -27,6 +27,7 @@
 ## Task 4: 검증
 
 - [x] `cd CoachingKit && swift test` — 170 tests, 0 failures
-- [ ] `xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build`
-  - 실행 환경이 중첩 `sandbox-exec`를 허용하지 않아 패키지 해석 단계에서 중단됨.
-  - 대신 CoachingKit을 iOS Simulator 대상으로 빌드하고 변경된 설정 화면과 알림 서비스를 `swiftc -typecheck`로 검증함.
+- [x] `xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build`
+  - 당시에는 실행 환경이 중첩 `sandbox-exec`를 허용하지 않아 패키지 해석 단계에서 중단됐다.
+    대신 CoachingKit을 iOS Simulator 대상으로 빌드하고 변경된 설정 화면과 알림 서비스를 `swiftc -typecheck`로 검증했다.
+  - 2026-07-30에 같은 명령이 `** BUILD SUCCEEDED **`로 통과했다. 남은 제약이 아니라 당시 환경 문제였다.
