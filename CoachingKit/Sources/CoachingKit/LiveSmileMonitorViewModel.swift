@@ -52,6 +52,13 @@ public final class LiveSmileMonitorViewModel {
     public private(set) var level: LiveSmileLevel?
     /// 알림이 울린 횟수. 화면이 이 값의 변화를 보고 "Smile!"을 띄운다.
     public private(set) var nudgeCount = 0
+    /// 측정 중 그래프가 그리는 타임라인. 확정된 1초 칸만 들어 있다.
+    public private(set) var timeline: [LiveSmileObservation] = []
+    /// 사진을 집어야 할 때마다 오른다. 화면이 이 변화를 보고 이미지를 만든다.
+    ///
+    /// 판정은 프레임 경로에서 끝났으므로, 화면이 한 박자 뒤에 캡처해도 방금 쓸 만한
+    /// 프레임이 있었다는 사실은 이미 확정돼 있다.
+    public private(set) var snapshotRequestCount = 0
 
     private let monitor: LiveSmileMonitoring
     private let now: () -> Date
@@ -69,6 +76,8 @@ public final class LiveSmileMonitorViewModel {
     private var calibrationStartedAt: Date?
     private var smoothedSignal: Double?
     private var lastPublishedAt: Date?
+    /// 세션마다 새로 만든다. 이전 세션 기록이 섞이면 안 된다.
+    private var recorder: LiveSmileSessionRecorder
 
     public init(
         monitor: LiveSmileMonitoring,
@@ -80,6 +89,7 @@ public final class LiveSmileMonitorViewModel {
         self.nudging = nudging
         self.nudgeSettings = nudgeSettings
         self.now = now
+        self.recorder = LiveSmileSessionRecorder(now: now)
     }
 
     // MARK: - 생명주기
@@ -89,6 +99,7 @@ public final class LiveSmileMonitorViewModel {
         guard !isAcceptingEvents else { return }
 
         isAcceptingEvents = true
+        recorder = LiveSmileSessionRecorder(now: now)
         resetMeasurement()
         state = .requestingPermission
         monitor.onEvent = { [weak self] event in
@@ -114,6 +125,15 @@ public final class LiveSmileMonitorViewModel {
 
         resetMeasurement()
         state = .calibrating
+    }
+
+    /// 측정을 끝내고 요약을 낸다. 세션은 멈추지만 요약은 호출자가 들고 있다.
+    ///
+    /// 저장하지 않는다. 호출자가 화면을 닫으면 그대로 사라진다.
+    public func finishSession() -> LiveSmileSessionSummary {
+        let summary = recorder.finish()
+        stop()
+        return summary
     }
 
     // MARK: - 이벤트 처리
@@ -159,6 +179,7 @@ public final class LiveSmileMonitorViewModel {
     /// 정상 프레임만 편한 표정 평균에 들어간다.
     private func calibrate(with sample: LiveSmileSample) {
         state = .calibrating
+        record(.unknown)
         calibrationSamples.append(LiveSmileSignalEvaluator.smileMean(sample))
 
         let startedAt = calibrationStartedAt ?? now()
@@ -181,6 +202,11 @@ public final class LiveSmileMonitorViewModel {
             Self.smoothingAlpha * signal + (1 - Self.smoothingAlpha) * $0
         } ?? signal
         smoothedSignal = smoothed
+
+        // 이 프레임의 단계로 기록한다. 화면에 게시하는 level은 초당 10회로 제한되지만
+        // 기록은 제한하지 않는다 — 그건 UI 갱신 제한이지 측정 제한이 아니다.
+        let frameLevel = Self.nextLevel(signal: smoothed, current: level)
+        record(frameLevel == .resting ? .notSmiling : .smiling)
 
         // 품질 문제에서 막 돌아왔다면 단계가 사라진 상태이므로 기다리지 않고 바로 보여준다.
         let isResuming = state != .monitoring || level == nil
@@ -226,7 +252,24 @@ public final class LiveSmileMonitorViewModel {
         nudging.nudge(withHaptic: nudgeSettings.isHapticEnabled)
     }
 
+    /// recorder에 넘기고, 칸이 새로 확정됐을 때만 화면용 타임라인을 갱신한다.
+    ///
+    /// 스냅샷 슬롯도 여기서 확보한다. `claimSnapshotSlot()`은 마지막으로 넘긴 관찰을 믿으므로
+    /// 프레임 경로 밖에서 부르면 안 된다 — 얼굴이 사라진 뒤에도 낡은 `notSmiling`이 남아
+    /// 가드를 통과하고, 얼굴 없는 사진이 찍힌다.
+    private func record(_ observation: LiveSmileObservation) {
+        recorder.observe(observation)
+
+        if recorder.claimSnapshotSlot() {
+            snapshotRequestCount += 1
+        }
+
+        guard recorder.timeline.count != timeline.count else { return }
+        timeline = recorder.timeline
+    }
+
     private func reportQualityIssue(_ issue: LiveSmileQualityIssue) {
+        record(.unknown)
         state = .qualityIssue(issue)
         // 원인을 안내하는 동안 마지막 단계를 남겨두면 그 값이 현재 표정으로 읽힌다.
         level = nil
@@ -256,6 +299,7 @@ public final class LiveSmileMonitorViewModel {
         lastPublishedAt = nil
         restingDuration = 0
         lastMonitoringFrameAt = nil
+        timeline = []
     }
 
     /// 경계를 살짝 넘나드는 것만으로 단계가 바뀌지 않게 한다.

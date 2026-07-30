@@ -498,4 +498,95 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
 
         XCTAssertTrue(nudging.calls.isEmpty)
     }
+
+    // MARK: - 세션 기록
+
+    func test_recording_marksCalibrationSecondsAsUnknown() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+
+        // 보정 중 프레임은 단계를 알 수 없다.
+        monitor.emit(sample(smile: 0.1))
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+
+        XCTAssertEqual(viewModel.timeline, [.unknown])
+    }
+
+    func test_recording_marksRestingSecondsAsNotSmiling() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        emitAfterPublishInterval(monitor, clock, sample(smile: 0.1))
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+
+        XCTAssertEqual(viewModel.timeline.last, .notSmiling)
+    }
+
+    func test_recording_marksSmilingSeconds() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        // 계속 웃으면 평활을 거쳐 resting을 벗어난다.
+        for _ in 0..<12 {
+            emitAfterPublishInterval(monitor, clock, sample(smile: 0.55))
+        }
+        clock.date += 1
+        monitor.emit(sample(smile: 0.55))
+
+        XCTAssertEqual(viewModel.timeline.last, .smiling)
+    }
+
+    func test_recording_marksQualityIssueSecondsAsUnknown() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        monitor.emit(.faceLost)
+        clock.date += 3
+        monitor.emit(sample(smile: 0.1))
+
+        XCTAssertTrue(viewModel.timeline.contains(.unknown))
+    }
+
+    func test_finishSession_returnsSummaryAndStops() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+
+        let summary = viewModel.finishSession()
+
+        XCTAssertGreaterThan(summary.totalSeconds, 0)
+        XCTAssertEqual(viewModel.state, .idle)
+        XCTAssertTrue(viewModel.timeline.isEmpty, "종료하면 화면용 타임라인은 비운다")
+    }
+
+    /// 새 세션은 이전 세션 기록을 물려받지 않는다.
+    func test_start_beginsFreshTimeline() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+        _ = viewModel.finishSession()
+
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        XCTAssertLessThanOrEqual(viewModel.timeline.count, 3, "이전 세션 칸이 남으면 안 된다")
+    }
+
+    /// 슬롯 판정은 프레임 경로에서 끝나야 한다. 시작 직후 첫 프레임이 한 장을 요청한다.
+    func test_snapshotRequest_risesOnTheFirstUsableFrame() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        XCTAssertGreaterThan(viewModel.snapshotRequestCount, 0)
+    }
 }
