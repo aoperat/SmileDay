@@ -25,6 +25,7 @@ XCTest suite for the whole package — one same-named test file per source area.
 | `LiveSmileMonitorViewModelTests` | Calibration excluding invalid frames, smoothing (one frame never jumps to the top level; sustained smiling reaches it), publish throttling, quality-issue priority, recalibrate discarding the old neutral, events after `stop()` ignored, level hysteresis, and nudges (fires on interval, repeats, restarts after a smile, pauses while the face is lost without losing progress, honours the haptic and enabled flags) |
 | `LiveSmileNudgeTests` | Nudge settings defaults, snapping an unknown interval to the nearest allowed value, UserDefaults round-trip that keeps an explicit `false` |
 | `LiveSmileGazeTests` | That off-centre seating still reads as facing the camera (the product requirement), that looking away reads large, and that the result is independent of where the camera sits in world space |
+| `LiveSmileSessionRecorderTests` | Bucket majority (including the exactly-half and tie boundaries), gaps filled with unknown, ratio excluding unknown, empty-session divide-by-zero guards, snapshot slots (one per minute, skipped when no usable frame, stops at the limit without stopping the timeline) |
 
 ## For AI Agents
 

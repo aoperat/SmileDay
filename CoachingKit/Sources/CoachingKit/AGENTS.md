@@ -47,6 +47,7 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 | `LiveSmileGaze.swift` | Pure geometry: how far the face's forward direction is from the direction of the camera. Position never enters the result |
 | `LiveSmileMonitorViewModel.swift` | `@Observable` session state: 2s neutral calibration from valid frames only, exponential smoothing, ≤10 publishes/sec, quality-issue priority over the level, hysteresis on level boundaries, resting-time nudges, `recalibrate()`/`stop()` |
 | `LiveSmileNudge.swift` | `LiveSmileNudgeSettings` (enabled / interval / haptic) with UserDefaults + InMemory stores, and the `LiveSmileNudging` boundary the app implements with haptics and a local notification |
+| `LiveSmileSessionRecorder.swift` | `LiveSmileObservation` 3-state, one-second buckets decided by majority vote, unknown-filled gaps, snapshot slots, and `LiveSmileSessionSummary` (ratio over usable time only) |
 
 ### Repositories (thin wrappers over `ModelContext` — own all FetchDescriptors)
 | File | Description |
@@ -91,6 +92,8 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 - `LiveSmileLevel` bands are intentionally uneven — narrow at the bottom so leaving a resting face registers immediately, wide at the top so nobody is pushed to smile harder. Do not "tidy" them into quarters.
 - `gazeOffsetDegrees` is the angle from the face's forward direction to the direction of the camera — not head pose in world space. That is what makes off-centre seating fine; comparing against a fixed axis would flag a user who is looking straight at the camera from the side. `LiveSmileGazeTests` pins this: sitting well off to the side must still read ~0° while facing the camera.
 - `gazeToleranceDegrees` is deliberately generous (40°): recognition matters more than precision here. A tighter gate silently kills the whole mode for someone glancing at a propped phone — and it also freezes the nudge timer, so they get no reminder either. Narrow it only with device evidence.
+- `LiveSmileSessionRecorder` sums nothing to disk and holds no images — CoachingKit imports no UIKit. The app target owns the snapshot array; the recorder only says when a slot is open.
+- The ratio denominator is usable time, not total time. Changing it to total time would report time away from the camera as time not smiling.
 
 ### Testing Requirements
 Every file here should have a same-named test in `Tests/CoachingKitTests/`. Run `cd CoachingKit && swift test --filter <ClassName>Tests`.

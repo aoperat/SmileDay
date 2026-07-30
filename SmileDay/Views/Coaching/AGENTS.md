@@ -29,7 +29,9 @@ Two screens, deliberately separate:
 ### `LiveSmileMonitorView`
 - The camera starts only after the user taps start on this screen — not on appear, and never from a notification.
 - The camera view is off by default and resets to off every session. Do not persist the toggle, and do not open the screen with a face already on it.
-- Build the preview only while the toggle is on, so turning it off costs nothing. Draw the running session with `ARSCNView`; never hand-convert `ARFrame.capturedImage`, and never add a capture/save button.
+- Build the preview only while the toggle is on, so turning it off costs nothing. Draw the running session with `ARSCNView`.
+- `ARFrame.capturedImage` is converted only for the once-a-minute snapshot, via `ARKitLiveSmileMonitor.snapshotImage()`. Never convert per frame, and never add a capture, save, export, or share button.
+- The summary screen owns the snapshot array. Closing it must clear both the array and the summary — that is the only thing standing between "session only" and "stored".
 - `ARSCNView` may take over the session delegate, which would silently stop the sample stream. `LiveSmileCameraPreview` calls back so the monitor can re-assert it — keep that path if you touch either file.
 - Nothing is persisted, with or without the camera view showing. This screen has no repository and must not gain one; live usage is not a completion.
 - Stop the session and restore `isIdleTimerDisabled` on every exit path — close, `onDisappear`, scene inactive, background, and failure.

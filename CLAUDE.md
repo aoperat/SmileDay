@@ -33,8 +33,9 @@ This loop never uses the camera. Camera access is never part of onboarding and n
 
 There is one **optional** side mode, "실시간 미소 확인" (live smile check), reached only from a secondary card on the home screen. While the user explicitly runs it, the TrueDepth camera reports how far the mouth-corner blend shapes have risen from a per-session neutral, shown as a live 0–100 signal. It has hard boundaries:
 
-- The camera view is off by default; a toggle turns it on for that session only. When on, it renders the running `ARSession` through `ARSCNView` — `ARFrame.capturedImage` is never read or converted by hand.
-- Nothing is persisted or transmitted — no photos, video, blend shapes, levels, or session times reach SwiftData or UserDefaults, whether the camera view is showing or not. There is no capture button.
+- The camera view is off by default; a toggle turns it on for that session only. When on, it renders the running `ARSession` through `ARSCNView`. `ARFrame.capturedImage` is read only once a minute, for the snapshot — never per frame, and never by the preview itself.
+- It takes one snapshot per minute and shows a session timeline and smiling ratio when it ends. All of it is memory-only and released when the summary closes.
+- Nothing is persisted or transmitted — no photos, video, blend shapes, levels, timelines, or session times reach SwiftData, UserDefaults, the filesystem, or the network. There is no capture, export, or share path.
 - It does not add to the completion count; running the live mode is a different action from completing a smile.
 - The score is a sensor reading, not a verdict. It never evaluates appearance, emotion, Duchenne-ness, or left/right symmetry.
 
