@@ -613,4 +613,66 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
 
         XCTAssertGreaterThan(viewModel.snapshotRequestCount, 0)
     }
+
+    // MARK: - 측정 보존
+
+    /// 시작 전에는 아무것도 기록되지 않았다.
+    func test_hasRecordedAnySecond_isFalse_onFreshViewModel() {
+        let (viewModel, _, _, _) = makeViewModel()
+
+        XCTAssertFalse(viewModel.hasRecordedAnySecond)
+    }
+
+    /// 한 칸이 확정되면 — 보정 중이라 unknown뿐이어도 — 무언가 기록됐다고 본다.
+    func test_hasRecordedAnySecond_becomesTrue_onceASecondIsRecorded() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+
+        monitor.emit(sample(smile: 0.1))
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1)) // 앞 칸을 닫는다
+
+        XCTAssertTrue(viewModel.hasRecordedAnySecond)
+    }
+
+    /// 프레임이 오기 전에 실패하면(권한 거부 등) 기록된 게 없다 — 요약을 보여줄 이유가 없다.
+    func test_hasRecordedAnySecond_isFalse_whenFailureHappensBeforeAnyFrame() {
+        let (viewModel, monitor, _, _) = makeViewModel()
+        viewModel.start()
+
+        monitor.emit(.permissionDenied)
+
+        XCTAssertFalse(viewModel.hasRecordedAnySecond)
+    }
+
+    /// 핵심 회귀 방지: fail()이 화면용 timeline을 비워도, recorder가 들고 있는 기록은 남아야
+    /// 세션 실패·인터럽션 뒤에도 요약을 보여줄 수 있다.
+    func test_hasRecordedAnySecond_staysTrue_afterFailureClearsPublishedTimeline() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        monitor.emit(sample(smile: 0.1))
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+        XCTAssertTrue(viewModel.hasRecordedAnySecond, "사전 조건")
+
+        monitor.emit(.sessionFailed)
+
+        XCTAssertEqual(viewModel.state, .failed(.sessionFailed))
+        XCTAssertTrue(viewModel.timeline.isEmpty, "실패 시 화면용 timeline은 그대로 비운다")
+        XCTAssertTrue(viewModel.hasRecordedAnySecond, "recorder는 실패 후에도 기록을 들고 있어야 한다")
+    }
+
+    /// finishSession()은 실패 뒤에도 옳은 요약을 낸다 — recorder는 stop()에 영향받지 않는다.
+    func test_finishSession_afterFailure_stillReturnsRecordedSummary() {
+        let (viewModel, monitor, clock, _) = makeViewModel()
+        viewModel.start()
+        monitor.emit(sample(smile: 0.1))
+        clock.date += 1
+        monitor.emit(sample(smile: 0.1))
+
+        monitor.emit(.sessionFailed)
+        let summary = viewModel.finishSession()
+
+        XCTAssertGreaterThan(summary.totalSeconds, 0, "실패 전에 기록된 칸이 요약에 남아 있어야 한다")
+    }
 }

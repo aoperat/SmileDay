@@ -59,9 +59,15 @@ struct LiveSmileMonitorView: View {
         }
         .onChange(of: viewModel?.state) { _, state in
             guard case .some(.failed) = state else { return }
-            // 세션은 ViewModel이 중지한다. 화면은 즉시 자동 잠금과 프리뷰 상태를 복원한다.
-            isShowingPreview = false
-            restoreIdleTimer()
+            // 세션은 ViewModel이 이미 멈췄다. 측정한 게 있으면 실패 문구 대신 요약을 먼저
+            // 보여준다 — 인터럽션이든 진짜 오류든, 이미 기록된 것을 말없이 버리지 않는다.
+            if let viewModel, viewModel.hasRecordedAnySecond, summary == nil {
+                finishAndShowSummary(viewModel)
+            } else {
+                // 측정 전 실패(권한 거부·미지원 기기)는 기록이 없으므로 실패 화면을 그대로 둔다.
+                isShowingPreview = false
+                restoreIdleTimer()
+            }
         }
     }
 
@@ -69,7 +75,7 @@ struct LiveSmileMonitorView: View {
         HStack {
             SDCloseButton {
                 // 측정한 게 있으면 말없이 버리지 않고 요약을 먼저 보여준다.
-                if let viewModel, hasStarted, summary == nil, !viewModel.timeline.isEmpty {
+                if let viewModel, hasStarted, summary == nil, viewModel.hasRecordedAnySecond {
                     finishAndShowSummary(viewModel)
                 } else {
                     releaseSession()
@@ -427,9 +433,16 @@ struct LiveSmileMonitorView: View {
     }
 
     private func pauseForSceneChange() {
-        viewModel?.stop()
-        restoreIdleTimer()
-        needsRestart = true
+        guard let viewModel else { return }
+        // 측정한 게 있으면 새로 시작하는 화면 대신 요약을 먼저 보여준다 — 카메라를 끄는 시점은
+        // 그대로다, finishSession()도 내부에서 즉시 stop()을 부른다.
+        if viewModel.hasRecordedAnySecond, summary == nil {
+            finishAndShowSummary(viewModel)
+        } else {
+            viewModel.stop()
+            restoreIdleTimer()
+            needsRestart = true
+        }
     }
 
     /// 측정을 끝내고 요약으로 넘어간다. 세션은 멈추지만 화면은 닫지 않는다.

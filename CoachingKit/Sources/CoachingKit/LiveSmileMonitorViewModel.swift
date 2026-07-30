@@ -60,6 +60,16 @@ public final class LiveSmileMonitorViewModel {
     /// 프레임이 있었다는 사실은 이미 확정돼 있다.
     public private(set) var snapshotRequestCount = 0
 
+    /// 세션 동안 무엇이든 기록됐는지 — 측정을 말없이 버리지 않고 요약을 보여줄지 판단할 때 쓴다.
+    ///
+    /// `timeline`이 아니라 recorder를 직접 읽는다. `fail()`은 `resetMeasurement()`로 화면용
+    /// `timeline`을 비우지만 recorder는 건드리지 않는다 — `stop()`도 마찬가지다. recorder는
+    /// `start()`에서만 새로 만들어지므로, 실패·중단·백그라운드 어느 경로를 거쳐도 이미 확정된
+    /// 칸은 이 값에 그대로 남는다.
+    public var hasRecordedAnySecond: Bool {
+        !recorder.timeline.isEmpty
+    }
+
     private let monitor: LiveSmileMonitoring
     private let now: () -> Date
     private let nudging: LiveSmileNudging?
