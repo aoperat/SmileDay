@@ -1,5 +1,7 @@
 # 미소 습관 중심 제품 전환 Implementation Plan
 
+> **중단:** 이 계획은 `SmileDay/docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`로 대체되었다. 남은 Task를 실행하지 않는다. 이미 완료된 변경이 있다면 새 계획 Task 0에서 현 상태와 충돌 여부를 먼저 확인한다.
+
 > **For agentic workers:** 각 Task를 순서대로 수행하고 체크박스로 진행 상태를 기록한다. 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-27-smile-habit-reframe-design.md`를 전체 읽는다.
 
 **Goal:** 점수 개선 중심의 현재 경험을 질문→미소→선택적 좋은 순간 기록→습관 회고 흐름으로 전환한다. AR 측정 데이터와 기존 저장 기록은 보존하되 일반 사용자 화면과 추천 로직에서 얼굴 평가를 제거한다.

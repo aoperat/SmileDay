@@ -4,52 +4,52 @@
 # Views
 
 ## Purpose
-All SwiftUI screens, grouped by tab/flow. `RootView` gates the app (splash → onboarding → baseline capture → tabs), `MainTabView` hosts a custom floating pill tab bar over 5 tabs (홈/미소/쉬어가기/기록/설정), and `Theme.swift` is the single design-system source ("Morning Glow" palette).
+SwiftUI screens for the frequency-first flow. `RootView` gates splash → reminder onboarding → home; home opens the short smile guide, the optional live monitor, and settings. `Theme.swift` is the single design-system source ("Morning Glow" palette).
 
 ## Key Files
 | File | Description |
 |------|-------------|
-| `RootView.swift` | App entry gate: splash while loading → `MainTabView` (baseline exists) / `BaselineCaptureView` / `OnboardingIntroView`; loads latest baseline on `.task`, seeds demo data in DEBUG, re-schedules reminders on scenePhase `.active` |
-| `MainTabView.swift` | `TabView` (native bar hidden) + `SDTabBar` floating pill bar + `AppTab` enum; hides bar during coaching; consumes `NotificationRouter.pendingCoaching` deep link to jump to coaching with a prompt |
-| `Theme.swift` | Design tokens: `SDColor` palette + gradients, `Color(hex:)`, `SmileArc` shape, `.sdCard()` modifier, `SDPrimaryButtonStyle`/`SDInkButtonStyle`, `SDCloseButton`, `SDFormat` (Korean-locale date/degree formatting) |
-| `SharedStrings.swift` | Shared Korean copy — currently only `saveFailed`, reused across capture/coaching/care save-error paths |
-| `FaceGuideOverlay.swift` | Non-interactive dashed ellipse guide overlaid on the AR camera preview |
+| `RootView.swift` | App entry gate: splash while loading → reminder onboarding when needed → home |
+| `Theme.swift` | Design tokens: `SDColor` palette + gradients, `Color(hex:)`, `SmileArc` shape, `.sdCard()` modifier, `SDPrimaryButtonStyle`/`SDInkButtonStyle`, `SDCloseButton`, `SDFormat` (pinned `ko_KR` locale) |
+| `SharedStrings.swift` | Reused Korean copy for the frequency-first flow |
 
 ## Subdirectories
 | Directory | Purpose |
 |-----------|---------|
-| `Home/` | 홈 dashboard: gauges, streak, nudge cards (see `Home/AGENTS.md`) |
-| `Coaching/` | 미소 시간 flow: live AR session → save confirmation with optional reflection (see `Coaching/AGENTS.md`) |
-| `Care/` | 쉬어가기 practice browser + guided player (see `Care/AGENTS.md`) |
-| `History/` | 기록 analytics: charts, heatmap (see `History/AGENTS.md`) |
-| `Settings/` | 설정: reminders, baseline reset, data privacy (see `Settings/AGENTS.md`) |
-| `Onboarding/` | First-run intro + baseline capture (see `Onboarding/AGENTS.md`) |
+| `Home/` | Today's count, next reminder, recent seven-day frequency |
+| `Coaching/` | Camera-free smile cue and timer, plus the optional live monitor and its toggleable camera view |
+| `Settings/` | Reminder window, interval, notification authorization, data-location copy |
+| `Onboarding/` | Purpose introduction and initial reminder-window setup |
 | `Splash/` | Branded launch screen (see `Splash/AGENTS.md`) |
+
+`AppStartupFailureView.swift` sits at this level: the fallback screen shown when the SwiftData container cannot be built.
 
 ## For AI Agents
 
 ### Working In This Directory
 - View-model acquisition pattern: `@State private var viewModel: SomeViewModel?`, lazily constructed in `.onAppear` from `@Environment(\.modelContext)`-backed CoachingKit repositories, then `try? vm.refresh()`. VMs are per-view, not shared.
-- Only `NotificationRouter` comes through the SwiftUI environment (`@Environment(NotificationRouter.self)`); results flow back up via closures (`onBaselineSaved`, `onCompleted`, `onStartCoaching`, ...).
-- Camera screens own an `ARKitFaceTrackingSession` as `@State`, inject it into their VM, `start()` on appear and `stop()` on disappear.
-- Tab flow: Home's `onStartCoaching` switches tab selection to `.coaching`; finishing/exiting coaching returns to `.home`. Baseline re-capture is presented via `fullScreenCover` from both Home (nudge card) and Settings.
+- Only `NotificationRouter` comes through the SwiftUI environment (`@Environment(NotificationRouter.self)`); results flow back up via closures (`onCompleted`, `onFinished`, ...).
+- Home presents `SmileGuideView` as a full-screen cover for both manual starts and notification taps, and `LiveSmileMonitorView` as a separate cover for the optional live mode. Notification taps must keep going to the guide, never to the camera.
 - All copy is inline Korean string literals; keep it that way unless a string is reused (then `SharedStrings`).
+- The only camera view in the app is `LiveSmileCameraPreview`, and only the live monitor may show it — off by default, behind a user toggle. No other screen renders camera output, and nothing anywhere captures or saves it.
+- Any screen that turns the camera on must stop it on close, background, and scene inactive, and must restore `isIdleTimerDisabled` on every exit path.
 
 ### Testing Requirements
 No view tests. Verify with `xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build`.
 
 ### Common Patterns
-- Container styling via `.sdCard()`; CTAs via `SDPrimaryButtonStyle` (coral gradient pill) / `SDInkButtonStyle`; tab backgrounds `SDColor.cream`, camera screens use black overlays; `.tint(SDColor.coral)` at roots.
-- Format numbers/dates through `SDFormat` (avoids "-0.0", keeps Korean locale).
-- `SmileArc` shape is reused for the logo, streak curve, and sun face.
+- Container styling via `.sdCard()`; CTAs via `SDPrimaryButtonStyle` (coral gradient pill) / `SDInkButtonStyle`; screen backgrounds use `SDColor.cream`.
+- Date formatting goes through `SDFormat.koreanLocale` so output does not follow the device locale.
+- `SmileArc` is reused for the splash logo and the guide screen's drawn face.
+- `SDColor` only wraps tokens the UI actually uses; raw hex values and their contrast tests live in `CoachingKit/SDPalette.swift`, because the app target has no test bundle. Add a token in both places or not at all.
 
 ## Dependencies
 
 ### Internal
-- CoachingKit view models, repositories, `HabitEncouragementEngine`, `ReminderNudge`; `Services/` for AR preview and notification routing.
-- User-facing copy never shows scores, day-over-day deltas, or left/right comparisons. `InsightEngine` exists for storage compatibility and internal research only.
+- CoachingKit frequency/reminder view models and repositories; `Services/` for notification scheduling and routing.
+- User-facing copy never shows stored scores, day-over-day deltas, or left/right comparisons — the logic that produced them has been removed, not hidden. The live monitor's 0–100 number is a real-time sensor reading that is never saved or compared.
 
 ### External
-- SwiftUI, Swift Charts (History), Observation.
+- SwiftUI, Observation.
 
 <!-- MANUAL: Any manually added notes below this line are preserved on regeneration -->

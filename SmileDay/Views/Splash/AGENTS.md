@@ -4,7 +4,7 @@
 # Splash
 
 ## Purpose
-Single branded launch screen shown by `RootView` while the initial baseline load runs.
+Single branded launch screen shown by `RootView` while it decides between onboarding and home.
 
 ## Key Files
 | File | Description |

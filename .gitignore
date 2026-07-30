@@ -1,4 +1,9 @@
 CoachingKit/.build/
 *.xcuserstate
 xcuserdata/
+
+# 에이전트·에디터 로컬 상태. 저장소에 남기지 않는다.
 .superpowers/
+.claude/
+.omc/
+.vscode/

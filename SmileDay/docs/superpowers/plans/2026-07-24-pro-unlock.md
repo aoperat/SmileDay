@@ -1,5 +1,7 @@
 # Pro 1회성 구매(잠금 해제) Implementation Plan
 
+> **⛔ BLOCKED (2026-07-28):** `SmileDay/docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`의 Task 13 검증 전에는 실행하지 않는다. 검증 후 혜택과 가격을 새 MVP 결과에 맞춰 다시 설계한다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **⛔ BLOCKED (2026-07-27):** Do not start this plan yet. See "선행 조건" below.
@@ -14,14 +16,14 @@
 
 ## 선행 조건 (2026-07-27 추가)
 
-**`2026-07-27-smile-habit-reframe.md`의 제품 전환 구현과 사용자 검증이 끝나기 전에는 이 계획의 StoreKit 작업을 시작하지 않는다.**
+**`2026-07-28-notification-smile-mvp.md`의 구현과 사용자 검증이 끝나기 전에는 이 계획의 StoreKit 작업을 시작하지 않는다.**
 
-이전 유료 경계(케어 루틴 전체, 시간대별 점수 상세)는 얼굴 평가 중심 가치에 기대고 있었고, 그 가치는 제품 정의에서 제거되었다. `CareRoutine`/`CareViewModel` 타입 자체가 사라졌으므로 아래 Task 2는 더 이상 적용되지 않는다.
+이 문서의 혜택과 게이팅은 알림 중심 MVP보다 넓은 이전 제품 범위를 전제로 하므로 현재 상태로 구현하지 않는다. MVP 검증 후 수익화 문서를 새로 작성한다.
 
 착수 조건:
 
-- [ ] 미소 습관 전환 구현 완료
-- [ ] `2026-07-27-smile-habit-reframe.md` Task 14의 제품 수용 기준 통과
+- [ ] 알림 중심 미소 MVP 구현 완료
+- [ ] `2026-07-28-notification-smile-mvp.md` Task 13의 검증 통과
 - [ ] 아래 Pro 후보 중 **최소 3개가 실제로 완성됨** — 구현되지 않은 혜택은 페이월에 표시하지 않는다
 
 ### 무료 핵심 (절대 잠그지 않는다)
