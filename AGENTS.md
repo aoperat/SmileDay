@@ -14,7 +14,7 @@ The core loop never uses the camera. One optional side mode ("실시간 미소 �
 |------|-------------|
 | `CLAUDE.md` | Claude Code guidance: build/test commands, architecture summary, conventions |
 | `SmileDay.xcodeproj` | Xcode project for the app target (scheme: `SmileDay`) |
-| `SmileDay/docs/reports/2026-07-30-project-review.md` | Latest project-wide review: verified status, risks, and recommended priorities |
+| `SmileDay/docs/reports/2026-07-31-project-review.md` | Latest project-wide review: verified status, risks, and recommended priorities |
 
 ## Subdirectories
 | Directory | Purpose |

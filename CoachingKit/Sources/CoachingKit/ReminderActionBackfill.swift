@@ -25,27 +25,29 @@ public final class UserDefaultsReminderActionBackfillStore: ReminderActionBackfi
 /// 기기에 그대로 남아 갱신되지 않으므로, 이 기능이 생기기 전에 예약한 사용자는 설정을 다시
 /// 저장하기 전까지 버튼을 영영 못 본다.
 ///
-/// **같은 `groupID`로 다시 등록한다.** 식별자가 `<groupID>-daily-HHmm`로 결정되어 있어서
-/// `UNUserNotificationCenter.add`가 같은 식별자의 알림을 덮어쓴다 — 취소하고 새로 만드는
-/// 경로를 타지 않으므로 중간에 실패해도 알림이 사라진 구간이 생기지 않고, 새 그룹을 만들지
-/// 않으니 지울 옛 그룹도 남지 않는다.
+/// **새 `groupID`로 전부 등록한 뒤 저장값을 교체하고, 마지막에 옛 그룹을 취소한다.**
+/// 같은 identifier를 덮어쓰다가 중간에 실패하면 scheduler의 부분 등록 롤백이 이미 존재하던
+/// 요청까지 지울 수 있다. 새 그룹을 쓰면 실패한 요청만 정리되고 옛 알림은 온전히 남는다.
 @MainActor
 public struct ReminderActionBackfill {
     private let scheduleRepository: SmileReminderScheduleRepository
     private let scheduler: ReminderScheduling
     private let messageStore: ReminderMessageStoring
     private let store: ReminderActionBackfillStoring
+    private let groupIDFactory: () -> String
 
     public init(
         scheduleRepository: SmileReminderScheduleRepository,
         scheduler: ReminderScheduling,
         messageStore: ReminderMessageStoring = UserDefaultsReminderMessageStore(),
-        store: ReminderActionBackfillStoring = UserDefaultsReminderActionBackfillStore()
+        store: ReminderActionBackfillStoring = UserDefaultsReminderActionBackfillStore(),
+        groupIDFactory: @escaping () -> String = { UUID().uuidString }
     ) {
         self.scheduleRepository = scheduleRepository
         self.scheduler = scheduler
         self.messageStore = messageStore
         self.store = store
+        self.groupIDFactory = groupIDFactory
     }
 
     /// 실패하면 표시를 남기지 않는다 — 다음 실행에서 다시 시도한다.
@@ -63,9 +65,12 @@ public struct ReminderActionBackfill {
             return false
         }
 
+        let previousGroupID = schedule.notificationGroupID
+        let newGroupID = groupIDFactory()
+
         do {
             try await scheduler.scheduleDailyPattern(
-                groupID: schedule.notificationGroupID,
+                groupID: newGroupID,
                 times: pattern.occurrences(),
                 messages: messageStore.messages
             )
@@ -73,6 +78,18 @@ public struct ReminderActionBackfill {
             return false
         }
 
+        do {
+            _ = try scheduleRepository.save(
+                pattern: pattern,
+                isEnabled: true,
+                notificationGroupID: newGroupID
+            )
+        } catch {
+            scheduler.cancelGroup(id: newGroupID)
+            return false
+        }
+
+        scheduler.cancelGroup(id: previousGroupID)
         store.hasBackfilledReminderActions = true
         return true
     }

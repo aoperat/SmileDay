@@ -11,11 +11,15 @@ final class ReminderActionBackfillTests: XCTestCase {
         var shouldFailScheduling = false
         private(set) var scheduled: [(groupID: String, times: [ReminderTime])] = []
         private(set) var cancelledGroups: [String] = []
+        private(set) var calls: [String] = []
 
         func requestAuthorization() async -> Bool { true }
         func currentAuthorizationStatus() async -> ReminderAuthorizationStatus { .authorized }
         func cancel(id: String) {}
-        func cancelGroup(id: String) { cancelledGroups.append(id) }
+        func cancelGroup(id: String) {
+            cancelledGroups.append(id)
+            calls.append("cancel:\(id)")
+        }
         func scheduleDailyPattern(
             groupID: String,
             times: [ReminderTime],
@@ -23,6 +27,7 @@ final class ReminderActionBackfillTests: XCTestCase {
         ) async throws {
             if shouldFailScheduling { throw SchedulingError.failed }
             scheduled.append((groupID, times))
+            calls.append("schedule:\(groupID)")
         }
     }
 
@@ -47,7 +52,8 @@ final class ReminderActionBackfillTests: XCTestCase {
                 scheduleRepository: repository,
                 scheduler: scheduler,
                 messageStore: InMemoryReminderMessageStore(),
-                store: store
+                store: store,
+                groupIDFactory: { "backfill-group" }
             ),
             repository,
             scheduler,
@@ -65,28 +71,24 @@ final class ReminderActionBackfillTests: XCTestCase {
 
     // MARK: - 다시 등록해야 하는 경우
 
-    /// 핵심: 예약된 그룹을 **같은 ID로** 다시 등록해야 알림이 덮어써진다.
-    /// 새 ID로 만들면 옛 알림이 그대로 남아 하루에 두 번 울린다.
-    func test_reschedulesIntoTheSameGroup() async throws {
+    /// 새 그룹이 완전히 등록된 뒤에만 저장값을 교체하고 옛 그룹을 지운다.
+    /// 같은 그룹을 덮어쓰면 중간 실패 롤백이 기존 요청까지 지울 수 있다.
+    func test_replacesOldGroupOnlyAfterSchedulingNewGroup() async throws {
         let (backfill, repository, scheduler, _) = try makeBackfill()
         let schedule = try repository.save(pattern: pattern(), isEnabled: true)
-        let groupID = schedule.notificationGroupID
+        let previousGroupID = schedule.notificationGroupID
 
         let didRun = await backfill.runIfNeeded()
 
         XCTAssertTrue(didRun)
         XCTAssertEqual(scheduler.scheduled.count, 1)
-        XCTAssertEqual(scheduler.scheduled.first?.groupID, groupID)
-    }
-
-    /// 덮어쓰기라서 지울 그룹이 없다. 취소를 부르면 그 순간 알림이 비는 구간이 생긴다.
-    func test_cancelsNothing() async throws {
-        let (backfill, repository, scheduler, _) = try makeBackfill()
-        _ = try repository.save(pattern: pattern(), isEnabled: true)
-
-        await backfill.runIfNeeded()
-
-        XCTAssertTrue(scheduler.cancelledGroups.isEmpty)
+        XCTAssertEqual(scheduler.scheduled.first?.groupID, "backfill-group")
+        XCTAssertEqual(scheduler.cancelledGroups, [previousGroupID])
+        XCTAssertEqual(
+            scheduler.calls,
+            ["schedule:backfill-group", "cancel:\(previousGroupID)"]
+        )
+        XCTAssertEqual(try repository.fetchCurrent()?.notificationGroupID, "backfill-group")
     }
 
     func test_reschedulesEveryOccurrence() async throws {
@@ -151,13 +153,16 @@ final class ReminderActionBackfillTests: XCTestCase {
     /// 실패했는데 표시를 남기면 그 사용자는 버튼을 영영 못 받는다.
     func test_retriesOnNextLaunch_whenSchedulingFails() async throws {
         let (backfill, repository, scheduler, store) = try makeBackfill()
-        _ = try repository.save(pattern: pattern(), isEnabled: true)
+        let previous = try repository.save(pattern: pattern(), isEnabled: true)
+        let previousGroupID = previous.notificationGroupID
         scheduler.shouldFailScheduling = true
 
         let didRun = await backfill.runIfNeeded()
 
         XCTAssertFalse(didRun)
         XCTAssertFalse(store.hasBackfilledReminderActions)
+        XCTAssertTrue(scheduler.cancelledGroups.isEmpty, "실패하면 기존 그룹을 취소하면 안 된다")
+        XCTAssertEqual(try repository.fetchCurrent()?.notificationGroupID, previousGroupID)
 
         scheduler.shouldFailScheduling = false
         let retry = await backfill.runIfNeeded()
