@@ -54,11 +54,6 @@ public final class LiveSmileMonitorViewModel {
     public private(set) var nudgeCount = 0
     /// 측정 중 그래프가 그리는 타임라인. 확정된 1초 칸만 들어 있다.
     public private(set) var timeline: [LiveSmileObservation] = []
-    /// 사진을 집어야 할 때마다 오른다. 화면이 이 변화를 보고 이미지를 만든다.
-    ///
-    /// 판정은 프레임 경로에서 끝났으므로, 화면이 한 박자 뒤에 캡처해도 방금 쓸 만한
-    /// 프레임이 있었다는 사실은 이미 확정돼 있다.
-    public private(set) var snapshotRequestCount = 0
 
     /// 세션 동안 무엇이든 기록됐는지 — 측정을 말없이 버리지 않고 요약을 보여줄지 판단할 때 쓴다.
     ///
@@ -267,16 +262,8 @@ public final class LiveSmileMonitorViewModel {
     }
 
     /// recorder에 넘기고, 칸이 새로 확정됐을 때만 화면용 타임라인을 갱신한다.
-    ///
-    /// 스냅샷 슬롯도 여기서 확보한다. `claimSnapshotSlot()`은 마지막으로 넘긴 관찰을 믿으므로
-    /// 프레임 경로 밖에서 부르면 안 된다 — 얼굴이 사라진 뒤에도 낡은 `notSmiling`이 남아
-    /// 가드를 통과하고, 얼굴 없는 사진이 찍힌다.
     private func record(_ observation: LiveSmileObservation) {
         recorder.observe(observation)
-
-        if recorder.claimSnapshotSlot() {
-            snapshotRequestCount += 1
-        }
 
         guard recorder.timeline.count != timeline.count else { return }
         timeline = recorder.timeline

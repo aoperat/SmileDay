@@ -605,15 +605,6 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.timeline.count, 2, "이전 세션 칸이 남으면 안 된다")
     }
 
-    /// 슬롯 판정은 프레임 경로에서 끝나야 한다. 시작 직후 첫 프레임이 한 장을 요청한다.
-    func test_snapshotRequest_risesOnTheFirstUsableFrame() {
-        let (viewModel, monitor, clock, _) = makeViewModel()
-        viewModel.start()
-        finishCalibration(monitor, clock)
-
-        XCTAssertGreaterThan(viewModel.snapshotRequestCount, 0)
-    }
-
     // MARK: - 측정 보존
 
     /// 시작 전에는 아무것도 기록되지 않았다.

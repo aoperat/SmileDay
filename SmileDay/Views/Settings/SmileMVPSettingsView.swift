@@ -232,7 +232,7 @@ struct SmileMVPSettingsView: View {
             Text("데이터 저장 위치")
                 .foregroundStyle(SDColor.ink)
         } footer: {
-            Text("완료한 시각만 저장해요. 실시간 확인 중 집는 사진은 화면을 닫으면 사라지고, 저장하거나 전송하지 않아요.")
+            Text("완료한 시각만 저장해요. 실시간 확인은 사진을 남기지 않고, 그 결과도 화면을 닫으면 사라져요.")
                 .foregroundStyle(SDColor.muted)
         }
         .listRowBackground(Color.white)

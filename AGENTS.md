@@ -69,8 +69,8 @@ Note: `swift test` output ends with the Swift Testing runner's "0 tests in 0 sui
 - The camera runs only while the user has explicitly started the mode, and stops on close, background, or scene inactive.
 - Show only the mouth-corner sensor signal. No appearance, emotion, impression, Duchenne, symmetry, age, or wrinkle evaluation.
 - The camera view is **off by default** and opens only when the user toggles it on. It is never persisted across sessions and never on at launch.
-- **Nothing from this mode is persisted or transmitted** — no frames, blend shapes, levels, timelines, or snapshots reach SwiftData, UserDefaults, the filesystem, or the network. This is the one absolute.
-- Snapshots are allowed under conditions: one per minute, held in memory for the session only, released when the summary closes, with no capture button, export, or share path. No video capture at all.
-- Three claims are now separate in copy — "we don't display it", "we don't take it", "we don't keep it". Only the last is absolute. Do not merge them back into one sentence.
+- **Nothing from this mode is persisted or transmitted** — no frames, blend shapes, levels, or timelines reach SwiftData, UserDefaults, the filesystem, or the network. This is the one absolute.
+- **No still image is produced at all.** `ARFrame.capturedImage` is never read; the mode's only output is the in-memory 1-second timeline. A per-minute snapshot grid was built and then removed on 2026-07-31 — a grid of the user's own face makes them grade themselves, which is exactly what this app refuses to do, and the timeline already answers "when". Do not reintroduce it; the timeline is the summary's visual.
+- Two claims stay separate in copy — "we don't display it" (conditional: the preview is user-toggled) and "we don't keep it" (absolute). Do not merge them into one sentence.
 - Live-mode usage is not a completion. Do not add it to `SmileMoment` counts.
 - A device without TrueDepth must keep full access to everything else in the app.

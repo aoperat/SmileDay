@@ -1,13 +1,25 @@
 # 실시간 확인 세션 그래프와 비율 설계
 
 - 날짜: 2026-07-30
-- 상태: 제안됨
+- 상태: 구현됨 (2026-07-31 개정 — §6 스냅샷 철회)
 - 상위 설계: `2026-07-29-live-smile-monitor-design.md` (이 문서가 §8·§11·§13·§14를 개정한다)
 - 관련 설계: `2026-07-29-smile-frequency-window-reminders-design.md`
 
+## 0. 개정 이력
+
+### 2026-07-31 개정 — 스냅샷 전면 철회
+
+**§6(스냅샷), §7의 사진 관련 항목, §9의 `claimSnapshotSlot()`, §10의 사진 메모리 예산, §12의 사진 검증 항목, §13의 문구 변경은 모두 무효다.** 그래프와 비율만 남는다.
+
+이유는 상위 설계 `2026-07-29-live-smile-monitor-design.md`의 6차 개정에 적었다. 요약하면 — 이 앱의 대상은 평소 잘 웃지 않는 사람이므로 사진 격자는 평균적으로 "안 웃는 자기 얼굴"의 격자가 되고, 그건 판정하지 않겠다는 이 제품의 전제와 부딪힌다. 사진 없이도 **언제**는 띠가, **얼마나**는 비율이 말한다.
+
+이 문서의 §2에서 "사진별 미소 여부 색 표시"를 버린 근거가 그대로 사진 자체에도 적용된다는 것이 뒤늦게 분명해진 셈이다.
+
+따라 사라진 것: `LiveSmileSessionRecorder`의 스냅샷 슬롯 전부(`snapshotInterval`·`snapshotGrace`·`maxSnapshots`·`claimSnapshotSlot()`·`firstJudgeableAt`), `LiveSmileMonitorViewModel.snapshotRequestCount`, `ARKitLiveSmileMonitor.snapshotJPEGData()`, 요약 화면의 사진 스트립. `ARFrame.capturedImage`를 읽는 코드는 앱 전체에 남아 있지 않다.
+
 ## 1. 목적
 
-실시간 확인 모드가 끝났을 때, 그 세션 동안 어떻게 웃었는지를 **그래프 하나와 비율 하나**로 보여준다. 분당 1장의 스냅샷을 함께 둬서 숫자가 어떤 표정에서 나왔는지 볼 수 있게 한다.
+실시간 확인 모드가 끝났을 때, 그 세션 동안 어떻게 웃었는지를 **그래프 하나와 비율 하나**로 보여준다.
 
 해결하려는 문제는 두 가지다.
 

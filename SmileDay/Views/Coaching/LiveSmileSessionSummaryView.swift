@@ -3,11 +3,11 @@ import CoachingKit
 
 /// 실시간 확인이 끝난 뒤 그 세션을 보여주는 화면.
 ///
-/// 저장하지 않는다. 이 화면을 닫으면 타임라인과 사진이 그대로 사라진다.
-/// 사진에 미소 여부 색을 칠하지 않는다 — 한 장마다 판정을 붙이면 "안 웃은 나"의 격자가 된다.
+/// 저장하지 않는다. 이 화면을 닫으면 타임라인이 그대로 사라진다.
+/// 얼굴 사진은 보여주지 않는다 — 자기 얼굴이 격자로 늘어서면 사용자가 스스로를 판정하게 되고,
+/// 그건 "잘함·못함을 매기지 않는다"는 이 앱의 전제와 어긋난다. 시간대는 아래 띠가 말해준다.
 struct LiveSmileSessionSummaryView: View {
     let summary: LiveSmileSessionSummary
-    let snapshots: [Data]
     let onClose: () -> Void
 
     var body: some View {
@@ -30,10 +30,6 @@ struct LiveSmileSessionSummaryView: View {
                 // "그 시간을 못 봤다"를 정확히 말해준다. 0초일 때만 숨긴다.
                 if summary.totalSeconds > 0 {
                     timelineBand
-                }
-
-                if !snapshots.isEmpty {
-                    snapshotStrip
                 }
 
                 Text(SharedStrings.liveSummaryMeaning)
@@ -114,40 +110,6 @@ struct LiveSmileSessionSummaryView: View {
             RoundedRectangle(cornerRadius: 3).fill(color).frame(width: 10, height: 10)
             Text(text)
         }
-    }
-
-    private var snapshotStrip: some View {
-        VStack(alignment: .leading, spacing: 8) {
-            // 사진에 판정을 붙이지 않는다. 개수만 알려준다.
-            Text("1분에 1장씩, 총 \(snapshots.count)장")
-                .font(.footnote.weight(.semibold))
-                .foregroundStyle(SDColor.muted)
-
-            LazyVGrid(columns: Array(repeating: GridItem(spacing: 4), count: 5), spacing: 4) {
-                // 사진 자체는 읽어줄 것이 없다. 대신 위의 장수는 남겨둔다.
-                // `LazyVGrid`는 보이는 셀만 만들므로, 120장을 압축 해제해 들고 있는 대신
-                // 셀마다 그때 필요한 것만 디코드한다.
-                ForEach(Array(snapshots.enumerated()), id: \.offset) { _, data in
-                    // 사진에 높이만 주면 프레임이 `scaledToFill`이 넘긴 폭을 그대로 물려받아
-                    // 셀이 열 너비를 벗어나고 `clipped()`도 잘라내지 못한다 —
-                    // 65pt 열에서 98pt로 측정된다. 크기는 빈 사각형이 정하고 사진은 그 위에 채운다.
-                    Rectangle()
-                        .fill(SDColor.shell)
-                        .frame(height: 74)
-                        .overlay {
-                            // 디코드가 실패해도(손상된 바이트) 빈 사각형이 자리를 지킨다.
-                            if let image = UIImage(data: data) {
-                                Image(uiImage: image)
-                                    .resizable()
-                                    .scaledToFill()
-                            }
-                        }
-                        .clipShape(RoundedRectangle(cornerRadius: 6, style: .continuous))
-                }
-            }
-            .accessibilityHidden(true)
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 
     private func durationText(_ seconds: Int) -> String {

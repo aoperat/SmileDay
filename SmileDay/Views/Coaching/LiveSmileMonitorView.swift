@@ -5,8 +5,8 @@ import CoachingKit
 /// 실시간 미소 확인 화면.
 ///
 /// 카메라 화면은 기본으로 꺼져 있고 사용자가 토글로 켠다. 켜져 있을 때만 프리뷰 뷰를 만든다.
-/// 분당 1장 스냅샷을 찍어 세션 동안만 메모리에 들고 있는다 — 카메라 화면이 꺼져 있어도,
-/// 측정값이든 사진이든 저장하거나 내보내거나 전송하는 경로는 없다.
+/// 프레임의 픽셀을 꺼내는 경로가 없다 — 사진을 남기지 않으므로 저장·내보내기·전송할 대상 자체가
+/// 없고, 세션이 만드는 것은 메모리에만 있는 1초 칸 타임라인뿐이다.
 struct LiveSmileMonitorView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.scenePhase) private var scenePhase
@@ -26,8 +26,6 @@ struct LiveSmileMonitorView: View {
     @State private var previousIdleTimerDisabled = false
     /// 종료를 누른 뒤 보여줄 요약. 화면을 닫으면 사라진다.
     @State private var summary: LiveSmileSessionSummary?
-    /// 분당 1장, JPEG 바이트로. 저장 경로가 없고 이 배열이 사라지면 사진도 사라진다.
-    @State private var snapshots: [Data] = []
 
     var body: some View {
         ZStack {
@@ -96,7 +94,6 @@ struct LiveSmileMonitorView: View {
             if let summary {
                 LiveSmileSessionSummaryView(
                     summary: summary,
-                    snapshots: snapshots,
                     onClose: {
                         releaseSession()
                         dismiss()
@@ -211,10 +208,6 @@ struct LiveSmileMonitorView: View {
         .onChange(of: viewModel.nudgeCount) { _, count in
             guard count > 0 else { return }
             showNudgeCue()
-        }
-        .onChange(of: viewModel.snapshotRequestCount) { _, count in
-            guard count > 0 else { return }
-            captureSnapshot()
         }
     }
 
@@ -423,8 +416,7 @@ struct LiveSmileMonitorView: View {
 
     private func startMeasuring() {
         hasStarted = true
-        // start()가 새 recorder를 만든다. 이전 세션 사진이 섞이지 않게 함께 버린다.
-        snapshots = []
+        // start()가 새 recorder를 만든다. 이전 세션 요약이 남지 않게 함께 버린다.
         summary = nil
         previousIdleTimerDisabled = UIApplication.shared.isIdleTimerDisabled
         // 세워두고 보는 화면이라 측정 중에만 자동 잠금을 막는다.
@@ -457,14 +449,6 @@ struct LiveSmileMonitorView: View {
     private func releaseSession() {
         shutDown()
         summary = nil
-        snapshots = []
-    }
-
-    /// 슬롯은 ViewModel이 프레임 경로에서 이미 확보했다. 여기서는 JPEG 바이트만 만든다.
-    private func captureSnapshot() {
-        guard let monitor, summary == nil else { return }
-        guard let data = monitor.snapshotJPEGData() else { return }
-        snapshots.append(data)
     }
 
     /// 닫기·화면 이탈·실패 등 모든 종료 경로에서 카메라와 자동 잠금을 원래대로 되돌린다.
@@ -476,7 +460,6 @@ struct LiveSmileMonitorView: View {
         // 다음 세션도 카메라 화면이 꺼진 상태로 시작한다.
         isShowingPreview = false
         isShowingNudgeCue = false
-        snapshots = []
     }
 
     private func restoreIdleTimer() {
