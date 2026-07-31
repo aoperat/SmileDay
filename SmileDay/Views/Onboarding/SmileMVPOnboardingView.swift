@@ -68,35 +68,44 @@ private struct IntroStep: View {
     let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        // 접근성 글씨 크기에서는 이 문구가 화면보다 길어진다. 고정 VStack이면 SwiftUI가
+        // 남는 자리에 맞추려고 텍스트를 잘라내는데, 잘려나가는 문장이 하필 얼굴을 찍지
+        // 않는다는 약속이다. minHeight로 평소의 가운데 정렬은 지키고, 넘칠 때만 스크롤한다.
+        // 마지막 단계(OnboardingScheduleStep)는 이미 같은 이유로 ScrollView 안에 있다.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer(minLength: 0)
 
-            Image(systemName: systemImage)
-                .font(.system(size: 64))
-                .foregroundStyle(SDColor.sunDeep)
-                .accessibilityHidden(true)
+                    Image(systemName: systemImage)
+                        .font(.system(size: 64))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .accessibilityHidden(true)
 
-            Text(title)
-                .font(.title2.bold())
-                .foregroundStyle(SDColor.ink)
+                    Text(title)
+                        .font(.title2.bold())
+                        .foregroundStyle(SDColor.ink)
 
-            Text(message)
-                .font(.body)
-                .foregroundStyle(SDColor.ink)
-                .multilineTextAlignment(.center)
+                    Text(message)
+                        .font(.body)
+                        .foregroundStyle(SDColor.ink)
+                        .multilineTextAlignment(.center)
 
-            Text(detail)
-                .font(.footnote)
-                .foregroundStyle(SDColor.muted)
-                .multilineTextAlignment(.center)
+                    Text(detail)
+                        .font(.footnote)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.center)
 
-            Spacer()
+                    Spacer(minLength: 0)
 
-            Button(actionTitle, action: action)
-                .buttonStyle(SDPrimaryButtonStyle())
+                    Button(actionTitle, action: action)
+                        .buttonStyle(SDPrimaryButtonStyle())
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 24)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
         }
-        .padding(.horizontal, 32)
-        .padding(.bottom, 24)
     }
 }
 

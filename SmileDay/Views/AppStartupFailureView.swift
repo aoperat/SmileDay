@@ -6,26 +6,29 @@ struct AppStartupFailureView: View {
         ZStack {
             SDColor.cream.ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                Image(systemName: "exclamationmark.circle.fill")
-                    .font(.system(size: 48))
-                    .foregroundStyle(SDColor.sunDeep)
-                    .accessibilityHidden(true)
+            // 복구 방법을 알려주는 화면이라 큰 글씨에서 잘리면 안내 자체가 사라진다.
+            ScrollView {
+                VStack(spacing: 18) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .accessibilityHidden(true)
 
-                VStack(spacing: 8) {
-                    Text("앱을 시작하지 못했어요")
-                        .font(.title2.bold())
-                        .foregroundStyle(SDColor.ink)
+                    VStack(spacing: 8) {
+                        Text("앱을 시작하지 못했어요")
+                            .font(.title2.bold())
+                            .foregroundStyle(SDColor.ink)
 
-                    Text("앱을 완전히 종료한 뒤 다시 열어주세요.\n계속되면 기기를 재시동해 주세요.")
-                        .font(.body)
-                        .foregroundStyle(SDColor.muted)
-                        .multilineTextAlignment(.center)
+                        Text("앱을 완전히 종료한 뒤 다시 열어주세요.\n계속되면 기기를 재시동해 주세요.")
+                            .font(.body)
+                            .foregroundStyle(SDColor.muted)
+                            .multilineTextAlignment(.center)
+                    }
                 }
+                .padding(28)
+                .sdCard()
+                .padding(.horizontal, 24)
             }
-            .padding(28)
-            .sdCard()
-            .padding(.horizontal, 24)
         }
         .preferredColorScheme(.light)
     }
