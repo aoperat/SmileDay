@@ -6,19 +6,18 @@ import CoachingKit
 /// 원시 hex 값은 `CoachingKit.SDPalette`에 있다. 앱 타깃에는 테스트 번들이 없어
 /// 대비 회귀를 잡을 수 없으므로, 값은 그쪽에 두고 여기서는 감싸기만 한다.
 enum SDColor {
-    static let coral = Color(hex: SDPalette.coral)
-    static let coralDeep = Color(hex: SDPalette.coralDeep)
-    static let apricot = Color(hex: SDPalette.apricot)
     static let sun = Color(hex: SDPalette.sun)
+    static let apricot = Color(hex: SDPalette.apricot)
+    static let sunDeep = Color(hex: SDPalette.sunDeep)
     static let cream = Color(hex: SDPalette.cream)
     static let ink = Color(hex: SDPalette.ink)
     static let muted = Color(hex: SDPalette.muted)
     static let shell = Color(hex: SDPalette.shell)
     static let alert = Color(hex: SDPalette.alert)
 
-    /// 흰 글자를 얹으므로 진한 쪽 두 색만 쓴다. 더 밝은 코랄은 흰 글자 대비가 3:1에 못 미친다.
+    /// 주조색 그라디언트. **여기에 얹는 글자는 `ink`다** — 흰 글자는 노랑 위에서 1.7:1이다.
     static var primaryGradient: LinearGradient {
-        LinearGradient(colors: [coralDeep, coral], startPoint: .leading, endPoint: .trailing)
+        LinearGradient(colors: [apricot, sun], startPoint: .leading, endPoint: .trailing)
     }
 }
 
@@ -67,7 +66,7 @@ struct SDCardModifier: ViewModifier {
         content
             .padding(padding)
             .background(.white, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .shadow(color: SDColor.coral.opacity(0.14), radius: 13, y: 5)
+            .shadow(color: SDColor.apricot.opacity(0.16), radius: 13, y: 5)
     }
 }
 
@@ -77,16 +76,17 @@ extension View {
     }
 }
 
-/// 코랄 그라디언트 필 버튼.
+/// 주조색(노랑) 그라디언트 필 버튼.
 struct SDPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.bold())
-            .foregroundStyle(.white)
+            // 흰 글자가 아니다. 노랑 위 흰 글자는 1.7:1이고, ink는 7.7:1이다.
+            .foregroundStyle(SDColor.ink)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(SDColor.primaryGradient, in: Capsule())
-            .shadow(color: SDColor.coral.opacity(0.5), radius: 10, y: 5)
+            .shadow(color: SDColor.apricot.opacity(0.5), radius: 10, y: 5)
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }

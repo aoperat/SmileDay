@@ -38,7 +38,7 @@ struct SmileMVPSettingsView: View {
                             Text("미소 알림")
                                 .foregroundStyle(SDColor.ink)
                         }
-                        .tint(SDColor.coralDeep)
+                        .tint(SDColor.sunDeep)
 
                         ReminderPatternControls(viewModel: viewModel)
                             .padding(.vertical, 6)
@@ -153,7 +153,7 @@ struct SmileMVPSettingsView: View {
                 Text(SharedStrings.liveMonitorNudgeToggle)
                     .foregroundStyle(SDColor.ink)
             }
-            .tint(SDColor.coralDeep)
+            .tint(SDColor.sunDeep)
 
             if nudgeSettings.isEnabled {
                 Picker(selection: nudgeBinding(\.intervalSeconds)) {
@@ -169,7 +169,7 @@ struct SmileMVPSettingsView: View {
                     Text(SharedStrings.liveMonitorNudgeHapticToggle)
                         .foregroundStyle(SDColor.ink)
                 }
-                .tint(SDColor.coralDeep)
+                .tint(SDColor.sunDeep)
             }
         } header: {
             Text(SharedStrings.liveMonitorNudgeSectionTitle)

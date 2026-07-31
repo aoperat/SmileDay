@@ -290,12 +290,12 @@ struct LiveSmileMonitorView: View {
         .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: filled)
     }
 
-    /// 아래 칸에서 위 칸으로 갈수록 살구에서 코랄로 옮겨간다.
+    /// 아래 칸에서 위 칸으로 갈수록 노랑에서 살구로 옮겨간다.
     private func segmentColor(_ index: Int) -> Color {
         let steps = max(LiveSmileLevel.allCases.count - 1, 1)
         return Color(
-            blending: SDPalette.apricot,
-            with: SDPalette.coral,
+            blending: SDPalette.sun,
+            with: SDPalette.apricot,
             ratio: Double(index) / Double(steps)
         )
     }
@@ -305,7 +305,7 @@ struct LiveSmileMonitorView: View {
         VStack(spacing: 4) {
             Text(SharedStrings.liveMonitorNudgeTitle)
                 .font(.system(size: 34, weight: .bold, design: .rounded))
-                .foregroundStyle(SDColor.coralDeep)
+                .foregroundStyle(SDColor.sunDeep)
 
             Text(SharedStrings.liveMonitorNudgeBody)
                 .font(.subheadline)

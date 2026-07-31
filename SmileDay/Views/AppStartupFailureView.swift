@@ -9,7 +9,7 @@ struct AppStartupFailureView: View {
             VStack(spacing: 18) {
                 Image(systemName: "exclamationmark.circle.fill")
                     .font(.system(size: 48))
-                    .foregroundStyle(SDColor.coralDeep)
+                    .foregroundStyle(SDColor.sunDeep)
                     .accessibilityHidden(true)
 
                 VStack(spacing: 8) {
@@ -39,7 +39,7 @@ struct AppDataLoadFailureView: View {
         VStack(spacing: 16) {
             Image(systemName: "arrow.clockwise.circle.fill")
                 .font(.system(size: 42))
-                .foregroundStyle(SDColor.coralDeep)
+                .foregroundStyle(SDColor.sunDeep)
                 .accessibilityHidden(true)
 
             Text("앱 데이터를 불러오지 못했어요")

@@ -93,7 +93,7 @@ struct LiveSmileSessionSummaryView: View {
                 .frame(height: 34)
 
             HStack(spacing: 14) {
-                legend(SharedStrings.liveSummaryLegendSmiling, SDColor.coral)
+                legend(SharedStrings.liveSummaryLegendSmiling, SDColor.apricot)
                 legend(SharedStrings.liveSummaryLegendNotSmiling, SDColor.shell)
                 legend(SharedStrings.liveSummaryLegendUnknown, SDColor.muted.opacity(0.35))
             }
@@ -172,7 +172,7 @@ struct LiveSmileTimelineBand: View {
 
     private func color(_ observation: LiveSmileObservation) -> Color {
         switch observation {
-        case .smiling: SDColor.coral
+        case .smiling: SDColor.apricot
         case .notSmiling: SDColor.shell
         case .unknown: SDColor.muted.opacity(0.35)
         }

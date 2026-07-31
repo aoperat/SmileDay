@@ -28,6 +28,35 @@ final class SDPaletteTests: XCTestCase {
         }
     }
 
+    /// 주조색이 노랑이 되면서 기본 버튼 글자는 흰색이 아니라 `ink`다.
+    /// 본문 기준(4.5:1)까지 넘기므로 작은 글씨를 얹어도 된다.
+    func test_inkOnPrimaryBackgrounds_meetBodyTextMinimum() {
+        XCTAssertFalse(SDPalette.inkOnPrimaryBackgrounds.isEmpty)
+        for background in SDPalette.inkOnPrimaryBackgrounds {
+            let ratio = SDPalette.contrastRatio(SDPalette.ink, background)
+            XCTAssertGreaterThanOrEqual(ratio, 4.5, "ink on \(name(background))")
+        }
+    }
+
+    /// 회귀 방지: 노랑 위에 흰 글자를 얹으려는 시도를 여기서 막는다.
+    /// 이 값들이 `whiteOnColorBackgrounds`에 들어가면 위 테스트가 바로 깨져야 한다.
+    func test_primaryBackgrounds_cannotCarryWhiteText() {
+        for background in SDPalette.inkOnPrimaryBackgrounds {
+            XCTAssertLessThan(
+                SDPalette.contrastRatio(SDPalette.white, background),
+                3.0,
+                "\(name(background))는 흰 글자를 받을 수 없다 — ink를 써야 한다"
+            )
+            XCTAssertFalse(SDPalette.whiteOnColorBackgrounds.contains(background))
+        }
+    }
+
+    /// 아이콘 틴트와 스위치에 쓰는 색. 밝은 표면 위에서 글자로 써도 될 만큼 어두워야 한다.
+    func test_sunDeep_isReadableOnLightSurfaces() {
+        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.sunDeep, SDPalette.cream), 4.5)
+        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.sunDeep, SDPalette.white), 4.5)
+    }
+
     func test_inkGlyphOnChipBackgrounds_meetNonTextMinimum() {
         for background in SDPalette.inkOnChipBackgrounds {
             let ratio = SDPalette.contrastRatio(SDPalette.ink, background)
@@ -45,6 +74,19 @@ final class SDPaletteTests: XCTestCase {
         }
     }
 
+    /// 그래프의 "미소" 칸(`apricot`)과 "안 웃음" 칸(`shell`)은 1pt 열로 나란히 그려진다.
+    /// 주조색 `sun`을 그대로 쓰면 둘이 붙어 보여서 진한 쪽을 쓴다 — 그 판단을 고정한다.
+    func test_timelineSmilingColor_separatesFromNotSmiling() {
+        let apricotVsShell = SDPalette.contrastRatio(SDPalette.apricot, SDPalette.shell)
+        let sunVsShell = SDPalette.contrastRatio(SDPalette.sun, SDPalette.shell)
+
+        XCTAssertGreaterThan(
+            apricotVsShell,
+            sunVsShell,
+            "apricot이 shell과 더 잘 갈리므로 그래프의 미소 칸은 apricot이다"
+        )
+    }
+
     func test_countdownColor_isReadableOnCream() {
         XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.ink, SDPalette.cream), 4.5)
     }
@@ -57,8 +99,14 @@ final class SDPaletteTests: XCTestCase {
         }
     }
 
-    func test_coralDeepDecorativeIcons_areVisibleOnLightSurfaces() {
-        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.coralDeep, SDPalette.cream), 3.0)
-        XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.coralDeep, SDPalette.white), 3.0)
+    /// 스플래시는 주조색 그라디언트 위에 앱 이름과 문구를 얹는다. 흰 글자가 아니라 `ink`다.
+    func test_splashText_isReadableOnThePrimaryGradient() {
+        for background in [SDPalette.sun, SDPalette.apricot] {
+            XCTAssertGreaterThanOrEqual(
+                SDPalette.contrastRatio(SDPalette.ink, background),
+                4.5,
+                "ink on \(name(background))"
+            )
+        }
     }
 }

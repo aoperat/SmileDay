@@ -73,7 +73,7 @@ private struct IntroStep: View {
 
             Image(systemName: systemImage)
                 .font(.system(size: 64))
-                .foregroundStyle(SDColor.coralDeep)
+                .foregroundStyle(SDColor.sunDeep)
                 .accessibilityHidden(true)
 
             Text(title)

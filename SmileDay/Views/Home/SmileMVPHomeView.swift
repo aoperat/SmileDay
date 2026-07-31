@@ -56,7 +56,7 @@ struct SmileMVPHomeView: View {
                         isShowingSettings = true
                     } label: {
                         Image(systemName: "gearshape")
-                            .foregroundStyle(SDColor.coralDeep)
+                            .foregroundStyle(SDColor.sunDeep)
                     }
                     .accessibilityLabel("설정")
                 }
@@ -65,7 +65,7 @@ struct SmileMVPHomeView: View {
                 SmileMVPSettingsView()
             }
         }
-        .tint(SDColor.coralDeep)
+        .tint(SDColor.sunDeep)
         .toolbarColorScheme(.light, for: .navigationBar)
         .toolbarBackground(SDColor.cream, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)

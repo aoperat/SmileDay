@@ -53,6 +53,14 @@ struct RootView: View {
         } catch {
             loadFailed = true
         }
+
+        // 알림 버튼이 생기기 전에 예약한 사용자는 설정을 다시 저장하기 전까지 버튼을 못 본다.
+        // 같은 그룹으로 한 번만 덮어써서 붙여준다. 실패해도 화면을 막지 않는다 — 다음 실행에서
+        // 다시 시도한다.
+        await ReminderActionBackfill(
+            scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
+            scheduler: UserNotificationReminderScheduler()
+        ).runIfNeeded()
         if keepSplashVisible {
             try? await Task.sleep(for: .seconds(1.3))
         }
