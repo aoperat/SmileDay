@@ -138,7 +138,8 @@ private struct OnboardingScheduleStep: View {
                     }
                 } label: {
                     if viewModel.isSaving {
-                        ProgressView().tint(.white)
+                        // 버튼이 노랑이라 흰 스피너는 1.7:1로 사실상 보이지 않는다.
+                        ProgressView().tint(SDColor.ink)
                     } else {
                         Text("이 시간으로 시작하기")
                     }

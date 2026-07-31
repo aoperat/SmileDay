@@ -265,8 +265,16 @@ private struct DayDot: View {
 
     var body: some View {
         VStack(spacing: 5) {
+            // 노랑은 흰 카드 위에서 1.5:1이라 채운 점만으로는 형태가 읽히지 않는다.
+            // 테두리가 윤곽을 만든다 — `sunDeep`은 흰 배경에서 5.4:1이다.
+            // 빈 점에는 테두리를 두지 않는다. 그 차이가 "웃은 날"의 표시다.
             Circle()
                 .fill(day.hasSmile ? AnyShapeStyle(SDColor.primaryGradient) : AnyShapeStyle(SDColor.shell))
+                .overlay {
+                    if day.hasSmile {
+                        Circle().strokeBorder(SDColor.sunDeep, lineWidth: 2)
+                    }
+                }
                 .frame(height: 32)
 
             Text(day.count > 0 ? "\(day.count)" : "·")

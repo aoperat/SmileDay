@@ -51,6 +51,24 @@ final class SDPaletteTests: XCTestCase {
         }
     }
 
+    /// 최근 7일 점처럼 흰 카드 위에 놓이는 표시는 윤곽이 3:1을 넘어야 한다(WCAG 1.4.11).
+    ///
+    /// 주조색만으로는 안 된다는 것이 이 테스트의 요지다. `sun`은 흰 배경에서 1.5:1이라
+    /// 채우기만 해서는 형태가 사라지고, 그래서 `sunDeep` 테두리를 두른다.
+    /// 이 관계가 뒤집히면 점을 단색으로 되돌려도 되는 것으로 오해할 수 있다.
+    func test_primaryFillAloneCannotCarryAShapeOnWhite() {
+        XCTAssertLessThan(
+            SDPalette.contrastRatio(SDPalette.sun, SDPalette.white),
+            3.0,
+            "sun만으로 흰 배경 위 도형을 그릴 수 없다 — sunDeep 테두리가 필요하다"
+        )
+        XCTAssertGreaterThanOrEqual(
+            SDPalette.contrastRatio(SDPalette.sunDeep, SDPalette.white),
+            3.0,
+            "테두리는 흰 배경에서 윤곽을 만들 수 있어야 한다"
+        )
+    }
+
     /// 아이콘 틴트와 스위치에 쓰는 색. 밝은 표면 위에서 글자로 써도 될 만큼 어두워야 한다.
     func test_sunDeep_isReadableOnLightSurfaces() {
         XCTAssertGreaterThanOrEqual(SDPalette.contrastRatio(SDPalette.sunDeep, SDPalette.cream), 4.5)
