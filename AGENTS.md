@@ -14,7 +14,7 @@ The core loop never uses the camera. One optional side mode ("실시간 미소 �
 |------|-------------|
 | `CLAUDE.md` | Claude Code guidance: build/test commands, architecture summary, conventions |
 | `SmileDay.xcodeproj` | Xcode project for the app target (scheme: `SmileDay`) |
-| `docs/reports/2026-07-31-project-review.md` | Latest project-wide review: verified status, risks, and recommended priorities |
+| `docs/reports/2026-07-31-release-readiness-review.md` | Latest project-wide release review: verified status, submission gates, risks, and recommended priorities |
 
 ## Subdirectories
 | Directory | Purpose |
@@ -30,7 +30,7 @@ The core loop never uses the camera. One optional side mode ("실시간 미소 �
 - All user-facing copy is Korean; locale is pinned to `ko_KR`.
 - Health-claim wording is restricted (App Store Guideline 1.4.1): never use "리프팅", "젊어진다", "교정한다", "치료" — use habit-awareness framing ("표정 습관을 기록한다").
 - Features have paired design specs and implementation plans under `docs/superpowers/` (`YYYY-MM-DD-<feature>-design.md` ↔ `YYYY-MM-DD-<feature>.md`). Consult the spec before extending a feature.
-- Before reporting the project's current status, risks, or next priorities, read `docs/reports/2026-07-31-project-review.md`. Re-verify any item affected by later code changes, and update or supersede the dated report when a new full-project review is performed.
+- Before reporting the project's current status, risks, or next priorities, read `docs/reports/2026-07-31-release-readiness-review.md`. Re-verify any item affected by later code changes, and update or supersede the dated report when a new full-project review is performed.
 
 ### Testing Requirements
 ```bash
