@@ -43,6 +43,10 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
             content.title = "스마일데이"
             content.body = availableMessages[index % availableMessages.count].text
             content.sound = .default
+            // 잠금화면에서 알림을 길게 눌렀을 때 "웃었어요" 버튼이 나오게 하는 값.
+            // 이 값이 없는 채로 이미 예약된 알림은 버튼 없이 그대로 울린다 — 설정을 다시
+            // 저장하면 새 값으로 바뀐다.
+            content.categoryIdentifier = ReminderNotificationCategory.identifier
             content.userInfo = ReminderNotificationPayload(
                 reminderID: groupID,
                 guideID: SmileGuideCatalog.default.id

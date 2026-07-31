@@ -13,16 +13,11 @@ import CoachingKit
 struct SmileDayApp: App {
     @UIApplicationDelegateAdaptor(AppDelegate.self) private var appDelegate
 
-    private let modelContainerResult: Result<ModelContainer, Error> = Result {
-        let schema = PersistenceSchema.schema
-        let configuration = ModelConfiguration(schema: schema)
-        return try ModelContainer(for: schema, configurations: [configuration])
-    }
-
     var body: some Scene {
         WindowGroup {
             Group {
-                switch modelContainerResult {
+                // 알림 액션도 같은 컨테이너에 써야 해서 뷰 밖(`PersistenceController`)에 있다.
+                switch PersistenceController.shared {
                 case .success(let modelContainer):
                     RootView()
                         .modelContainer(modelContainer)

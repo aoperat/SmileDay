@@ -87,6 +87,11 @@ struct SmileMVPHomeView: View {
             openSmile(source: .notification)
             notificationRouter.pendingSmileGuide = nil
         }
+        // 앱이 떠 있는 채로 알림 배너의 "웃었어요"를 누르면 scenePhase가 안 바뀌어
+        // 오늘 횟수가 옛 값에 머문다. 그 경우에만 여기서 다시 읽는다.
+        .onChange(of: notificationRouter.recordedWithoutGuideCount) { _, _ in
+            refresh()
+        }
         .fullScreenCover(item: $launch) { launch in
             SmileGuideView(
                 cue: launch.cue,
