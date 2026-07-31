@@ -117,6 +117,20 @@ struct SmileGuideView: View {
                         .foregroundStyle(SDColor.ink)
                 }
 
+                // 안내한 행동을 실제로 할 수 있어야 한다. 5초는 이미 지났으므로 다시 세지 않고
+                // 같은 완료를 재저장한다.
+                if viewModel.saveFailed {
+                    Button(SharedStrings.guideRetrySaveAction) {
+                        viewModel.retrySave()
+                        // 성공했을 때만 완료 감촉을 준다. 처음 완료의 onAppear는 다시 불리지 않는다.
+                        if !viewModel.saveFailed {
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        }
+                    }
+                    .buttonStyle(SDPrimaryButtonStyle())
+                    .padding(.horizontal, 40)
+                }
+
                 Button("닫기") { dismiss() }
                     .buttonStyle(SDInkButtonStyle())
                     .padding(.horizontal, 40)

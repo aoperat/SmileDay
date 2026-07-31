@@ -33,7 +33,7 @@ public final class SmileGuideViewModel {
     public let guide: SmileGuide
 
     private let source: SmileMomentSource
-    private let repository: SmileMomentRepository
+    private let repository: SmileMomentRecording
     private let clock: SmileGuideClock
     private let now: () -> Date
     private let onCompleted: (() -> Void)?
@@ -41,11 +41,14 @@ public final class SmileGuideViewModel {
     /// 취소되었거나 다시 시작된 카운트다운이 뒤늦게 완료 처리하지 않도록 하는 세대 번호.
     private var runToken = 0
     private var hasSaved = false
+    /// 저장에 실패한 완료의 시각. 재시도는 이 시각으로 기록한다 — 사용자가 한참 뒤에
+    /// 눌러도, 자정을 넘겨 눌러도 웃은 날이 바뀌면 안 된다.
+    private var failedSaveDate: Date?
 
     public init(
         guide: SmileGuide,
         source: SmileMomentSource,
-        repository: SmileMomentRepository,
+        repository: SmileMomentRecording,
         clock: SmileGuideClock = RealTimeSmileGuideClock(),
         now: @escaping () -> Date = Date.init,
         onCompleted: (() -> Void)? = nil
@@ -95,16 +98,37 @@ public final class SmileGuideViewModel {
         guard phase != .completed else { return }
 
         if !hasSaved {
+            let completedAt = now()
             do {
-                try repository.save(guideID: guide.id, source: source, date: now())
+                try repository.save(guideID: guide.id, source: source, date: completedAt)
                 hasSaved = true
                 saveFailed = false
+                failedSaveDate = nil
             } catch {
                 saveFailed = true
+                failedSaveDate = completedAt
             }
         }
 
         phase = .completed
         onCompleted?()
+    }
+
+    /// 저장에 실패한 완료를 다시 기록한다.
+    ///
+    /// 5초는 이미 지났으므로 다시 세지 않고, 웃은 시각도 처음 완료한 그때로 남긴다.
+    /// 성공하면 `onCompleted`를 다시 불러 홈의 오늘 횟수가 반영되게 한다.
+    public func retrySave() {
+        guard phase == .completed, saveFailed, !hasSaved, let completedAt = failedSaveDate else { return }
+
+        do {
+            try repository.save(guideID: guide.id, source: source, date: completedAt)
+            hasSaved = true
+            saveFailed = false
+            failedSaveDate = nil
+            onCompleted?()
+        } catch {
+            saveFailed = true
+        }
     }
 }

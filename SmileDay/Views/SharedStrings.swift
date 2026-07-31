@@ -8,6 +8,8 @@ enum SharedStrings {
     /// 타이머를 끝까지 본 뒤의 문구. 표정이 어땠는지는 말하지 않는다.
     static let guideCompleted = "오늘 한 번 더 웃어봤어요"
     static let guideSaveFailed = "기록을 저장하지 못했어요. 다시 시도해주세요."
+    /// 위 문구가 안내하는 행동. 5초를 다시 세지 않고 같은 완료를 그대로 재저장한다.
+    static let guideRetrySaveAction = "다시 시도"
     static let todayCountTitle = "오늘 미소"
     static let recentSevenDaysTitle = "최근 7일"
     static let nextReminderTitle = "다음 알림"

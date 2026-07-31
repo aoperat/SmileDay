@@ -16,6 +16,18 @@ public struct SmileDayCount: Identifiable, Equatable, Sendable {
     }
 }
 
+/// 완료 한 건을 기록하는 경계.
+///
+/// 저장 실패는 실기기에서만 나는 일이라 테스트가 재현하기 어렵다. 가이드 화면의 재시도가
+/// 실제로 동작하는지 보려면 "한 번 실패한 뒤 성공하는" 저장소가 필요해서 이음새를 뒀다.
+/// `ReminderScheduling`, `LiveSmileMonitoring`과 같은 방식이다.
+public protocol SmileMomentRecording {
+    @discardableResult
+    func save(guideID: String, source: SmileMomentSource, date: Date) throws -> SmileMoment
+}
+
+extension SmileMomentRepository: SmileMomentRecording {}
+
 public final class SmileMomentRepository {
     private let modelContext: ModelContext
 
@@ -27,7 +39,18 @@ public final class SmileMomentRepository {
     public func save(guideID: String, source: SmileMomentSource, date: Date = Date()) throws -> SmileMoment {
         let moment = SmileMoment(date: date, guideID: guideID, source: source)
         modelContext.insert(moment)
-        try modelContext.save()
+        do {
+            try modelContext.save()
+        } catch {
+            // 실패한 삽입을 그대로 두면 같은 컨텍스트의 다음 save()가 이것까지 밀어 넣는다 —
+            // 저장하지 못했다고 안내한 완료가 뒤늦게 기록된다.
+            //
+            // rollback()은 컨텍스트 전체의 미저장 변경을 버린다. 뷰들이 SwiftUI mainContext
+            // 하나를 공유하고 알림 일정 리포지토리도 같은 컨텍스트 위에 올라가므로, 우리가
+            // 만든 것만 지운다.
+            modelContext.delete(moment)
+            throw error
+        }
         return moment
     }
 
