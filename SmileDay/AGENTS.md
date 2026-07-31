@@ -17,12 +17,12 @@ The iOS app target: SwiftUI views and platform services. Contains no business lo
 | `Views/` | Splash, onboarding, home, smile guide, and settings screens (see `Views/AGENTS.md`) |
 | `Services/` | Local notifications and notification-tap routing (see `Services/AGENTS.md`) |
 | `Assets.xcassets/` | App icons (light/dark/tinted) and asset catalog |
-| `docs/` | Korean design specs, implementation plans, and reports (see `docs/AGENTS.md`) |
 
 ## For AI Agents
 
 ### Working In This Directory
 - The project uses folder-synchronized groups, so a new `.swift` file needs no `project.pbxproj` edit. Build settings (for example `INFOPLIST_KEY_*`) still do, in **both** Debug and Release.
+- **Anything you drop in this directory ships inside the app.** The synchronized group reads the filesystem, not git, so `.gitignore` gives no protection — a stale `SmileDay/.omc/` state directory was being copied into `SmileDay.app` while git showed a clean tree. Keep docs, scratch files, and tool state out of `SmileDay/`; the project file has no `membershipExceptions` to fall back on. Check with `ls` on the built `.app` after touching this directory.
 - Do not put logic here that could live in CoachingKit; views should delegate to package view models.
 - The core loop never requests camera access. Only the optional live-monitor mode does, and only after the user explicitly starts it — see the guardrails in the repo-root `AGENTS.md`.
 

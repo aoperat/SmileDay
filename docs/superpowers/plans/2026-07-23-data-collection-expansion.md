@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** ARKit 블렌드셰이프 52개 전체·세션 통계·케어 행동 데이터·기분 이모지를 온디바이스에 수집한다 (스펙: `SmileDay/docs/superpowers/specs/2026-07-23-data-collection-expansion-design.md`).
+**Goal:** ARKit 블렌드셰이프 52개 전체·세션 통계·케어 행동 데이터·기분 이모지를 온디바이스에 수집한다 (스펙: `docs/superpowers/specs/2026-07-23-data-collection-expansion-design.md`).
 
 **Architecture:** CoachingKit(SwiftPM, 테스트 가능)에 순수 로직(`SessionMetricsAccumulator`, `CheckInPayload`, 모델/리포지토리 확장)을 먼저 TDD로 넣고, 앱 레이어(ARKit 세션·뷰)는 마지막에 연결한다. 블렌드셰이프 키는 앱이 ARKit 타입 상수의 rawValue를 주입하므로 문자열 추측이 없다(consistent-by-construction). 새 저장 필드는 전부 optional/기본값 → SwiftData 경량 마이그레이션 자동.
 

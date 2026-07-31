@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
-**Goal:** 비대칭·진짜미소·긴장도·측정신뢰도 지표를 개인 히스토리 상대 비교로 판정해, 체크인 직후 인사이트 1줄과 케어 추천에 반영한다 (스펙: `SmileDay/docs/superpowers/specs/2026-07-24-rule-based-coaching-design.md`).
+**Goal:** 비대칭·진짜미소·긴장도·측정신뢰도 지표를 개인 히스토리 상대 비교로 판정해, 체크인 직후 인사이트 1줄과 케어 추천에 반영한다 (스펙: `docs/superpowers/specs/2026-07-24-rule-based-coaching-design.md`).
 
 **Architecture:** 판정 로직은 CoachingKit의 순수 컴포넌트 `InsightEngine`(값 타입 입력, SwiftData 무관)으로 만들어 TDD. SwiftData 연결은 `CheckInRecord(session:)` 매퍼와 `InsightEngine.evaluateLatest(in:)` 편의 함수로 한 곳에 모은다. 앱 레이어(SaveConfirmView/CoachingTabView)와 CareViewModel은 이 한 함수만 호출한다.
 

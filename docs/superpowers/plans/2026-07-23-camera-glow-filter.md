@@ -8,7 +8,7 @@
 
 **Tech Stack:** ARKit, Metal(MetalKit), Core Image, SwiftUI.
 
-**설계 문서:** `SmileDay/docs/superpowers/specs/2026-07-23-camera-glow-filter-design.md`
+**설계 문서:** `docs/superpowers/specs/2026-07-23-camera-glow-filter-design.md`
 
 ---
 

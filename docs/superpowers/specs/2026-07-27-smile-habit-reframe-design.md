@@ -1,7 +1,7 @@
 # 미소 습관 중심 제품 전환 설계
 
 - 날짜: 2026-07-27
-- 상태: 대체됨 — `SmileDay/docs/superpowers/specs/2026-07-28-notification-smile-mvp-design.md`를 따른다.
+- 상태: 대체됨 — `docs/superpowers/specs/2026-07-28-notification-smile-mvp-design.md`를 따른다.
 - 배경: SmileDay의 핵심 가치는 얼굴이나 미소 크기의 개선을 평가하는 데 있지 않다. 사용자가 하루 중 잠시 멈춰 의식적으로 미소 짓고, 자신을 웃게 한 좋은 순간을 떠올리며, 그 행동을 부담 없이 반복하도록 돕는 것이 제품의 목적이다. 현재 앱은 AR 측정 점수, 전날 대비 상승, 좌우 차이와 얼굴 긴장 분석을 전면에 노출해 이 목적과 어긋난다.
 
 ## 1. 제품 정의

@@ -2,7 +2,7 @@
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 >
-> 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-30-live-smile-session-graph-design.md`와 상위 설계 `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`를 전체 읽는다.
+> 구현 전 대응 설계 `docs/superpowers/specs/2026-07-30-live-smile-session-graph-design.md`와 상위 설계 `docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`를 전체 읽는다.
 
 > **2026-07-31 — 스냅샷은 철회됐다.** Task 4·6과 Task 7의 사진 관련 Step, Task 9의 수집 Step은
 > 실행됐고 동작했지만 이후 전부 되돌렸다. 아래 본문은 그때 무엇을 왜 만들었는지의 기록으로 남긴다 —
@@ -22,8 +22,8 @@
 
 **Files:**
 
-- Read: `SmileDay/docs/superpowers/specs/2026-07-30-live-smile-session-graph-design.md`
-- Read: `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
+- Read: `docs/superpowers/specs/2026-07-30-live-smile-session-graph-design.md`
+- Read: `docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
 - Read: `AGENTS.md`
 
 - [x] **Step 1: 작업 트리 상태를 기록한다**
@@ -1526,7 +1526,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 
 **Files:**
 
-- Modify: `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
+- Modify: `docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
 - Modify: `AGENTS.md`
 - Modify: `SmileDay/Views/Coaching/AGENTS.md`
 - Modify: `CoachingKit/Sources/CoachingKit/AGENTS.md`
@@ -1678,7 +1678,7 @@ git commit -m "feat: show the session summary when live smile check ends"
 - [x] **Step 9: 커밋**
 
 ```bash
-git add SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md \
+git add docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md \
         AGENTS.md SmileDay/Views/Coaching/AGENTS.md \
         CoachingKit/Sources/CoachingKit/AGENTS.md \
         CoachingKit/Tests/CoachingKitTests/AGENTS.md \
@@ -1776,7 +1776,7 @@ Expected: `git diff --check` 결과 없음.
 - [ ] 측정 중 세션이 인터럽션(예: 전화 수신)으로 끊기면 실패 문구 대신 그때까지 측정된 것의 요약이 나온다. 인터럽션이 측정 시작 전에 일어나면(기록이 없으므로) 실패 화면이 나온다
 - [ ] VoiceOver가 요약의 비율과 측정 시간을 읽는다
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-live-smile-session-graph-device-verification.md`에 기기, iOS, 빌드, 항목별 PASS/FAIL과 발열 체감만 기록한다. **raw blend shape와 비율 시계열은 저장하지 않는다.**
+결과는 `docs/reports/YYYY-MM-DD-live-smile-session-graph-device-verification.md`에 기기, iOS, 빌드, 항목별 PASS/FAIL과 발열 체감만 기록한다. **raw blend shape와 비율 시계열은 저장하지 않는다.**
 
 ---
 

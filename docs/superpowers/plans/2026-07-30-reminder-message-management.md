@@ -2,7 +2,7 @@
 
 **Goal:** 고정 알림 문구를 사용자가 관리하는 순서형 메시지 목록으로 교체한다.
 
-**설계 문서:** `SmileDay/docs/superpowers/specs/2026-07-30-reminder-message-management-design.md`
+**설계 문서:** `docs/superpowers/specs/2026-07-30-reminder-message-management-design.md`
 
 ## Task 1: 메시지 모델과 저장소
 

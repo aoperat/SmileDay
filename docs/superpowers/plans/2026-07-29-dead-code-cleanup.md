@@ -1,6 +1,6 @@
 # 빈도 중심 전환 후 죽은 코드 정리 Implementation Plan
 
-> 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-29-dead-code-cleanup-design.md`와 상위 제품 설계 `SmileDay/docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다.
+> 구현 전 대응 설계 `docs/superpowers/specs/2026-07-29-dead-code-cleanup-design.md`와 상위 제품 설계 `docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다.
 >
 > 2026-07-29 추가 결정: 레거시 측정 파이프라인은 이 계획대로 삭제하되, 선택형 실시간 미소 확인 모드는 `2026-07-29-live-smile-monitor.md`에서 프리뷰·기준선 저장·점수 저장 없이 새로 구현한다. 삭제 파일을 통째로 복원하지 않는다.
 
@@ -17,9 +17,9 @@
 **Files:**
 
 - Read: `AGENTS.md`
-- Read: `SmileDay/docs/reports/2026-07-27-project-review.md`
-- Read: `SmileDay/docs/superpowers/specs/2026-07-29-dead-code-cleanup-design.md`
-- Read: `SmileDay/docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`
+- Read: `docs/reports/2026-07-27-project-review.md`
+- Read: `docs/superpowers/specs/2026-07-29-dead-code-cleanup-design.md`
+- Read: `docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`
 
 - [ ] 기존 작업 트리의 수정·삭제·미추적 파일을 기록하고 사용자 변경을 되돌리지 않는다.
 - [ ] 현재 앱이 폴더 동기화 그룹을 사용하는지 확인해 Swift 파일 삭제 시 별도 pbxproj 편집이 필요한지 판정한다.
@@ -454,7 +454,7 @@ git diff --name-status
 - [ ] 오늘과 최근 7일 횟수가 즉시 갱신되는지 확인한다.
 - [ ] 앱 재실행 뒤 새 완료 기록과 반복 설정이 유지되는지 확인한다.
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-dead-code-cleanup-device-verification.md`에 기기, iOS, 이전 빌드, 정리 빌드, 항목별 PASS/FAIL만 기록한다. 얼굴 이미지나 개인 측정 원시값은 저장하지 않는다.
+결과는 `docs/reports/YYYY-MM-DD-dead-code-cleanup-device-verification.md`에 기기, iOS, 이전 빌드, 정리 빌드, 항목별 PASS/FAIL만 기록한다. 얼굴 이미지나 개인 측정 원시값은 저장하지 않는다.
 
 ---
 

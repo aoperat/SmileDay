@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 5.10, SwiftUI, XCTest.
 
-**설계 문서:** `SmileDay/docs/superpowers/specs/2026-07-24-reminder-suggested-times-design.md`
+**설계 문서:** `docs/superpowers/specs/2026-07-24-reminder-suggested-times-design.md`
 
 ---
 

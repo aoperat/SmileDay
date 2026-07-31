@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 5.10, SwiftUI, SwiftData, `UserNotifications`(UNUserNotificationCenter), XCTest (Swift Package `CoachingKit`) + Xcode 프로젝트(`SmileDay`).
 
-**설계 문서:** `SmileDay/docs/superpowers/specs/2026-07-23-reminder-expression-prompts-design.md`
+**설계 문서:** `docs/superpowers/specs/2026-07-23-reminder-expression-prompts-design.md`
 
 **베이스라인 확인**: `cd CoachingKit && swift test` 는 현재 76 tests, 0 failures로 통과 상태.
 

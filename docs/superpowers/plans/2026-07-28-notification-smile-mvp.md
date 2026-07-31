@@ -1,6 +1,6 @@
 # 알림 중심 미소 습관 MVP Implementation Plan
 
-> **For agentic workers:** 이 계획은 `2026-07-27-smile-habit-reframe.md`를 대체한다. 구현 전 `SmileDay/docs/superpowers/specs/2026-07-28-notification-smile-mvp-design.md`를 전체 읽고 Task를 순서대로 수행한다.
+> **For agentic workers:** 이 계획은 `2026-07-27-smile-habit-reframe.md`를 대체한다. 구현 전 `docs/superpowers/specs/2026-07-28-notification-smile-mvp-design.md`를 전체 읽고 Task를 순서대로 수행한다.
 
 **Goal:** 카메라·점수·감정 기록 없이, 사용자가 여러 알림과 3개 미소 가이드를 설정하고 5초 실행을 완료한 뒤 오늘 횟수와 최근 7일을 볼 수 있는 최소 제품을 만든다.
 
@@ -392,7 +392,7 @@ git diff --stat
 - [ ] VoiceOver와 큰 글자
 - [ ] 운전·보행 중 화면 사용을 유도하는 문구 없음
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-notification-smile-mvp-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다.
+결과는 `docs/reports/YYYY-MM-DD-notification-smile-mvp-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다.
 
 ---
 

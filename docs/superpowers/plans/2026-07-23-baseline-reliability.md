@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift, SwiftUI, SwiftData, XCTest, Swift Observation(`@Observable`)
 
-**참고 스펙**: `SmileDay/docs/superpowers/specs/2026-07-23-baseline-reliability-design.md`
+**참고 스펙**: `docs/superpowers/specs/2026-07-23-baseline-reliability-design.md`
 
 ---
 

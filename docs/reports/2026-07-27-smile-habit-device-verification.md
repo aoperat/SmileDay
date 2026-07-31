@@ -3,7 +3,7 @@
 - 날짜: 2026-07-27
 - 브랜치: `smile-habit-reframe`
 - 기준 커밋: `fd7e044` (전환 작업 시작 시점)
-- 대상 계획: `SmileDay/docs/superpowers/plans/2026-07-27-smile-habit-reframe.md`
+- 대상 계획: `docs/superpowers/plans/2026-07-27-smile-habit-reframe.md`
 
 > 얼굴 이미지·영상·원시 얼굴 수치는 이 저장소에 기록하지 않는다. 아래 표에는 PASS/FAIL만 남긴다.
 

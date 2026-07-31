@@ -8,7 +8,7 @@
 
 **Tech Stack:** Swift 5.10, SwiftUI, SwiftData, XCTest.
 
-**설계 문서:** `SmileDay/docs/superpowers/specs/2026-07-23-bucket-reminder-nudge-design.md`
+**설계 문서:** `docs/superpowers/specs/2026-07-23-bucket-reminder-nudge-design.md`
 
 ---
 

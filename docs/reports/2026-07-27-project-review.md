@@ -17,8 +17,8 @@
 
 현재 최우선 작업은 대응 설계와 계획이 작성된 `project-hardening` 작업이다.
 
-- 설계: `SmileDay/docs/superpowers/specs/2026-07-27-project-hardening-design.md`
-- 계획: `SmileDay/docs/superpowers/plans/2026-07-27-project-hardening.md`
+- 설계: `docs/superpowers/specs/2026-07-27-project-hardening-design.md`
+- 계획: `docs/superpowers/plans/2026-07-27-project-hardening.md`
 
 ## 2. 확인된 구조
 
@@ -112,7 +112,7 @@ xcodebuild -project SmileDay.xcodeproj -scheme SmileDay \
 
 `2026-07-24-data-inventory-and-ideas.md`는 데이터 활용 아이디어 보고서이며 현재 프로젝트 전체 상태의 기준 문서가 아니다. 일부 아이디어 문구는 현재 건강 효능 표현 정책과 맞지 않으므로 구현 근거로 사용할 때 최신 설계 문서를 우선해야 한다.
 
-또한 기능 문서는 `SmileDay/docs/superpowers/`와 루트 `docs/superpowers/` 두 트리에 나뉘어 있다. 새 기능을 확장할 때 대상 기능의 기존 문서 위치를 먼저 확인하고, 앱 기능의 기본 설계·계획은 `SmileDay/docs/superpowers/`의 짝을 유지한다.
+또한 기능 문서는 `docs/superpowers/`와 루트 `docs/superpowers/` 두 트리에 나뉘어 있다. 새 기능을 확장할 때 대상 기능의 기존 문서 위치를 먼저 확인하고, 앱 기능의 기본 설계·계획은 `docs/superpowers/`의 짝을 유지한다.
 
 ## 5. 권장 작업 순서
 

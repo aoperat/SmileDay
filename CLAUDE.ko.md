@@ -58,4 +58,4 @@ SmileDay는 일상에서 잘 웃지 않는 사람이 미소 짓는 횟수를 늘
 - 등급이나 연속 기록 실패 표현을 쓰지 않습니다. 0회인 날은 실패가 아니라 그냥 쉬어간 날입니다. 사용자에게 보이는 가이드 문구는 `SmileCueCatalog`에 있습니다.
 - "점수"라는 이름으로 보여주는 유일한 값은 실시간 모드의 센서 신호이며, 저장하거나 세션 간에 비교하거나 좋고 나쁨으로 표현하지 않습니다.
 - `SmileGuideCatalog.default.id`(`"anytime-soft"`)는 저장되는 값입니다 — `SmileMoment.guideID`와 이미 기기에 예약된 알림 payload에 들어 있습니다. 바꾸지 마세요.
-- 디자인 스펙은 `SmileDay/docs/superpowers/specs/`에, 구현 계획은 `SmileDay/docs/superpowers/plans/`(날짜별 마크다운 파일)에 있습니다. 기능을 확장하기 전에 관련 스펙을 먼저 확인하세요.
+- 디자인 스펙은 `docs/superpowers/specs/`에, 구현 계획은 `docs/superpowers/plans/`(날짜별 마크다운 파일)에 있습니다. 기능을 확장하기 전에 관련 스펙을 먼저 확인하세요.

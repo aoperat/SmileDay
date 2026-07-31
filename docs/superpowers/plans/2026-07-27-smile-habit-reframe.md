@@ -1,8 +1,8 @@
 # 미소 습관 중심 제품 전환 Implementation Plan
 
-> **중단:** 이 계획은 `SmileDay/docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`로 대체되었다. 남은 Task를 실행하지 않는다. 이미 완료된 변경이 있다면 새 계획 Task 0에서 현 상태와 충돌 여부를 먼저 확인한다.
+> **중단:** 이 계획은 `docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`로 대체되었다. 남은 Task를 실행하지 않는다. 이미 완료된 변경이 있다면 새 계획 Task 0에서 현 상태와 충돌 여부를 먼저 확인한다.
 
-> **For agentic workers:** 각 Task를 순서대로 수행하고 체크박스로 진행 상태를 기록한다. 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-27-smile-habit-reframe-design.md`를 전체 읽는다.
+> **For agentic workers:** 각 Task를 순서대로 수행하고 체크박스로 진행 상태를 기록한다. 구현 전 대응 설계 `docs/superpowers/specs/2026-07-27-smile-habit-reframe-design.md`를 전체 읽는다.
 
 **Goal:** 점수 개선 중심의 현재 경험을 질문→미소→선택적 좋은 순간 기록→습관 회고 흐름으로 전환한다. AR 측정 데이터와 기존 저장 기록은 보존하되 일반 사용자 화면과 추천 로직에서 얼굴 평가를 제거한다.
 
@@ -15,7 +15,7 @@
 ## 선행 조건과 변경 보호
 
 - [x] 루트 `AGENTS.md`와 대상 하위 `AGENTS.md`를 다시 확인한다.
-- [x] `SmileDay/docs/reports/2026-07-27-project-review.md`의 P0 안정성 항목을 확인한다.
+- [x] `docs/reports/2026-07-27-project-review.md`의 P0 안정성 항목을 확인한다.
 - [x] 가능하면 `2026-07-27-project-hardening.md`를 먼저 완료한다. 완료하지 못했다면 iOS 타깃, SwiftData/Metal 강제 종료 위험을 이 작업의 미해결 선행 위험으로 기록한다.
 - [x] 기존 작업 트리를 확인하고 사용자 변경을 덮어쓰지 않는다.
 
@@ -414,8 +414,8 @@ rg -n '점수|미소 크기|어제보다|올라갔|내려갔|약한 쪽|진짜 �
 
 **Files:**
 
-- Modify: `SmileDay/docs/superpowers/specs/2026-07-24-pro-unlock-design.md`
-- Modify: `SmileDay/docs/superpowers/plans/2026-07-24-pro-unlock.md`
+- Modify: `docs/superpowers/specs/2026-07-24-pro-unlock-design.md`
+- Modify: `docs/superpowers/plans/2026-07-24-pro-unlock.md`
 
 - [x] 이 제품 전환 구현과 사용자 검증 전에는 StoreKit Pro 작업을 시작하지 않는다는 선행 조건을 추가한다.
 - [x] 기존 “케어 루틴 전체/시간대별 점수 상세” 혜택을 제거한다.
@@ -494,7 +494,7 @@ git diff --stat
   - 백그라운드 복귀
   - 앱 재실행 후 데이터 유지
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-smile-habit-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다. 얼굴 이미지·영상·원시 얼굴 수치를 저장소에 추가하지 않는다.
+결과는 `docs/reports/YYYY-MM-DD-smile-habit-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다. 얼굴 이미지·영상·원시 얼굴 수치를 저장소에 추가하지 않는다.
 
 ---
 

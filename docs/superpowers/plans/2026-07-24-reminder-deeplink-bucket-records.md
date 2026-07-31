@@ -8,7 +8,7 @@
 
 **Tech Stack:** SwiftUI, SwiftData, UserNotifications, XCTest (CoachingKit 패키지), Observation
 
-**설계 스펙:** `SmileDay/docs/superpowers/specs/2026-07-24-reminder-deeplink-bucket-records-design.md`
+**설계 스펙:** `docs/superpowers/specs/2026-07-24-reminder-deeplink-bucket-records-design.md`
 
 **스펙 대비 구체화 노트:**
 - 스펙의 "기록 탭 날짜별 상세"는 현재 존재하지 않는 화면이므로, **월 히트맵 날짜 셀 탭 → 히트맵 아래 시간대별 카드** 방식으로 구현한다 (기본 선택: 오늘).

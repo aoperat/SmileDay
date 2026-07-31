@@ -1,6 +1,6 @@
 # 미소 빈도·반복 중심 시간창 리마인더 Implementation Plan
 
-> 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다. 이 계획은 상황 카드 확장이 아니라, 현재 MVP를 시작·종료 시간과 반복 주기 중심으로 단순화한다.
+> 구현 전 대응 설계 `docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다. 이 계획은 상황 카드 확장이 아니라, 현재 MVP를 시작·종료 시간과 반복 주기 중심으로 단순화한다.
 
 **Goal:** 평소 잘 웃지 않는 사용자가 설정한 활동 시간 안에서 반복 알림을 받고, 짧은 문구와 5초 미소를 반복한 뒤 오늘과 최근 7일 횟수를 확인하게 한다.
 
@@ -15,8 +15,8 @@
 **Files:**
 
 - Verify: `AGENTS.md`
-- Read: `SmileDay/docs/reports/2026-07-27-project-review.md`
-- Read: `SmileDay/docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`
+- Read: `docs/reports/2026-07-27-project-review.md`
+- Read: `docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`
 
 - [ ] `AGENTS.md`의 Product North Star를 구현 판단의 최상위 제품 기준으로 사용한다.
 - [ ] 기존 작업 트리와 사용자 변경을 확인하고 겹치는 파일을 덮어쓰지 않는다.
@@ -342,7 +342,7 @@ git diff --stat
 - [ ] 큰 글자와 VoiceOver에서 시간 설정·문구·타이머 사용 가능
 - [ ] 알림 문구가 운전·보행 중 화면 사용을 유도하지 않음
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-smile-frequency-window-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다.
+결과는 `docs/reports/YYYY-MM-DD-smile-frequency-window-device-verification.md`에 기기, iOS, 빌드/커밋, PASS/FAIL만 기록한다.
 
 ---
 

@@ -1,6 +1,6 @@
 # 프리뷰 없는 실시간 미소 확인 모드 Implementation Plan
 
-> 구현 전 대응 설계 `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`와 현재 제품 설계 `SmileDay/docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다.
+> 구현 전 대응 설계 `docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`와 현재 제품 설계 `docs/superpowers/specs/2026-07-29-smile-frequency-window-reminders-design.md`를 전체 읽는다.
 
 **Goal:** 사용자가 iPhone을 세워둔 동안 카메라 프리뷰 없이 현재 미소 점수와 즉각적인 상태 피드백을 확인하게 한다.
 
@@ -17,8 +17,8 @@
 - Read: `AGENTS.md`
 - Read: `SmileDay/AGENTS.md`
 - Read: `CoachingKit/AGENTS.md`
-- Read: `SmileDay/docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
-- Read: `SmileDay/docs/superpowers/plans/2026-07-29-dead-code-cleanup.md`
+- Read: `docs/superpowers/specs/2026-07-29-live-smile-monitor-design.md`
+- Read: `docs/superpowers/plans/2026-07-29-dead-code-cleanup.md`
 
 - [ ] 작업 트리에서 레거시 측정 파일 삭제와 새 빈도 중심 파일 추가가 진행 중인지 확인한다.
 - [ ] `FaceMeasurement`, `ScoreCalculator`, `CoachingViewModel`, `CameraPreviewView`를 복원하지 않는다.
@@ -319,7 +319,7 @@ git diff --stat
 - [ ] SwiftData와 UserDefaults에 측정값이 추가되지 않음
 - [ ] VoiceOver가 점수를 프레임마다 반복 낭독하지 않음
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-live-smile-monitor-device-verification.md`에 기기, iOS, 빌드/커밋, 항목별 PASS/FAIL과 발열 체감만 기록한다. 얼굴 이미지, raw blend shape, 점수 시계열은 저장하지 않는다.
+결과는 `docs/reports/YYYY-MM-DD-live-smile-monitor-device-verification.md`에 기기, iOS, 빌드/커밋, 항목별 PASS/FAIL과 발열 체감만 기록한다. 얼굴 이미지, raw blend shape, 점수 시계열은 저장하지 않는다.
 
 ---
 

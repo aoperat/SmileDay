@@ -60,4 +60,4 @@ The reminder notification also carries two buttons (`ReminderNotificationAction`
 - No rankings or streak-loss language. A day with zero smiles is neutral, not a failure. User-facing guide copy lives in `SmileCueCatalog`.
 - The only number ever shown as a "score" is the live mode's real-time sensor signal, and it is never stored, compared across sessions, or framed as good/bad.
 - `SmileGuideCatalog.default.id` (`"anytime-soft"`) is a persisted value — it is stored in `SmileMoment.guideID` and in notification payloads already scheduled on devices. Do not change it.
-- Design specs live in `SmileDay/docs/superpowers/specs/`, implementation plans in `SmileDay/docs/superpowers/plans/` (dated markdown files). Consult the relevant spec before extending a feature.
+- Design specs live in `docs/superpowers/specs/`, implementation plans in `docs/superpowers/plans/` (dated markdown files). Consult the relevant spec before extending a feature.

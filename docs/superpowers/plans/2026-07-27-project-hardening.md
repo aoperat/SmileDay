@@ -1,6 +1,6 @@
 # 프로젝트 안정성 정리 Implementation Plan
 
-> **For agentic workers:** 각 Task를 순서대로 수행하고 체크박스로 진행 상태를 기록한다. 구현 전 대응 설계 문서 `SmileDay/docs/superpowers/specs/2026-07-27-project-hardening-design.md`를 읽는다.
+> **For agentic workers:** 각 Task를 순서대로 수행하고 체크박스로 진행 상태를 기록한다. 구현 전 대응 설계 문서 `docs/superpowers/specs/2026-07-27-project-hardening-design.md`를 읽는다.
 
 **Goal:** iOS 지원 버전 불일치, SwiftData/Metal 강제 종료 경로, 정책상 혼동 가능한 `.lift` 명칭과 TrueDepth 검증 공백을 정리한다.
 
@@ -255,7 +255,7 @@ git diff --stat
 - [ ] 로컬 알림 탭 → 코칭 탭 딥링크 및 질문 표시
 - [ ] 앱 재실행 → 기존 기준선과 기록 유지
 
-결과는 `SmileDay/docs/reports/YYYY-MM-DD-truedepth-device-verification.md`에 기기 모델, iOS 버전, 빌드/커밋, 항목별 PASS/FAIL만 기록한다. 실제 얼굴 이미지, 개인 측정 원시값, 화면 녹화는 저장소에 추가하지 않는다.
+결과는 `docs/reports/YYYY-MM-DD-truedepth-device-verification.md`에 기기 모델, iOS 버전, 빌드/커밋, 항목별 PASS/FAIL만 기록한다. 실제 얼굴 이미지, 개인 측정 원시값, 화면 녹화는 저장소에 추가하지 않는다.
 
 ---
 

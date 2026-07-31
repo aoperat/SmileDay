@@ -1,6 +1,6 @@
 # Pro 1회성 구매(잠금 해제) Implementation Plan
 
-> **⛔ BLOCKED (2026-07-28):** `SmileDay/docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`의 Task 13 검증 전에는 실행하지 않는다. 검증 후 혜택과 가격을 새 MVP 결과에 맞춰 다시 설계한다.
+> **⛔ BLOCKED (2026-07-28):** `docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`의 Task 13 검증 전에는 실행하지 않는다. 검증 후 혜택과 가격을 새 MVP 결과에 맞춰 다시 설계한다.
 
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
@@ -50,7 +50,7 @@
 
 ## Spec reference
 
-Full design: `SmileDay/docs/superpowers/specs/2026-07-24-pro-unlock-design.md`. Re-read section 2 (게이팅 규칙) and section 7 (가격과 수익성 검증) before starting. The implementation is not considered launch-ready until purchase restoration and the no-paid-advertising profitability gate are verified.
+Full design: `docs/superpowers/specs/2026-07-24-pro-unlock-design.md`. Re-read section 2 (게이팅 규칙) and section 7 (가격과 수익성 검증) before starting. The implementation is not considered launch-ready until purchase restoration and the no-paid-advertising profitability gate are verified.
 
 ## Business constraints
 

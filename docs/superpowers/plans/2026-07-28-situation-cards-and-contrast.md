@@ -1,6 +1,6 @@
 # 상황 카드와 색 대비 Implementation Plan
 
-> **For agentic workers:** 구현 전 `SmileDay/docs/superpowers/specs/2026-07-28-situation-cards-and-contrast-design.md`를 전체 읽고 Task를 순서대로 수행한다. 이 계획은 `2026-07-28-notification-smile-mvp.md`를 대체하지 않고 두 부분(색, 가이드 목록)을 고친다.
+> **For agentic workers:** 구현 전 `docs/superpowers/specs/2026-07-28-situation-cards-and-contrast-design.md`를 전체 읽고 Task를 순서대로 수행한다. 이 계획은 `2026-07-28-notification-smile-mvp.md`를 대체하지 않고 두 부분(색, 가이드 목록)을 고친다.
 
 **Goal:** 보조 텍스트가 WCAG AA를 넘기게 만들고, 표정 3종 목록을 시간대별 상황 카드 14개 + 사용자 카드 CRUD로 바꾼다.
 
