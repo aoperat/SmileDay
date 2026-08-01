@@ -21,36 +21,44 @@ final class ARKitLiveSmileMonitor: NSObject, LiveSmileMonitoring {
 
     // MARK: - LiveSmileMonitoring
 
+    /// 이 기기가 TrueDepth 얼굴 추적을 할 수 있는지. 못 하면 권한을 물을 이유도 없다.
+    var isFaceTrackingSupported: Bool { ARFaceTrackingConfiguration.isSupported }
+
+    var cameraPermission: LiveSmileCameraPermission {
+        switch AVCaptureDevice.authorizationStatus(for: .video) {
+        case .authorized: return .granted
+        case .notDetermined: return .notDetermined
+        default: return .denied
+        }
+    }
+
+    /// 세션을 켜기 전에 권한을 끝낸다.
+    ///
+    /// 예전에는 `start()` 안에서 물었는데, 권한 대화상자가 뜨는 동안 앱이 inactive가 되고
+    /// 화면은 그것을 "카메라를 쓰다 벗어났다"로 읽어 세션을 멈췄다. 그래서 처음 쓰는 사람이
+    /// 허용을 누르고 돌아오면 측정 화면 대신 "측정을 멈췄어요"를 봤다.
+    func requestCameraPermission() async -> LiveSmileCameraPermission {
+        guard cameraPermission == .notDetermined else { return cameraPermission }
+        let granted = await AVCaptureDevice.requestAccess(for: .video)
+        return granted ? .granted : .denied
+    }
+
     func start() {
         guard !isActive else { return }
 
-        guard ARFaceTrackingConfiguration.isSupported else {
+        guard isFaceTrackingSupported else {
             onEvent?(.unsupportedDevice)
             return
         }
 
-        isActive = true
-
-        switch AVCaptureDevice.authorizationStatus(for: .video) {
-        case .authorized:
-            runSession()
-        case .notDetermined:
-            // 사용자가 명시적으로 시작했을 때만 권한을 묻는다.
-            AVCaptureDevice.requestAccess(for: .video) { [weak self] granted in
-                DispatchQueue.main.async {
-                    guard let self, self.isActive else { return }
-                    guard granted else {
-                        self.isActive = false
-                        self.onEvent?(.permissionDenied)
-                        return
-                    }
-                    self.runSession()
-                }
-            }
-        default:
-            isActive = false
+        // 권한은 이 지점 전에 이미 정해져 있다. 여기서 묻지 않는다.
+        guard cameraPermission == .granted else {
             onEvent?(.permissionDenied)
+            return
         }
+
+        isActive = true
+        runSession()
     }
 
     /// 프리뷰가 그릴 세션. 사용자가 카메라 화면을 켰을 때만 쓰인다.

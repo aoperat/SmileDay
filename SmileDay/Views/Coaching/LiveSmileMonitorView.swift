@@ -26,6 +26,10 @@ struct LiveSmileMonitorView: View {
     @State private var previousIdleTimerDisabled = false
     /// 종료를 누른 뒤 보여줄 요약. 화면을 닫으면 사라진다.
     @State private var summary: LiveSmileSessionSummary?
+    /// 카메라 허용이 없어 측정에 들어가지 못한 상태. 설정에서 켜고 돌아오면 풀린다.
+    @State private var needsCameraPermission = false
+    /// 권한을 묻는 중. 그 사이 시작 버튼을 다시 누르지 못하게 막는다.
+    @State private var isResolvingPermission = false
 
     var body: some View {
         ZStack {
@@ -51,8 +55,17 @@ struct LiveSmileMonitorView: View {
         }
         .onDisappear(perform: shutDown)
         .onChange(of: scenePhase) { _, phase in
+            guard phase != .active else {
+                // 설정 앱에서 카메라를 켜고 돌아왔다면 안내를 걷어낸다.
+                if needsCameraPermission, monitor?.cameraPermission == .granted {
+                    needsCameraPermission = false
+                }
+                return
+            }
             // 화면을 벗어나면 카메라를 즉시 끈다. 복귀는 사용자가 결정한다.
-            guard phase != .active, hasStarted else { return }
+            // 권한 대화상자가 뜬 경우는 아직 측정 전이라 hasStarted가 false다 — 그래서
+            // 처음 쓰는 사람이 허용을 누르는 동안 세션이 중단으로 처리되지 않는다.
+            guard hasStarted else { return }
             pauseForSceneChange()
         }
         .onChange(of: viewModel?.state) { _, state in
@@ -101,6 +114,8 @@ struct LiveSmileMonitorView: View {
                 )
             } else if case .failed(let failure) = viewModel.state {
                 failureSection(failure)
+            } else if needsCameraPermission {
+                cameraPermissionSection
             } else if !hasStarted {
                 introSection
             } else if needsRestart {
@@ -145,9 +160,47 @@ struct LiveSmileMonitorView: View {
             .sdCard()
 
             Button(SharedStrings.liveMonitorStartAction) {
-                startMeasuring()
+                beginSession()
             }
             .buttonStyle(SDPrimaryButtonStyle())
+            .disabled(isResolvingPermission)
+        }
+    }
+
+    // MARK: - 카메라 허용이 필요할 때
+
+    /// 앱 안에서는 되돌릴 수 없다. iOS는 카메라 권한을 한 번만 묻는다.
+    private var cameraPermissionSection: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "camera.fill")
+                .font(.system(size: 36))
+                .foregroundStyle(SDColor.sunDeep)
+                .accessibilityHidden(true)
+
+            Text(SharedStrings.liveMonitorCameraRequiredTitle)
+                .font(.headline)
+                .foregroundStyle(SDColor.ink)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Text(SharedStrings.liveMonitorCameraRequiredDetail)
+                .font(.subheadline)
+                .foregroundStyle(SDColor.muted)
+                .multilineTextAlignment(.center)
+                .fixedSize(horizontal: false, vertical: true)
+
+            Button(SharedStrings.liveMonitorOpenCameraSettings) {
+                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                UIApplication.shared.open(url)
+            }
+            .buttonStyle(SDPrimaryButtonStyle())
+
+            Button(SharedStrings.liveMonitorCloseAction) {
+                shutDown()
+                dismiss()
+            }
+            .font(.subheadline.weight(.semibold))
+            .foregroundStyle(SDColor.ink)
         }
     }
 
@@ -414,7 +467,41 @@ struct LiveSmileMonitorView: View {
 
     // MARK: - 생명주기
 
+    /// 시작을 누르면 권한부터 끝낸다.
+    ///
+    /// 세션을 켜둔 채 권한을 물으면, 대화상자가 뜨는 동안 앱이 inactive가 되고 화면은 그것을
+    /// 카메라를 쓰다 벗어난 것으로 읽어 세션을 멈춘다. 처음 쓰는 사람이 허용을 누르고 돌아와
+    /// "측정을 멈췄어요"를 보던 이유가 그것이다. 허용이 확인된 뒤에만 측정에 들어간다.
+    private func beginSession() {
+        guard let monitor, !isResolvingPermission else { return }
+
+        switch LiveSmileStartDecision(
+            permission: monitor.cameraPermission,
+            isFaceTrackingSupported: monitor.isFaceTrackingSupported
+        ) {
+        case .startMeasuring:
+            startMeasuring()
+        case .explainPermissionNeeded:
+            needsCameraPermission = true
+        case .explainUnsupportedDevice:
+            // start()가 unsupportedDevice를 올려 실패 화면으로 간다. 권한은 묻지 않는다.
+            startMeasuring()
+        case .askForPermission:
+            isResolvingPermission = true
+            Task {
+                let result = await monitor.requestCameraPermission()
+                isResolvingPermission = false
+                if result == .granted {
+                    startMeasuring()
+                } else {
+                    needsCameraPermission = true
+                }
+            }
+        }
+    }
+
     private func startMeasuring() {
+        needsCameraPermission = false
         hasStarted = true
         // start()가 새 recorder를 만든다. 이전 세션 요약이 남지 않게 함께 버린다.
         summary = nil
