@@ -45,6 +45,12 @@ enum SharedStrings {
 
     // MARK: - 실시간 미소 확인 (선택형)
 
+    /// 카메라 허용 없이는 이 기능 자체가 성립하지 않는다. 측정 화면에 들여보내고 실패를
+    /// 보여주는 대신, 들어가기 전에 무엇이 필요한지와 어디서 켜는지를 말한다.
+    static let liveMonitorCameraRequiredTitle = "카메라 허용이 있어야 쓸 수 있어요"
+    static let liveMonitorCameraRequiredDetail = "실시간 미소 확인은 전면 카메라로 입꼬리 움직임만 읽어요. 사진과 영상은 저장하지도 전송하지도 않아요."
+    static let liveMonitorOpenCameraSettings = "카메라 허용 설정하기"
+
     static let liveMonitorTitle = "실시간 미소 확인"
     static let liveMonitorEntrySummary = "카메라 화면 없이 미소 신호만 보여드려요. 원하면 화면을 켤 수도 있어요."
     /// 측정 중 항상 보이는 프라이버시 고지. 화면 표시 여부와 무관하게 저장하지 않는다는 약속이다.

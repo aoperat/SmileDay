@@ -91,6 +91,12 @@ struct SmileMVPHomeView: View {
             guard newPhase == .active else { return }
             refresh()
         }
+        // 설정 화면은 같은 앱 안에서 밀고 당기므로 scenePhase가 바뀌지 않는다. 갱신하지
+        // 않으면 알림을 꺼두고 돌아와도 "다음 알림"이 옛 값 그대로 남는다.
+        .onChange(of: isShowingSettings) { _, isShowing in
+            guard !isShowing else { return }
+            refresh()
+        }
         .onChange(of: notificationRouter.pendingSmileGuide, initial: true) { _, payload in
             guard payload != nil else { return }
             openSmile(source: .notification)
@@ -218,6 +224,20 @@ private struct NextReminderCard: View {
     let onOpenSystemSettings: () -> Void
 
     var body: some View {
+        // 알림이 오지 못하는 상태에서는 카드 전체가 버튼이다. 작은 글씨를 정확히 누르게
+        // 하는 것보다, 눈에 걸린 곳을 그냥 누르면 고치러 가는 편이 맞다.
+        Group {
+            if state.needsAttention {
+                Button(action: action) { card }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(SharedStrings.reminderTurnOnAction)
+            } else {
+                card
+            }
+        }
+    }
+
+    private var card: some View {
         HStack(alignment: state.needsAttention ? .top : .center, spacing: 12) {
             Image(systemName: state.needsAttention ? "bell.slash.fill" : "bell.fill")
                 .font(.system(size: 13, weight: .semibold))
@@ -241,7 +261,7 @@ private struct NextReminderCard: View {
                         .foregroundStyle(SDColor.ink)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Button(SharedStrings.reminderTurnOnAction, action: action)
+                    Text(SharedStrings.reminderTurnOnAction)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.sunDeep)
                         .padding(.top, 6)
@@ -249,6 +269,13 @@ private struct NextReminderCard: View {
             }
 
             Spacer(minLength: 0)
+
+            if state.needsAttention {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(SDColor.muted)
+                    .accessibilityHidden(true)
+            }
         }
         .sdCard(padding: 14, cornerRadius: 20)
         .accessibilityElement(children: .combine)
