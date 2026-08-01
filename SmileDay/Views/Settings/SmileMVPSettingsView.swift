@@ -6,8 +6,9 @@ struct SmileMVPSettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: SmileReminderScheduleViewModel?
     @State private var messageViewModel: ReminderMessageViewModel?
-    @State private var didSave = false
     @State private var loadFailed = false
+    /// 알림을 끄기 전에 한 번 확인한다.
+    @State private var isConfirmingDisable = false
 
     private let reminderMessageStore = UserDefaultsReminderMessageStore()
     private let nudgeStore = UserDefaultsLiveSmileNudgeSettingsStore()
@@ -31,9 +32,17 @@ struct SmileMVPSettingsView: View {
 
                 if !loadFailed {
                     Section {
+                        // 끄는 것은 이 앱의 유일한 흐름을 멈추는 일이라 한 번 확인한다.
+                        // 켜는 것은 되돌리기 쉬우니 그대로 반영한다.
                         Toggle(isOn: Binding(
                             get: { viewModel.isEnabled },
-                            set: { viewModel.updateEnabled($0) }
+                            set: { isOn in
+                                if isOn {
+                                    viewModel.updateEnabled(true)
+                                } else {
+                                    isConfirmingDisable = true
+                                }
+                            }
                         )) {
                             Text("미소 알림")
                                 .foregroundStyle(SDColor.ink)
@@ -52,31 +61,13 @@ struct SmileMVPSettingsView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(SDColor.alert)
                         }
-
-                        Button {
-                            Task {
-                                didSave = await viewModel.save(requestAuthorization: viewModel.isEnabled)
-                            }
-                        } label: {
-                            Text(viewModel.isSaving ? "저장 중…" : "알림 설정 저장")
-                                .frame(maxWidth: .infinity)
-                        }
-                        .buttonStyle(SDInkButtonStyle())
-                        .disabled(viewModel.isSaving || viewModel.pattern == nil)
                     } header: {
                         Text("반복 설정")
                             .foregroundStyle(SDColor.ink)
                     } footer: {
-                        Text("놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요.")
+                        // 저장 버튼이 없으므로 반영됐다는 사실은 여기서 말한다.
+                        Text(viewModel.isSaving ? "저장 중…" : "바꾸면 바로 적용돼요. 놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요.")
                             .foregroundStyle(SDColor.muted)
-                    }
-                    .listRowBackground(Color.white)
-                }
-
-                if didSave && !loadFailed {
-                    Section {
-                        Label("알림 설정을 저장했어요", systemImage: "checkmark.circle.fill")
-                            .foregroundStyle(SDColor.ink)
                     }
                     .listRowBackground(Color.white)
                 }
@@ -87,7 +78,7 @@ struct SmileMVPSettingsView: View {
                             NavigationLink {
                                 ReminderMessageManagementView(
                                     viewModel: messageViewModel,
-                                    onChanged: { didSave = false }
+                                    onChanged: {}
                                 )
                             } label: {
                                 HStack {
@@ -120,13 +111,27 @@ struct SmileMVPSettingsView: View {
         .toolbarColorScheme(.light, for: .navigationBar)
         .toolbarBackground(SDColor.cream, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
+        .alert(
+            SharedStrings.disableRemindersConfirmTitle,
+            isPresented: $isConfirmingDisable
+        ) {
+            // 취소하면 토글은 저절로 제자리로 돌아온다 — viewModel.isEnabled를 읽기 때문이다.
+            Button(SharedStrings.disableRemindersCancelAction, role: .cancel) {}
+            Button(SharedStrings.disableRemindersConfirmAction, role: .destructive) {
+                viewModel?.updateEnabled(false)
+            }
+        } message: {
+            Text(SharedStrings.disableRemindersConfirmMessage)
+        }
         .task {
             if viewModel == nil {
                 viewModel = SmileReminderScheduleViewModel(
                     scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
                     legacyReminderRepository: LegacyReminderRepository(modelContext: modelContext),
                     scheduler: UserNotificationReminderScheduler(),
-                    messageStore: reminderMessageStore
+                    messageStore: reminderMessageStore,
+                    // 바꾼 것 자체가 결정이다. 저장 버튼을 한 번 더 누르게 하지 않는다.
+                    appliesChangesImmediately: true
                 )
             }
             if messageViewModel == nil {

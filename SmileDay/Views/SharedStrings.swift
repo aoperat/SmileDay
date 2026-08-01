@@ -43,6 +43,13 @@ enum SharedStrings {
     static let onboardingPermissionDeniedMessage = "알림 권한이 거부돼서 정한 시간에 알려드릴 수 없어요. iOS는 이 요청을 한 번만 물어보기 때문에, 켜려면 설정 앱에서 바꿔야 해요."
     static let onboardingContinueAnyway = "이대로 시작하기"
 
+    // MARK: - 설정에서 알림을 끌 때
+
+    static let disableRemindersConfirmTitle = "정말 알림을 끌까요?"
+    static let disableRemindersConfirmMessage = "예약된 알림이 모두 취소돼요. 앱을 직접 열어야 미소 시간을 시작할 수 있어요. 언제든 다시 켤 수 있어요."
+    static let disableRemindersConfirmAction = "알림 끄기"
+    static let disableRemindersCancelAction = "그대로 둘래요"
+
     // MARK: - 실시간 미소 확인 (선택형)
 
     /// 카메라 허용 없이는 이 기능 자체가 성립하지 않는다. 측정 화면에 들여보내고 실패를
