@@ -72,15 +72,41 @@ final class SmileOnboardingStateTests: XCTestCase {
         XCTAssertTrue(viewModel.didComplete)
     }
 
-    func test_confirm_completesWhenPermissionDenied() async throws {
+    /// 예전에는 거부당해도 그대로 온보딩을 끝냈다. 그러면 사용자는 알림이 켜진 줄 알고
+    /// 홈으로 나가고, 이 앱에 남는 흐름이 없는 채로 며칠이 지난다. iOS는 권한을 한 번만
+    /// 물으므로 여기서 짚지 않으면 다시 물을 기회도 없다.
+    func test_confirm_stopsToExplain_whenPermissionDenied() async throws {
         let (viewModel, repository, scheduler, store) = try makeViewModel()
         scheduler.status = .denied
 
         await viewModel.confirm()
 
+        // 일정은 저장돼 있다 — 권한만 켜면 바로 동작해야 하기 때문이다.
         XCTAssertNotNil(try repository.fetchCurrent())
+        XCTAssertTrue(viewModel.wasPermissionDenied)
+        XCTAssertFalse(store.hasCompletedOnboarding)
+        XCTAssertFalse(viewModel.didComplete)
+    }
+
+    /// 설명을 읽고도 그대로 가겠다면 막지 않는다.
+    func test_continueWithoutPermission_completesAfterTheExplanation() async throws {
+        let (viewModel, _, scheduler, store) = try makeViewModel()
+        scheduler.status = .denied
+        await viewModel.confirm()
+
+        viewModel.continueWithoutPermission()
+
         XCTAssertTrue(store.hasCompletedOnboarding)
         XCTAssertTrue(viewModel.didComplete)
+    }
+
+    func test_confirm_doesNotFlagDenial_whenPermissionGranted() async throws {
+        let (viewModel, _, _, store) = try makeViewModel()
+
+        await viewModel.confirm()
+
+        XCTAssertFalse(viewModel.wasPermissionDenied)
+        XCTAssertTrue(store.hasCompletedOnboarding)
     }
 
     func test_skipReminders_savesDisabledSchedule() async throws {

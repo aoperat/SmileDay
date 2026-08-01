@@ -19,6 +19,30 @@ enum SharedStrings {
     static let notificationDeniedNotice = "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요."
     static let openSystemSettings = "설정 앱 열기"
 
+    // MARK: - 알림이 도착하지 못할 때
+
+    /// 이 앱은 알림 → 5초 → 기록이 전부다. 알림이 끊기면 남는 흐름이 없어 홈에서 짚어준다.
+    /// 다만 문구는 재촉이 아니라 사실과 고치는 방법만 말한다.
+    static let reminderBlockedTitle = "알림이 오지 않아요"
+    static let reminderBlockedDetail = "iOS 설정에서 알림이 꺼져 있어요. 켜야 정한 시간에 알려드릴 수 있어요."
+    static let reminderNotRequestedTitle = "알림을 켜면 잊지 않아요"
+    static let reminderNotRequestedDetail = "정한 시간에 짧게 알려드릴게요. 지금 켤 수 있어요."
+    static let reminderOffTitle = "알림이 꺼져 있어요"
+    static let reminderOffDetail = "이 앱은 알림으로 미소를 떠올리게 해요. 설정에서 언제든 켤 수 있어요."
+    static let reminderTurnOnAction = "알림 켜기"
+
+    // MARK: - 온보딩에서 알림을 건너뛸 때
+
+    static let skipRemindersConfirmTitle = "알림 없이 시작할까요?"
+    /// 겁주지 않되, 무엇이 없어지는지는 분명히 말한다.
+    static let skipRemindersConfirmMessage = "스마일데이는 정한 시간에 알림으로 미소를 떠올리게 해요. 알림이 없으면 앱을 직접 열어야 기억할 수 있어요. 나중에 설정에서 켤 수 있어요."
+    static let skipRemindersConfirmAction = "알림 없이 시작"
+    static let skipRemindersCancelAction = "알림 받을래요"
+
+    static let onboardingPermissionDeniedTitle = "알림이 꺼진 채로 시작해요"
+    static let onboardingPermissionDeniedMessage = "알림 권한이 거부돼서 정한 시간에 알려드릴 수 없어요. iOS는 이 요청을 한 번만 물어보기 때문에, 켜려면 설정 앱에서 바꿔야 해요."
+    static let onboardingContinueAnyway = "이대로 시작하기"
+
     // MARK: - 실시간 미소 확인 (선택형)
 
     static let liveMonitorTitle = "실시간 미소 확인"

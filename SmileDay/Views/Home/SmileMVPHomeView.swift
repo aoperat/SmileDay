@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 import CoachingKit
 
 struct SmileMVPHomeView: View {
@@ -36,7 +37,14 @@ struct SmileMVPHomeView: View {
 
                             LiveMonitorCard(onOpen: { isShowingLiveMonitor = true })
 
-                            NextReminderCard(reminder: viewModel.nextReminder)
+                            NextReminderCard(
+                                state: viewModel.reminderDelivery,
+                                onOpenAppSettings: { isShowingSettings = true },
+                                onOpenSystemSettings: {
+                                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+                                    UIApplication.shared.open(url)
+                                }
+                            )
 
                             RecentSevenDaysCard(
                                 days: viewModel.recentSevenDays,
@@ -73,7 +81,8 @@ struct SmileMVPHomeView: View {
             if viewModel == nil {
                 viewModel = SmileHomeViewModel(
                     momentRepository: SmileMomentRepository(modelContext: modelContext),
-                    scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext)
+                    scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
+                    scheduler: UserNotificationReminderScheduler()
                 )
             }
             refresh()
@@ -115,11 +124,13 @@ struct SmileMVPHomeView: View {
     }
 
     private func refresh() {
-        do {
-            try viewModel?.refresh()
-            loadFailed = false
-        } catch {
-            loadFailed = true
+        Task {
+            do {
+                try await viewModel?.refresh()
+                loadFailed = false
+            } catch {
+                loadFailed = true
+            }
         }
     }
 }
@@ -197,38 +208,77 @@ private struct LiveMonitorCard: View {
     }
 }
 
+/// 다음 알림 시각, 또는 알림이 오지 못하는 이유와 고치는 방법.
+///
+/// 예약된 일정만 보고 시각을 적으면, iOS 권한이 꺼진 사용자에게 오지 않을 알림을 약속하게
+/// 된다. 그래서 `ReminderDeliveryState`가 판단한 결과만 그린다.
 private struct NextReminderCard: View {
-    let reminder: UpcomingReminder?
+    let state: ReminderDeliveryState
+    let onOpenAppSettings: () -> Void
+    let onOpenSystemSettings: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "bell.fill")
+        HStack(alignment: state.needsAttention ? .top : .center, spacing: 12) {
+            Image(systemName: state.needsAttention ? "bell.slash.fill" : "bell.fill")
                 .font(.system(size: 13, weight: .semibold))
                 .foregroundStyle(SDColor.ink)
                 .frame(width: 32, height: 32)
-                .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 10))
+                .background(state.needsAttention ? SDColor.shell : SDColor.apricot, in: RoundedRectangle(cornerRadius: 10))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(SharedStrings.nextReminderTitle)
+                Text(title)
                     .font(.caption)
                     .foregroundStyle(SDColor.muted)
 
-                if let reminder {
+                if case .scheduled(let reminder) = state {
                     Text(reminder.date.formatted(.dateTime.locale(SDFormat.koreanLocale).hour().minute()))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
                 } else {
-                    Text(SharedStrings.noReminderYet)
+                    Text(detail)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(SDColor.muted)
+                        .foregroundStyle(SDColor.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Button(SharedStrings.reminderTurnOnAction, action: action)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .padding(.top, 6)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
         }
         .sdCard(padding: 14, cornerRadius: 20)
         .accessibilityElement(children: .combine)
+    }
+
+    private var title: String {
+        switch state {
+        case .scheduled: SharedStrings.nextReminderTitle
+        case .blockedByPermission: SharedStrings.reminderBlockedTitle
+        case .permissionNotRequested: SharedStrings.reminderNotRequestedTitle
+        case .off: SharedStrings.reminderOffTitle
+        }
+    }
+
+    private var detail: String {
+        switch state {
+        case .scheduled: ""
+        case .blockedByPermission: SharedStrings.reminderBlockedDetail
+        case .permissionNotRequested: SharedStrings.reminderNotRequestedDetail
+        case .off: SharedStrings.reminderOffDetail
+        }
+    }
+
+    /// 권한이 거부된 상태는 앱 안에서 되돌릴 수 없다 — iOS는 한 번만 묻는다. 그때만
+    /// 설정 앱으로 보내고, 나머지는 앱 안의 설정 화면에서 해결된다.
+    private var action: () -> Void {
+        switch state {
+        case .blockedByPermission: onOpenSystemSettings
+        case .scheduled, .permissionNotRequested, .off: onOpenAppSettings
+        }
     }
 }
 

@@ -1,5 +1,6 @@
 import SwiftUI
 import SwiftData
+import UIKit
 import CoachingKit
 
 struct SmileMVPOnboardingView: View {
@@ -113,6 +114,8 @@ private struct OnboardingScheduleStep: View {
     let viewModel: SmileOnboardingViewModel
     let onFinished: () -> Void
 
+    @State private var isConfirmingSkip = false
+
     var body: some View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
@@ -156,15 +159,11 @@ private struct OnboardingScheduleStep: View {
                 .buttonStyle(SDPrimaryButtonStyle())
                 .disabled(viewModel.isSaving || viewModel.schedule.pattern == nil)
 
-                Button("알림 없이 시작하기") {
-                    Task {
-                        await viewModel.skipReminders()
-                        if viewModel.didComplete { onFinished() }
-                    }
-                }
-                .font(.subheadline.weight(.semibold))
-                .foregroundStyle(SDColor.ink)
-                .frame(maxWidth: .infinity)
+                // 알림이 이 앱의 유일한 흐름이라 한 번 더 확인한다. 막지는 않는다.
+                Button("알림 없이 시작하기") { isConfirmingSkip = true }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(SDColor.ink)
+                    .frame(maxWidth: .infinity)
 
                 Text("알림 권한을 허용하지 않아도 앱에서 직접 미소 시간을 시작할 수 있어요.")
                     .font(.footnote)
@@ -173,6 +172,43 @@ private struct OnboardingScheduleStep: View {
                     .frame(maxWidth: .infinity)
             }
             .padding(24)
+        }
+        // alert를 쓴다. confirmationDialog는 .cancel 역할 버튼의 문구를 제 것으로 바꿔버려
+        // "알림 받을래요"라는 선택지가 사라지고, 되돌릴 방법이 없는 것처럼 보인다.
+        // 한 번 더 묻는 의미는 두 선택지가 나란히 보일 때만 생긴다.
+        .alert(
+            SharedStrings.skipRemindersConfirmTitle,
+            isPresented: $isConfirmingSkip
+        ) {
+            Button(SharedStrings.skipRemindersCancelAction, role: .cancel) {}
+            Button(SharedStrings.skipRemindersConfirmAction, role: .destructive) {
+                Task {
+                    await viewModel.skipReminders()
+                    if viewModel.didComplete { onFinished() }
+                }
+            }
+        } message: {
+            Text(SharedStrings.skipRemindersConfirmMessage)
+        }
+        // 시스템 권한 대화상자는 한 번만 뜬다. 거부했다면 앱에서 다시 물을 수 없으므로
+        // 무엇이 없어졌는지와 어디서 되돌리는지를 여기서 알려준다.
+        .alert(
+            SharedStrings.onboardingPermissionDeniedTitle,
+            isPresented: .constant(viewModel.wasPermissionDenied)
+        ) {
+            Button(SharedStrings.openSystemSettings) {
+                if let url = URL(string: UIApplication.openSettingsURLString) {
+                    UIApplication.shared.open(url)
+                }
+                viewModel.continueWithoutPermission()
+                if viewModel.didComplete { onFinished() }
+            }
+            Button(SharedStrings.onboardingContinueAnyway, role: .cancel) {
+                viewModel.continueWithoutPermission()
+                if viewModel.didComplete { onFinished() }
+            }
+        } message: {
+            Text(SharedStrings.onboardingPermissionDeniedMessage)
         }
     }
 }
