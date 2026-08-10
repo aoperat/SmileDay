@@ -146,6 +146,35 @@ final class SmileMomentRepositoryTests: XCTestCase {
         XCTAssertTrue(days.allSatisfy { $0.count == 0 })
     }
 
+    // MARK: - monthlyCounts
+
+    func test_monthlyCounts_returnsEveryDayAndFillsMissingDays() throws {
+        let repository = try makeRepository()
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 8, 1, 9))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 8, 4, 9))
+        try repository.save(guideID: "anytime-soft", source: .notification, date: date(2026, 8, 4, 18))
+
+        let days = try repository.monthlyCounts(containing: date(2026, 8, 20), calendar: calendar)
+
+        XCTAssertEqual(days.count, 31)
+        XCTAssertEqual(days.first?.date, date(2026, 8, 1, 0))
+        XCTAssertEqual(days.last?.date, date(2026, 8, 31, 0))
+        XCTAssertEqual(days[0].count, 1)
+        XCTAssertEqual(days[1].count, 0)
+        XCTAssertEqual(days[3].count, 2)
+    }
+
+    func test_monthlyCounts_excludesAdjacentMonths() throws {
+        let repository = try makeRepository()
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 31, 23, 59))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 8, 1, 0, 0))
+        try repository.save(guideID: "anytime-soft", source: .manual, date: date(2026, 9, 1, 0, 0))
+
+        let days = try repository.monthlyCounts(containing: date(2026, 8, 20), calendar: calendar)
+
+        XCTAssertEqual(days.reduce(0) { $0 + $1.count }, 1)
+    }
+
     // MARK: - weekActiveDayCount
 
     /// 같은 날 여러 번 완료해도 하루로 센다.

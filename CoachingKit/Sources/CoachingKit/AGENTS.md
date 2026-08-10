@@ -53,7 +53,7 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 | File | Description |
 |------|-------------|
 | `PersistenceSchema.swift` | The SwiftData model list — **all seven models**, active and compatibility-only. Register new `@Model`s here |
-| `SmileMomentRepository.swift` | Save/fetch completions; `count(onDayOf:)`, `recentSevenDays(endingOn:)` → `[SmileDayCount]`, `weekActiveDayCount(endingOn:)` |
+| `SmileMomentRepository.swift` | Save/fetch completions; daily, recent-seven-day, and zero-filled monthly counts, plus week active-day count |
 | `SmileReminderScheduleRepository.swift` | Fetch/save the one current `SmileReminderSchedule` |
 | `LegacyReminderRepository.swift` | Read-only: `pendingNotificationIDs()` for cancelling notifications an older build scheduled. No create/update/delete |
 
@@ -61,6 +61,7 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 | File | Description |
 |------|-------------|
 | `SmileHomeViewModel.swift` | Today's count, seven-day total and per-day counts, next reminder time. No score, streak-loss, or day-over-day comparison |
+| `SmileHistoryViewModel.swift` | Monthly day counts, total, active-day count, selected day, and month navigation capped at the current month |
 | `SmileGuideViewModel.swift` | One guide run: `ready → running(remainingSeconds:) → completed`; saves exactly once on completion, saves nothing on cancel. Clock injected via `SmileGuideClock` |
 | `SmileReminderScheduleViewModel.swift` | Edits and saves the repeating schedule, then cancels legacy notification IDs — **only after** the save succeeds. Settings applies changes as they happen (debounced); there is no save button, so `applyMessageChange()` is what carries edited reminder text into the already-scheduled notifications, and `flushPendingApply()` finishes a debounced change before the screen goes away |
 | `SmileOnboardingState.swift` | `SmileOnboardingViewModel` (confirm / skip) + `SmileOnboardingStoring` with UserDefaults and InMemory stores |

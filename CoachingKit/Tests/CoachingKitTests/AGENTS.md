@@ -15,6 +15,7 @@ XCTest suite for the whole package — one same-named test file per source area.
 | `SmileReminderScheduleViewModelTests` | Save → schedule → cancel ordering, including "legacy notifications are cancelled only after a successful save" |
 | `SmileGuideTests`, `SmileGuideViewModelTests` | Default guide id/duration; countdown state machine, save-exactly-once, cancel saves nothing, late ticks never complete |
 | `SmileHomeViewModelTests`, `SmileOnboardingStateTests` | Home counts and next-reminder math; onboarding confirm/skip and permission-denied paths |
+| `SmileHistoryViewModelTests` | Monthly summary, selected day, previous/next month navigation, and future-date guard |
 | `SmileCueTests` | Cue catalog copy rules (no appearance, emotion, or quality claims) |
 | `ReminderNotificationPayloadTests` | Current and legacy (`bucket`/`promptText`) payload parsing; unopenable payloads stay nil |
 | `LegacyReminderRepositoryTests` | Legacy notification IDs returned for cancellation, disabled reminders included |

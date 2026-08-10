@@ -90,6 +90,29 @@ public final class SmileMomentRepository {
         return days
     }
 
+    /// `date`가 속한 달의 모든 날짜를 오래된 날부터 반환한다.
+    ///
+    /// 기록이 없는 날도 `count: 0`으로 채운다. 화면이 저장 건수에 따라 달력의 모양을
+    /// 다시 계산하지 않게 월 경계와 날짜별 집계를 저장소가 책임진다.
+    public func monthlyCounts(containing date: Date, calendar: Calendar = .current) throws -> [SmileDayCount] {
+        guard let month = calendar.dateInterval(of: .month, for: date) else { return [] }
+
+        let moments = try fetch(from: month.start, to: month.end)
+        var countsByDay: [Date: Int] = [:]
+        for moment in moments {
+            countsByDay[calendar.startOfDay(for: moment.date), default: 0] += 1
+        }
+
+        var days: [SmileDayCount] = []
+        var day = calendar.startOfDay(for: month.start)
+        while day < month.end {
+            days.append(SmileDayCount(date: day, count: countsByDay[day] ?? 0))
+            guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else { break }
+            day = nextDay
+        }
+        return days
+    }
+
     /// `date`가 속한 달력 주(캘린더의 `firstWeekday` 기준)에서 한 번이라도 완료한 날의 수.
     /// 같은 날 여러 번 완료해도 하루로 센다.
     public func weekActiveDayCount(endingOn date: Date, calendar: Calendar = .current) throws -> Int {

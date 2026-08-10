@@ -11,6 +11,7 @@ struct SmileMVPHomeView: View {
     @State private var viewModel: SmileHomeViewModel?
     @State private var launch: SmileLaunch?
     @State private var isShowingSettings = false
+    @State private var isShowingHistory = false
     @State private var isShowingLiveMonitor = false
     @State private var loadFailed = false
 
@@ -48,7 +49,8 @@ struct SmileMVPHomeView: View {
 
                             RecentSevenDaysCard(
                                 days: viewModel.recentSevenDays,
-                                totalCount: viewModel.recentSevenDayTotal
+                                totalCount: viewModel.recentSevenDayTotal,
+                                onOpen: { isShowingHistory = true }
                             )
                         }
                         .padding(.horizontal, 20)
@@ -73,6 +75,9 @@ struct SmileMVPHomeView: View {
                 // 아래 onChange는 뒤로 가기를 누른 순간 돈다 — 설정의 반영이 아직 지연
                 // 중이면 그때 읽은 값은 옛 일정이다. 반영이 끝난 뒤 한 번 더 읽는다.
                 SmileMVPSettingsView(onScheduleApplied: refresh)
+            }
+            .navigationDestination(isPresented: $isShowingHistory) {
+                SmileHistoryView()
             }
         }
         .tint(SDColor.sunDeep)
@@ -314,28 +319,40 @@ private struct NextReminderCard: View {
 private struct RecentSevenDaysCard: View {
     let days: [SmileDayCount]
     let totalCount: Int
+    let onOpen: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(SharedStrings.recentSevenDaysTitle)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.muted)
+        Button(action: onOpen) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text(SharedStrings.recentSevenDaysTitle)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
 
-                Spacer()
+                    Spacer()
 
-                Text("총 \(totalCount)번")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.ink)
-            }
+                    Text("총 \(totalCount)번")
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
 
-            HStack(spacing: 6) {
-                ForEach(days) { day in
-                    DayDot(day: day)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
+                        .accessibilityHidden(true)
+                }
+
+                HStack(spacing: 6) {
+                    ForEach(days) { day in
+                        DayDot(day: day)
+                    }
                 }
             }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .sdCard()
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("월별 기록 보기")
     }
 }
 
