@@ -121,6 +121,10 @@ enum SharedStrings {
     /// 분모에서 알 수 없음을 뺐으므로 그 비율을 항상 함께 보여준다.
     static let liveSummaryLowConfidence = "인식된 시간이 짧아 이 숫자는 참고만 해주세요."
     static let liveSummaryNoMeasurement = "측정된 시간이 없어요."
+    /// 사용자가 종료를 누르지 않았는데 요약이 떴을 때, 왜 끝났는지 먼저 말한다.
+    /// 이유 없이 요약이 나타나면 자기가 뭘 잘못 눌렀다고 생각한다.
+    static let liveSummaryEndedByLeavingApp = "화면을 벗어나서 카메라를 껐어요. 그때까지 측정한 내용이에요."
+    static let liveSummaryEndedByInterruption = "카메라가 멈춰서 측정을 마쳤어요. 그때까지 측정한 내용이에요."
     /// 숫자를 값 판단으로 읽지 않도록 함께 둔다.
     static let liveSummaryMeaning = "이 비율은 웃음의 좋고 나쁨이 아니라, 카메라가 입꼬리 움직임을 감지한 시간의 비율이에요."
 }

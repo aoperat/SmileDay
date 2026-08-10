@@ -46,7 +46,7 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 | `LiveSmileSignalEvaluator.swift` | Pure calculation: mouth-corner mean, neutral-relative 0–1 signal over `displaySpan`, gaze check against `gazeToleranceDegrees`, darkness check. Clamps everything; asymmetry never subtracts. Also defines `LiveSmileLevel`, whose bands are deliberately **not** equal quarters (0 / 0.10 / 0.30 / 0.60) |
 | `LiveSmileGaze.swift` | Pure geometry: how far the face's forward direction is from the direction of the camera. Position never enters the result |
 | `LiveSmileMonitorViewModel.swift` | `@Observable` session state: 2s neutral calibration from valid frames only, exponential smoothing, ≤10 publishes/sec, quality-issue priority over the level, hysteresis on level boundaries, resting-time nudges, `recalibrate()`/`stop()` |
-| `LiveSmileNudge.swift` | `LiveSmileNudgeSettings` (enabled / interval / haptic) with UserDefaults + InMemory stores, and the `LiveSmileNudging` boundary the app implements with haptics and a local notification |
+| `LiveSmileNudge.swift` | `LiveSmileNudgeSettings` (enabled / interval / haptic) with UserDefaults + InMemory stores, and the `LiveSmileNudging` boundary the app implements with haptics and a local notification. `clearNudges()` runs on every session end (`stop()` and `fail()`) — a nudge left in Notification Center loses its "you are measuring right now" context and taps nowhere, since it carries no deep link |
 | `LiveSmileSessionRecorder.swift` | `LiveSmileObservation` 3-state, one-second buckets decided by majority vote, unknown-filled gaps, and `LiveSmileSessionSummary` (ratio over usable time only) |
 
 ### Repositories (thin wrappers over `ModelContext` — own all FetchDescriptors)

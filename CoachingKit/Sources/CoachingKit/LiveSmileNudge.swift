@@ -80,4 +80,11 @@ public final class InMemoryLiveSmileNudgeSettingsStore: LiveSmileNudgeSettingsSt
 @MainActor
 public protocol LiveSmileNudging: AnyObject {
     func nudge(withHaptic: Bool)
+
+    /// 세션이 끝날 때 부른다. 이 세션이 띄운 알림을 거둔다.
+    ///
+    /// 이 알림은 "지금 실시간 확인 중"이라는 맥락에서만 뜻이 있다. 세션이 끝난 뒤에도
+    /// 알림센터에 남아 있으면, 나중에 그걸 본 사용자는 미소 알림이 온 줄 알고 누른다 —
+    /// 그런데 이 알림에는 딥링크가 없어 아무 일도 일어나지 않는다.
+    func clearNudges()
 }

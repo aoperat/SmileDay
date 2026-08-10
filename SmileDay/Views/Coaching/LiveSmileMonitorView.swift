@@ -26,6 +26,8 @@ struct LiveSmileMonitorView: View {
     @State private var previousIdleTimerDisabled = false
     /// 종료를 누른 뒤 보여줄 요약. 화면을 닫으면 사라진다.
     @State private var summary: LiveSmileSessionSummary?
+    /// 요약이 왜 떴는지. 종료를 누르지 않은 경우에만 요약 화면이 이유를 먼저 말한다.
+    @State private var summaryEndReason: LiveSmileSessionEndReason = .userEnded
     /// 카메라 허용이 없어 측정에 들어가지 못한 상태. 설정에서 켜고 돌아오면 풀린다.
     @State private var needsCameraPermission = false
     /// 권한을 묻는 중. 그 사이 시작 버튼을 다시 누르지 못하게 막는다.
@@ -73,7 +75,7 @@ struct LiveSmileMonitorView: View {
             // 세션은 ViewModel이 이미 멈췄다. 측정한 게 있으면 실패 문구 대신 요약을 먼저
             // 보여준다 — 인터럽션이든 진짜 오류든, 이미 기록된 것을 말없이 버리지 않는다.
             if let viewModel, viewModel.hasRecordedAnySecond, summary == nil {
-                finishAndShowSummary(viewModel)
+                finishAndShowSummary(viewModel, endedBy: .interrupted)
             } else {
                 // 측정 전 실패(권한 거부·미지원 기기)는 기록이 없으므로 실패 화면을 그대로 둔다.
                 isShowingPreview = false
@@ -87,7 +89,7 @@ struct LiveSmileMonitorView: View {
             SDCloseButton {
                 // 측정한 게 있으면 말없이 버리지 않고 요약을 먼저 보여준다.
                 if let viewModel, hasStarted, summary == nil, viewModel.hasRecordedAnySecond {
-                    finishAndShowSummary(viewModel)
+                    finishAndShowSummary(viewModel, endedBy: .userEnded)
                 } else {
                     releaseSession()
                     dismiss()
@@ -107,6 +109,7 @@ struct LiveSmileMonitorView: View {
             if let summary {
                 LiveSmileSessionSummaryView(
                     summary: summary,
+                    endReason: summaryEndReason,
                     onClose: {
                         releaseSession()
                         dismiss()
@@ -251,7 +254,7 @@ struct LiveSmileMonitorView: View {
                 .buttonStyle(SDInkButtonStyle())
 
                 Button(SharedStrings.liveMonitorCloseAction) {
-                    finishAndShowSummary(viewModel)
+                    finishAndShowSummary(viewModel, endedBy: .userEnded)
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
             }
@@ -516,7 +519,7 @@ struct LiveSmileMonitorView: View {
         // 측정한 게 있으면 새로 시작하는 화면 대신 요약을 먼저 보여준다 — 카메라를 끄는 시점은
         // 그대로다, finishSession()도 내부에서 즉시 stop()을 부른다.
         if viewModel.hasRecordedAnySecond, summary == nil {
-            finishAndShowSummary(viewModel)
+            finishAndShowSummary(viewModel, endedBy: .leftTheApp)
         } else {
             viewModel.stop()
             restoreIdleTimer()
@@ -525,10 +528,14 @@ struct LiveSmileMonitorView: View {
     }
 
     /// 측정을 끝내고 요약으로 넘어간다. 세션은 멈추지만 화면은 닫지 않는다.
-    private func finishAndShowSummary(_ viewModel: LiveSmileMonitorViewModel) {
+    private func finishAndShowSummary(
+        _ viewModel: LiveSmileMonitorViewModel,
+        endedBy reason: LiveSmileSessionEndReason
+    ) {
         let result = viewModel.finishSession()
         isShowingPreview = false
         restoreIdleTimer()
+        summaryEndReason = reason
         summary = result
     }
 
@@ -536,6 +543,7 @@ struct LiveSmileMonitorView: View {
     private func releaseSession() {
         shutDown()
         summary = nil
+        summaryEndReason = .userEnded
     }
 
     /// 닫기·화면 이탈·실패 등 모든 종료 경로에서 카메라와 자동 잠금을 원래대로 되돌린다.

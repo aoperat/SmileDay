@@ -24,6 +24,12 @@ final class LiveSmileNudgeNotifier: LiveSmileNudging {
         postNotification()
     }
 
+    /// 세션이 끝나면 이 알림은 뜻을 잃는다. 배달된 것과 아직 처리 중인 것을 모두 거둔다.
+    func clearNudges() {
+        center.removeDeliveredNotifications(withIdentifiers: [Self.notificationID])
+        center.removePendingNotificationRequests(withIdentifiers: [Self.notificationID])
+    }
+
     private func postNotification() {
         let content = UNMutableNotificationContent()
         content.title = SharedStrings.liveMonitorNudgeTitle

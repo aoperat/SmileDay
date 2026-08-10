@@ -28,8 +28,10 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
     /// 알림 호출을 기록만 하는 경계 더블.
     private final class FakeNudging: LiveSmileNudging {
         private(set) var calls: [Bool] = []
+        private(set) var clearCount = 0
 
         func nudge(withHaptic: Bool) { calls.append(withHaptic) }
+        func clearNudges() { clearCount += 1 }
     }
 
     private func makeViewModel(
@@ -665,5 +667,56 @@ final class LiveSmileMonitorViewModelTests: XCTestCase {
         let summary = viewModel.finishSession()
 
         XCTAssertGreaterThan(summary.totalSeconds, 0, "실패 전에 기록된 칸이 요약에 남아 있어야 한다")
+    }
+
+    // MARK: - 세션이 끝나면 알림도 거둔다
+
+    /// 남은 알림은 "지금 실시간 확인 중"이라는 맥락을 잃는다. 나중에 그걸 누른 사용자는
+    /// 미소 알림인 줄 알지만 이 알림에는 딥링크가 없어 아무 일도 일어나지 않는다.
+    func test_stop_clearsTheNudgeNotification() {
+        let (viewModel, _, _, nudging) = makeViewModel()
+        viewModel.start()
+
+        viewModel.stop()
+
+        XCTAssertEqual(nudging.clearCount, 1)
+    }
+
+    func test_finishSession_clearsTheNudgeNotification() {
+        let (viewModel, monitor, clock, nudging) = makeViewModel()
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        _ = viewModel.finishSession()
+
+        XCTAssertEqual(nudging.clearCount, 1)
+    }
+
+    /// 실패 경로도 세션의 끝이다. 여기서만 빠지면 권한 거부·기기 미지원 뒤에 알림이 남는다.
+    func test_failure_clearsTheNudgeNotification() {
+        let (viewModel, monitor, _, nudging) = makeViewModel()
+        viewModel.start()
+
+        monitor.emit(.sessionFailed)
+
+        XCTAssertEqual(nudging.clearCount, 1)
+    }
+
+    /// 측정 중에는 거두지 않는다 — 방금 울린 알림을 사용자가 보기 전에 지우면 안 된다.
+    func test_nudge_doesNotClearWhileStillMeasuring() {
+        let (viewModel, monitor, clock, nudging) = makeViewModel(
+            nudgeSettings: LiveSmileNudgeSettings(intervalSeconds: 30)
+        )
+        viewModel.start()
+        finishCalibration(monitor, clock)
+
+        // 웃지 않은 채로 알림 간격을 넘긴다.
+        for _ in 0..<60 {
+            clock.date += 0.5
+            monitor.emit(sample(smile: 0.1))
+        }
+
+        XCTAssertFalse(nudging.calls.isEmpty, "사전 조건: 알림이 울려야 한다")
+        XCTAssertEqual(nudging.clearCount, 0)
     }
 }

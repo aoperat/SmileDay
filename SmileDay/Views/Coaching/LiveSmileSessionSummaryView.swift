@@ -1,6 +1,25 @@
 import SwiftUI
 import CoachingKit
 
+/// 요약 화면이 왜 떴는지.
+///
+/// 종료를 누른 것과, 화면을 벗어나 카메라가 꺼진 것과, 카메라가 멈춘 것은 사용자에게
+/// 전혀 다른 사건이다. 셋을 구분하지 않으면 잠깐 제어센터를 내렸다 돌아온 사람이
+/// 영문 모를 요약 화면을 보고 자기가 뭘 잘못 눌렀다고 생각한다.
+enum LiveSmileSessionEndReason {
+    case userEnded
+    case leftTheApp
+    case interrupted
+
+    var notice: String? {
+        switch self {
+        case .userEnded: nil
+        case .leftTheApp: SharedStrings.liveSummaryEndedByLeavingApp
+        case .interrupted: SharedStrings.liveSummaryEndedByInterruption
+        }
+    }
+}
+
 /// 실시간 확인이 끝난 뒤 그 세션을 보여주는 화면.
 ///
 /// 저장하지 않는다. 이 화면을 닫으면 타임라인이 그대로 사라진다.
@@ -8,12 +27,21 @@ import CoachingKit
 /// 그건 "잘함·못함을 매기지 않는다"는 이 앱의 전제와 어긋난다. 시간대는 아래 띠가 말해준다.
 struct LiveSmileSessionSummaryView: View {
     let summary: LiveSmileSessionSummary
+    var endReason: LiveSmileSessionEndReason = .userEnded
     let onClose: () -> Void
 
     var body: some View {
         ScrollView {
             VStack(spacing: 22) {
                 header
+
+                if let notice = endReason.notice {
+                    Text(notice)
+                        .font(.footnote)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
 
                 switch summary.confidence {
                 case .noMeasurement:

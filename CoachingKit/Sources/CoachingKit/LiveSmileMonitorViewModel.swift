@@ -118,6 +118,9 @@ public final class LiveSmileMonitorViewModel {
         monitor.onEvent = nil
         monitor.stop()
         isAcceptingEvents = false
+        // 이 세션이 띄운 알림은 세션과 함께 사라져야 한다. 종료·실패·화면 이탈이 모두
+        // 여기나 fail()을 지나므로 두 곳에서만 거두면 된다.
+        nudging?.clearNudges()
         resetMeasurement()
         state = .idle
     }
@@ -226,7 +229,9 @@ public final class LiveSmileMonitorViewModel {
             return
         }
 
-        level = Self.nextLevel(signal: smoothed, current: level)
+        // 기록한 것과 같은 단계를 보여준다. 여기서 다시 계산하면 같은 인자로 같은 값을
+        // 구하는 일을 두 번 하는 것이고, 한쪽만 고쳤을 때 화면과 기록이 갈린다.
+        level = frameLevel
         lastPublishedAt = now()
     }
 
@@ -287,6 +292,7 @@ public final class LiveSmileMonitorViewModel {
         monitor.onEvent = nil
         monitor.stop()
         isAcceptingEvents = false
+        nudging?.clearNudges()
         resetMeasurement()
         state = .failed(failure)
     }
