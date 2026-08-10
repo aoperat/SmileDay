@@ -46,7 +46,7 @@ struct ReminderMessageManagementView: View {
                 Text("알림 메시지")
                     .foregroundStyle(SDColor.ink)
             } footer: {
-                Text("위에서부터 알림 시간 순서대로 반복해 사용해요. 변경한 뒤 설정 화면에서 알림 설정을 저장해주세요.")
+                Text("위에서부터 알림 시간 순서대로 반복해 사용해요. 바꾸면 다음 알림부터 바로 적용돼요.")
                     .foregroundStyle(SDColor.muted)
             }
             .listRowBackground(Color.white)

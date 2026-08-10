@@ -34,6 +34,10 @@ public final class SmileReminderScheduleViewModel {
     /// 계속 바뀌는데, 매 틱마다 저장하면 스크롤 한 번에 알림 재예약이 수십 번 돈다.
     private let applyDelayNanoseconds: UInt64
     private var pendingApply: Task<Void, Never>?
+    /// 아직 알림에 반영되지 않은 변경이 있는지. `flushPendingApply()`가 한 번 더 저장할지 판단한다.
+    private var hasUnappliedChanges = false
+    /// 대기 중인 반영이 권한까지 물어야 하는지. 여러 변경이 묶이면 한 번이라도 켰으면 묻는다.
+    private var pendingRequestAuthorization = false
 
     public init(
         scheduleRepository: SmileReminderScheduleRepository,
@@ -116,12 +120,30 @@ public final class SmileReminderScheduleViewModel {
         applyChangesSoon(requestAuthorization: enabled)
     }
 
+    /// 알림 문구가 바뀌었을 때 부른다.
+    ///
+    /// 반복 알림은 예약 시점의 문구를 본문에 박아 들고 기기에 남는다 — 다시 예약하지 않으면
+    /// 사용자가 메시지 관리에서 무엇을 바꾸든 옛 문구가 계속 울린다. 예전에는 설정 화면의
+    /// "저장"이 그 재예약을 맡았는데, 바꾸는 즉시 반영으로 바뀌며 그 버튼이 사라졌다.
+    ///
+    /// 알림이 꺼져 있으면 예약된 것이 없으므로 아무 일도 하지 않는다. 나중에 켜면 그 저장
+    /// 경로가 이미 최신 문구를 읽어간다.
+    public func applyMessageChange() {
+        guard isEnabled else { return }
+        applyChangesSoon()
+    }
+
     /// 마지막 변경에서 잠깐 기다렸다가 한 번만 저장한다.
     ///
     /// 저장은 알림을 전부 다시 등록하고 옛 그룹을 지우는 일이라 가볍지 않다. 시간 다이얼을
     /// 굴리는 동안 매 틱마다 부르면 스크롤 한 번에 그 일이 수십 번 돈다.
     private func applyChangesSoon(requestAuthorization: Bool = false) {
         guard appliesChangesImmediately else { return }
+
+        hasUnappliedChanges = true
+        // 묶인 변경 중 하나라도 켜기였으면 권한을 묻는다. 끄기나 시간 변경이 뒤따랐다고
+        // 방금 켠 사용자에게 물어볼 기회를 잃으면 안 된다.
+        pendingRequestAuthorization = pendingRequestAuthorization || requestAuthorization
 
         pendingApply?.cancel()
         pendingApply = Task { [applyDelayNanoseconds] in
@@ -130,22 +152,55 @@ public final class SmileReminderScheduleViewModel {
             }
             guard !Task.isCancelled else { return }
 
-            // 앞선 저장이 아직 돌고 있으면 save()가 스스로 물러난다. 그 사이 바뀐 값이
-            // 통째로 버려지지 않게 끝나기를 잠깐 기다린다.
-            var waited = 0
-            while isSaving, waited < 40, !Task.isCancelled {
-                try? await Task.sleep(nanoseconds: 50_000_000)
-                waited += 1
-            }
+            await waitWhileSaving()
             guard !Task.isCancelled else { return }
 
-            await save(requestAuthorization: requestAuthorization)
+            await applyNow()
         }
     }
 
-    /// 대기 중인 반영이 끝나기를 기다린다. 화면을 떠나기 전이나 테스트에서 쓴다.
+    /// 대기 중인 반영이 끝나기를 기다린다. 테스트에서 쓴다.
     public func waitForPendingApply() async {
         await pendingApply?.value
+    }
+
+    /// 대기 중인 반영을 지연 없이 지금 끝낸다. 화면을 떠나기 전에 부른다.
+    ///
+    /// 여기서 기다리지 않으면 홈이 아직 저장되지 않은 일정을 읽어 "다음 알림"에 옛 시각을
+    /// 그린다. 시간을 바꾸자마자 뒤로 나가는 것은 흔한 조작이라 지연이 끝나기를 기다릴 수 없다.
+    public func flushPendingApply() async {
+        if let pending = pendingApply {
+            // 지연을 건너뛰게 하고, 이미 저장에 들어갔다면 그 저장이 끝날 때까지 기다린다.
+            pending.cancel()
+            await pending.value
+            pendingApply = nil
+        }
+
+        guard hasUnappliedChanges else { return }
+        await waitWhileSaving()
+        await applyNow()
+    }
+
+    /// 앞선 저장이 아직 돌고 있으면 save()가 스스로 물러난다. 그 사이 바뀐 값이 통째로
+    /// 버려지지 않게 끝나기를 잠깐 기다린다.
+    private func waitWhileSaving() async {
+        var waited = 0
+        while isSaving, waited < 40, !Task.isCancelled {
+            try? await Task.sleep(nanoseconds: 50_000_000)
+            waited += 1
+        }
+    }
+
+    /// 저장하지 못했으면 반영되지 않은 변경으로 되돌려 둔다 — 다음 변경이나 flush가 다시 시도한다.
+    private func applyNow() async {
+        let requestAuthorization = pendingRequestAuthorization
+        pendingRequestAuthorization = false
+        hasUnappliedChanges = false
+
+        if await save(requestAuthorization: requestAuthorization) == false {
+            hasUnappliedChanges = true
+            pendingRequestAuthorization = requestAuthorization
+        }
     }
 
     @discardableResult

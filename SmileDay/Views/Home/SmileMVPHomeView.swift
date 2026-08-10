@@ -70,7 +70,9 @@ struct SmileMVPHomeView: View {
                 }
             }
             .navigationDestination(isPresented: $isShowingSettings) {
-                SmileMVPSettingsView()
+                // 아래 onChange는 뒤로 가기를 누른 순간 돈다 — 설정의 반영이 아직 지연
+                // 중이면 그때 읽은 값은 옛 일정이다. 반영이 끝난 뒤 한 번 더 읽는다.
+                SmileMVPSettingsView(onScheduleApplied: refresh)
             }
         }
         .tint(SDColor.sunDeep)

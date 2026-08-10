@@ -3,6 +3,10 @@ import SwiftData
 import CoachingKit
 
 struct SmileMVPSettingsView: View {
+    /// 화면을 떠나며 대기 중인 반영을 끝낸 뒤 부른다. 홈이 이 시점에 다시 읽어야
+    /// "다음 알림"이 방금 정한 시각을 보여준다.
+    var onScheduleApplied: () -> Void = {}
+
     @Environment(\.modelContext) private var modelContext
     @State private var viewModel: SmileReminderScheduleViewModel?
     @State private var messageViewModel: ReminderMessageViewModel?
@@ -78,7 +82,9 @@ struct SmileMVPSettingsView: View {
                             NavigationLink {
                                 ReminderMessageManagementView(
                                     viewModel: messageViewModel,
-                                    onChanged: {}
+                                    // 문구를 바꾸는 것만으로는 이미 예약된 알림이 바뀌지 않는다.
+                                    // 저장 버튼이 없어졌으므로 여기서 재예약을 건다.
+                                    onChanged: { viewModel.applyMessageChange() }
                                 )
                             } label: {
                                 HStack {
@@ -138,6 +144,14 @@ struct SmileMVPSettingsView: View {
                 messageViewModel = ReminderMessageViewModel(store: reminderMessageStore)
             }
             await loadSettings()
+        }
+        // 시간 다이얼을 굴린 직후 뒤로 나가면 반영이 아직 지연 중이다. 여기서 끝내지
+        // 않으면 홈이 옛 일정을 읽어 "다음 알림"에 지난 시각을 그린다.
+        .onDisappear {
+            Task {
+                await viewModel?.flushPendingApply()
+                onScheduleApplied()
+            }
         }
     }
 
