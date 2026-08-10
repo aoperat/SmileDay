@@ -6,6 +6,8 @@
 - 목적: App Store 첫 출시 직전 코드, 번들, 개인정보, 서명, 메타데이터, 실기기 검증 상태 판정
 - 이전 전체점검: `2026-07-31-project-review.md`
 
+> **2026-08-05 변경:** 첫 App Store 등록 전에 번들 ID를 `dvelo.smileDay`에서 `dolparo.smileDay`로 변경했다. 새 번들 ID로 iPhoneOS Release 빌드와 Archive가 성공했고 Team `45BNT5RDHP`, 프로비저닝 프로파일 `iOS Team Provisioning Profile: dolparo.smileDay`, 버전 `1.0 (1)`을 확인했다. 아래의 `dvelo.smileDay` 검증 결과는 2026-07-31 당시 기록이며, App Store 배포 검증·업로드·TestFlight 설치는 아직 필요하다.
+
 ## 1. 출시 판정
 
 **현재 판정은 조건부 보류다.**
@@ -83,6 +85,24 @@ swift test --disable-sandbox
 
 저장소와 설정 화면에는 개인정보 안내 문구는 있지만 공개 정책 URL과 그 링크가 없다. Privacy manifest는 사용자용 개인정보처리방침을 대신하지 않는다.
 
+2026-08-01 확인 결과, 별도 `dolparo` 정적 사이트 저장소에 제출용 페이지 원본이 생성돼 있다. 배포 시 아래 위치와 URL을 사용한다.
+
+| 용도 | 로컬 원본 | 공개 URL / App Store Connect 입력값 |
+|------|-----------|------------------------------------|
+| 스마일데이 소개·Marketing URL(선택) | `/Users/ijonghwan/Documents/WorkSpaces/dolparo/smileday/index.html` | `https://dolparo.com/smileday` |
+| 개인정보처리방침 | `/Users/ijonghwan/Documents/WorkSpaces/dolparo/smileday/privacy.html` | `https://dolparo.com/smileday/privacy` |
+| 고객지원·Support URL | `/Users/ijonghwan/Documents/WorkSpaces/dolparo/smileday/support.html` | `https://dolparo.com/smileday/support` |
+| 사이트 배포 설정 | `/Users/ijonghwan/Documents/WorkSpaces/dolparo/vercel.json` | Vercel production 배포 후 위 URL 확인 |
+
+2026-08-04에 앱 내부 링크를 추가했다. `SmileDay/Views/Settings/SmileMVPSettingsView.swift`의 “데이터 저장 위치” 바로 아래 “약관과 문의” 섹션이 위 두 URL을 `Link`로 연다. 주소는 `SharedStrings`에 문자열로 두고 화면에서 `URL(string:)`으로 만든다 — 만들지 못하면 그 줄을 그리지 않으므로 눌러도 아무 일이 없는 항목이 남지 않는다.
+
+**아직 이 P0는 열려 있다.** 링크가 가리키는 페이지가 아직 배포되지 않았다. 제출 전 남은 확인:
+
+1. 정책 문구를 실제 구현과 다시 대조한다.
+2. `dolparo.com`을 production 배포하고 두 URL의 HTTPS 공개 접근을 확인한다.
+3. 앱에서 두 링크를 눌러 실제 페이지가 열리는지 확인한다.
+4. App Store Connect의 Privacy Policy URL·Support URL에 같은 주소를 입력한다.
+
 정책에는 최소한 다음 현재 동작을 명시한다.
 
 - 완료 시각, 알림 설정, 사용자 알림 문구와 앱 설정은 기기에만 저장
@@ -106,15 +126,15 @@ App Review Guidelines는 개인정보처리방침 링크를 App Store Connect와
 
 현재 코드 근거로는 외부 전송과 제3자 SDK가 없고 실시간 데이터도 화면을 닫으면 사라진다. Apple은 기기 안에서만 처리되는 데이터는 App Privacy의 “수집”으로 보지 않는다고 안내한다. 최종 응답은 제출자가 실제 배포본과 정책을 대조해 확정한다.
 
-### P0-3. 배포 Archive와 TestFlight 미검증
+### P0-3. App Store 배포와 TestFlight 미검증
 
-Release simulator 빌드는 통과 근거가 있지만 App Store 배포용 Archive, distribution provisioning, Organizer validation, 업로드 처리 결과는 아직 확인하지 못했다.
+2026-08-05에 `dolparo.smileDay`로 iPhoneOS Release 빌드와 Archive가 성공했다. Archive는 Apple Development 인증서와 `iOS Team Provisioning Profile: dolparo.smileDay`로 서명됐고 식별자, Team, 버전 `1.0 (1)`을 확인했다. App Store 배포용 재서명·Organizer validation, 업로드 처리 결과와 TestFlight 설치는 아직 확인하지 못했다.
 
 첫 업로드 전 확인:
 
 1. Xcode Organizer에서 Generic iOS Device 대상 Archive
 2. Team `45BNT5RDHP`와 App Store Connect App ID 확인
-3. Bundle ID `dvelo.smileDay` 확인
+3. Bundle ID `dolparo.smileDay` 확인
 4. Version/build `1.0 (1)` 확인
 5. Validate App 성공
 6. TestFlight 업로드·처리 성공
@@ -173,8 +193,8 @@ Release simulator 빌드는 통과 근거가 있지만 App Store 배포용 Archi
 
 ## 7. 권장 출시 순서
 
-1. 개인정보처리방침 페이지 작성 및 설정 화면 링크 추가
-2. 지원 페이지와 App Store Connect 필수 메타데이터 작성
+1. `dolparo`에 준비된 개인정보처리방침·지원 페이지를 현재 구현과 대조해 수정하고 production 배포
+2. 앱 설정 화면 링크와 App Store Connect Privacy Policy URL·Support URL·필수 메타데이터 입력
 3. 현재 출시 설정 변경 검토·커밋
 4. P1 저장 실패 원자성과 재시도 UX 수정
 5. iPhone/TrueDepth 기기와 미지원 기기 실기기 체크리스트 수행

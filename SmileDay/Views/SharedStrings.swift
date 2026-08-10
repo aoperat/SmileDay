@@ -19,6 +19,20 @@ enum SharedStrings {
     static let notificationDeniedNotice = "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요."
     static let openSystemSettings = "설정 앱 열기"
 
+    // MARK: - 개인정보처리방침·고객지원
+
+    /// App Review Guidelines는 정책 링크를 App Store Connect뿐 아니라 **앱 안에서도** 쉽게
+    /// 찾을 수 있는 위치에 요구한다. 설정의 "데이터 저장 위치" 바로 아래가 그 자리다.
+    ///
+    /// 문자열로 둔다 — `URL(string:)!`은 오타 하나가 실행 중 크래시가 된다. 화면에서 만들어
+    /// 보고, 만들지 못하면 줄을 그리지 않는다.
+    static let privacyPolicyTitle = "개인정보처리방침"
+    static let privacyPolicyURLString = "https://dolparo.com/smileday/privacy"
+    static let supportTitle = "고객지원"
+    static let supportURLString = "https://dolparo.com/smileday/support"
+    static let legalSectionTitle = "약관과 문의"
+    static let legalSectionFooter = "브라우저가 열려요. 문의는 이메일로 답변드려요."
+
     // MARK: - 알림이 도착하지 못할 때
 
     /// 이 앱은 알림 → 5초 → 기록이 전부다. 알림이 끊기면 남는 흐름이 없어 홈에서 짚어준다.

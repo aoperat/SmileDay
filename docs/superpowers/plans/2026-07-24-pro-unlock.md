@@ -2,6 +2,8 @@
 
 > **⛔ BLOCKED (2026-07-28):** `docs/superpowers/plans/2026-07-28-notification-smile-mvp.md`의 Task 13 검증 전에는 실행하지 않는다. 검증 후 혜택과 가격을 새 MVP 결과에 맞춰 다시 설계한다.
 
+> **2026-08-05 식별자 변경:** 이 계획을 재개한다면 본문의 예전 상품 ID `dvelo.SmileDay.pro.unlock` 대신 `dolparo.SmileDay.pro.unlock`을 사용한다.
+
 > **For agentic workers:** REQUIRED SUB-SKILL: Use superpowers:subagent-driven-development (recommended) or superpowers:executing-plans to implement this plan task-by-task. Steps use checkbox (`- [ ]`) syntax for tracking.
 
 > **⛔ BLOCKED (2026-07-27):** Do not start this plan yet. See "선행 조건" below.

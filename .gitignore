@@ -7,3 +7,8 @@ xcuserdata/
 .claude/
 .omc/
 .vscode/
+
+# 마케팅 이진 자산. 스크린샷·캐러셀·목업 이미지와 배포용 묶음은 저장소 밖에 둔다.
+# 만드는 문서와 생성 스크립트는 남기므로, 자산은 언제든 다시 뽑을 수 있다.
+docs/marketing/**/*.png
+docs/marketing/**/*.zip

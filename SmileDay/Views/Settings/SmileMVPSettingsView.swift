@@ -107,6 +107,7 @@ struct SmileMVPSettingsView: View {
 
                     liveMonitorNudgeSection
                     dataSection
+                    legalSection
                 }
             }
         }
@@ -237,6 +238,48 @@ struct SmileMVPSettingsView: View {
             .padding(.vertical, 4)
         }
         .listRowBackground(Color.white)
+    }
+
+    /// 개인정보처리방침과 고객지원. 심사가 앱 안에서도 찾을 수 있기를 요구하는 링크다.
+    ///
+    /// 주소를 만들지 못하면 그 줄을 아예 그리지 않는다 — 눌러도 아무 일이 없는 항목을
+    /// 남겨두면 링크가 있다고 믿게 만든다.
+    private var legalSection: some View {
+        Section {
+            if let url = URL(string: SharedStrings.privacyPolicyURLString) {
+                Link(destination: url) {
+                    externalLinkLabel(SharedStrings.privacyPolicyTitle, systemImage: "hand.raised")
+                }
+            }
+
+            if let url = URL(string: SharedStrings.supportURLString) {
+                Link(destination: url) {
+                    externalLinkLabel(SharedStrings.supportTitle, systemImage: "questionmark.circle")
+                }
+            }
+        } header: {
+            Text(SharedStrings.legalSectionTitle)
+                .foregroundStyle(SDColor.ink)
+        } footer: {
+            Text(SharedStrings.legalSectionFooter)
+                .foregroundStyle(SDColor.muted)
+        }
+        .listRowBackground(Color.white)
+    }
+
+    /// 앱 밖으로 나간다는 사실을 화살표로 알린다. VoiceOver도 같은 안내를 받는다.
+    private func externalLinkLabel(_ title: String, systemImage: String) -> some View {
+        HStack {
+            Label(title, systemImage: systemImage)
+                .foregroundStyle(SDColor.ink)
+            Spacer()
+            Image(systemName: "arrow.up.right")
+                .font(.footnote.weight(.semibold))
+                .foregroundStyle(SDColor.muted)
+                .accessibilityHidden(true)
+        }
+        .accessibilityElement(children: .combine)
+        .accessibilityHint("사파리에서 열려요")
     }
 
     private var dataSection: some View {
