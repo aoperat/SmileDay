@@ -78,6 +78,13 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
         }
     }
 
+    /// 이 그룹이 쓸 수 있었던 식별자 공간 전체를 지운다.
+    ///
+    /// 예약된 시각만 골라 지우려면 이전 패턴을 어딘가에서 다시 계산해야 하는데, 그 계산이
+    /// 한 번만 어긋나도 지우지 못한 반복 알림이 영영 울린다 — 사용자가 앱에서 되돌릴 방법이
+    /// 없는 종류의 고장이다. 하루의 분(1,440개)을 통째로 넘기면 그럴 일이 없고, 비용은 문자열
+    /// 생성과 요청 한 번뿐이다. 식별자 형식은 기기에 이미 깔린 빌드와의 호환 계약이라
+    /// 바꾸지 않는다.
     func cancelGroup(id: String) {
         let identifiers = (0..<24).flatMap { hour in
             (0..<60).map { minute in

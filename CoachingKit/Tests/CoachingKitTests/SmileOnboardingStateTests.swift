@@ -119,10 +119,11 @@ final class SmileOnboardingStateTests: XCTestCase {
         XCTAssertTrue(store.hasCompletedOnboarding)
     }
 
+    /// 시작과 끝이 같은 창만 거부한다 — 끝이 더 이르면 자정을 넘는 창이다.
     func test_invalidRange_doesNotComplete() async throws {
         let (viewModel, repository, _, store) = try makeViewModel()
         viewModel.schedule.updateStart(hour: 21, minute: 0)
-        viewModel.schedule.updateEnd(hour: 9, minute: 0)
+        viewModel.schedule.updateEnd(hour: 21, minute: 0)
 
         await viewModel.confirm()
 

@@ -30,6 +30,8 @@ enum SharedStrings {
     static let reminderOffTitle = "알림이 꺼져 있어요"
     static let reminderOffDetail = "이 앱은 알림으로 미소를 떠올리게 해요. 설정에서 언제든 켤 수 있어요."
     static let reminderTurnOnAction = "알림 켜기"
+    /// 종료가 시작보다 이른 시각일 때. 잘못 고른 것이 아니라 밤을 넘기는 창으로 읽었다고 말한다.
+    static let reminderWindowCrossesMidnight = "자정을 넘는 시간창이에요. 종료 시간은 다음 날로 봐요."
 
     // MARK: - 온보딩에서 알림을 건너뛸 때
 

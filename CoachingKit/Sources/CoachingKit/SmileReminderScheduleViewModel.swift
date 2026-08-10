@@ -4,6 +4,10 @@ import Observation
 @MainActor
 @Observable
 public final class SmileReminderScheduleViewModel {
+    /// 시작이 종료보다 늦어도 된다 — 자정을 넘는 창이다. 같은 시각만 만들 수 없다.
+    /// 화면 두 곳(온보딩·설정)이 같은 문구를 써야 해서 여기 둔다.
+    public static let invalidPatternMessage = "시작 시간과 종료 시간을 다르게 정해주세요."
+
     public private(set) var startHour = 9
     public private(set) var startMinute = 0
     public private(set) var endHour = 21
@@ -63,6 +67,12 @@ public final class SmileReminderScheduleViewModel {
 
     public var occurrenceTimes: [ReminderTime] {
         pattern?.occurrences() ?? []
+    }
+
+    /// 자정을 넘는 시간창인지. 화면이 "종료 시간은 다음 날"이라고 알려줄 때 쓴다 —
+    /// 22:00~02:00을 실수로 읽지 않게 한다.
+    public var crossesMidnight: Bool {
+        pattern?.crossesMidnight ?? false
     }
 
     public func refresh() throws {
@@ -142,7 +152,7 @@ public final class SmileReminderScheduleViewModel {
     public func save(requestAuthorization: Bool = false) async -> Bool {
         guard !isSaving else { return false }
         guard let pattern else {
-            errorMessage = "종료 시간은 시작 시간보다 늦어야 해요."
+            errorMessage = SmileReminderScheduleViewModel.invalidPatternMessage
             return false
         }
 

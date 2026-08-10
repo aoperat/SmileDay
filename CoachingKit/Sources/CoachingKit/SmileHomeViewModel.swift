@@ -61,6 +61,10 @@ public final class SmileHomeViewModel {
     }
 
     /// 단일 반복 패턴에서 다음 발생 시각을 구한다.
+    ///
+    /// 각 시각은 매일 반복하는 알림이라, 다음에 울릴 것은 "오늘 남은 시각 중 가장 이른 것,
+    /// 없으면 내일 가장 이른 시각"이다. `occurrences()`는 창을 지나는 순서로 오므로
+    /// (자정을 넘는 창이면 22:00 다음에 00:00이 온다) 여기서는 시계 순으로 정렬해서 본다.
     private func findNextReminder(after reference: Date) throws -> UpcomingReminder? {
         guard let schedule = try scheduleRepository.fetchCurrent(),
               schedule.isEnabled,
@@ -68,16 +72,17 @@ public final class SmileHomeViewModel {
             return nil
         }
 
-        let todayCandidates = pattern.occurrences().compactMap {
-            occurrence(on: reference, time: $0)
-        }
+        let byClock = pattern.occurrences()
+            .sorted { $0.minutesSinceMidnight < $1.minutesSinceMidnight }
+
+        let todayCandidates = byClock.compactMap { occurrence(on: reference, time: $0) }
         if let nextToday = todayCandidates.first(where: { $0 > reference }) {
             return UpcomingReminder(date: nextToday)
         }
 
         guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: reference),
-              let first = pattern.occurrences().first,
-              let next = occurrence(on: tomorrow, time: first) else {
+              let earliest = byClock.first,
+              let next = occurrence(on: tomorrow, time: earliest) else {
             return nil
         }
         return UpcomingReminder(date: next)

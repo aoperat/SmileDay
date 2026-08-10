@@ -57,7 +57,7 @@ struct SmileMVPSettingsView: View {
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(SDColor.alert)
                         } else if viewModel.pattern == nil {
-                            Text("종료 시간은 시작 시간보다 늦어야 해요.")
+                            Text(SmileReminderScheduleViewModel.invalidPatternMessage)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(SDColor.alert)
                         }

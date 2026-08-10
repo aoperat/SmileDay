@@ -137,7 +137,7 @@ private struct OnboardingScheduleStep: View {
                         .foregroundStyle(SDColor.alert)
                         .frame(maxWidth: .infinity, alignment: .leading)
                 } else if viewModel.schedule.pattern == nil {
-                    Text("종료 시간은 시작 시간보다 늦어야 해요.")
+                    Text(SmileReminderScheduleViewModel.invalidPatternMessage)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.alert)
                         .frame(maxWidth: .infinity, alignment: .leading)
@@ -245,23 +245,38 @@ struct ReminderPatternControls: View {
                 set: { viewModel.updateInterval($0) }
             )) {
                 ForEach(SmileReminderPattern.allowedIntervals, id: \.self) { minutes in
-                    Text("\(minutes / 60)시간마다").tag(minutes)
+                    Text(Self.intervalLabel(minutes)).tag(minutes)
                 }
             }
             .foregroundStyle(SDColor.ink)
 
-            HStack(spacing: 8) {
-                Image(systemName: "bell.fill")
-                    .foregroundStyle(SDColor.ink)
-                    .accessibilityHidden(true)
-                Text("하루 \(viewModel.occurrenceTimes.count)번 알려드려요")
-                    .font(.subheadline.weight(.semibold))
-                    .foregroundStyle(SDColor.ink)
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Image(systemName: "bell.fill")
+                        .foregroundStyle(SDColor.ink)
+                        .accessibilityHidden(true)
+                    Text("하루 \(viewModel.occurrenceTimes.count)번 알려드려요")
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+                }
+
+                // 22:00~02:00을 잘못 고른 것으로 읽지 않게, 그렇게 이해했다고 말해준다.
+                if viewModel.crossesMidnight {
+                    Text(SharedStrings.reminderWindowCrossesMidnight)
+                        .font(.caption)
+                        .foregroundStyle(SDColor.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
             }
             .frame(maxWidth: .infinity, alignment: .leading)
             .padding(12)
             .background(SDColor.shell, in: RoundedRectangle(cornerRadius: 14))
         }
+    }
+
+    /// 30분을 `분 / 60`으로 적으면 "0시간마다"가 된다. 한 시간 미만은 분으로 적는다.
+    static func intervalLabel(_ minutes: Int) -> String {
+        minutes < 60 ? "\(minutes)분마다" : "\(minutes / 60)시간마다"
     }
 
     private func timeBinding(

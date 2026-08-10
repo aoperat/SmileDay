@@ -88,6 +88,44 @@ final class SmileHomeViewModelTests: XCTestCase {
         XCTAssertEqual(viewModel.nextReminder?.date, date(30, 9))
     }
 
+    // MARK: - 자정을 넘는 시간창의 다음 알림
+
+    /// 22:00~02:00 창은 `occurrences()`가 22, 23, 00, 01, 02 순으로 준다 — 시계 순이 아니다.
+    /// 그 순서를 그대로 믿고 "지금 이후 첫 값"을 찾으면 자정 이후 시각이 오늘로 잡혀
+    /// 밤 11시에 "다음 알림 00:00"이 이미 지난 시각으로 뜬다.
+    func test_refresh_findsNextOccurrenceInAWindowCrossingMidnight() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 23, 10))
+        try schedules.save(
+            pattern: try SmileReminderPattern(
+                startTime: try ReminderTime(hour: 22, minute: 0),
+                endTime: try ReminderTime(hour: 2, minute: 0),
+                intervalMinutes: 60
+            ),
+            isEnabled: true
+        )
+
+        try await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.nextReminder?.date, date(30, 0))
+    }
+
+    /// 창이 다음 날 새벽에 끝난 뒤에는 그날 밤 시작 시각이 다음 알림이다.
+    func test_refresh_rollsToTheEveningStart_afterAnOvernightWindowEnds() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 3))
+        try schedules.save(
+            pattern: try SmileReminderPattern(
+                startTime: try ReminderTime(hour: 22, minute: 0),
+                endTime: try ReminderTime(hour: 2, minute: 0),
+                intervalMinutes: 60
+            ),
+            isEnabled: true
+        )
+
+        try await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.nextReminder?.date, date(29, 22))
+    }
+
     func test_refresh_hasNoNextReminder_whenScheduleDisabledOrMissing() async throws {
         let (missing, _, _) = try makeViewModel(now: date(29, 10))
         try await missing.refresh()

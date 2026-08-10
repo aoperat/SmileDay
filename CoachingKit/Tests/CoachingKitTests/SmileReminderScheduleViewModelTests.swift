@@ -121,7 +121,7 @@ final class SmileReminderScheduleViewModelTests: XCTestCase {
         let (viewModel, _, context, scheduler) = try makeViewModel()
         try insertLegacyReminder(context, hour: 9, notificationID: "legacy-morning")
         viewModel.updateStart(hour: 21, minute: 0)
-        viewModel.updateEnd(hour: 9, minute: 0)
+        viewModel.updateEnd(hour: 21, minute: 0)
 
         let didSave = await viewModel.save()
         XCTAssertFalse(didSave)
@@ -144,13 +144,29 @@ final class SmileReminderScheduleViewModelTests: XCTestCase {
     func test_invalidRange_isRejectedWithoutPersistence() async throws {
         let (viewModel, schedules, _, scheduler) = try makeViewModel()
         viewModel.updateStart(hour: 21, minute: 0)
-        viewModel.updateEnd(hour: 9, minute: 0)
+        viewModel.updateEnd(hour: 21, minute: 0)
 
         let didSave = await viewModel.save()
         XCTAssertFalse(didSave)
         XCTAssertNil(try schedules.fetchCurrent())
         XCTAssertTrue(scheduler.scheduled.isEmpty)
         XCTAssertNotNil(viewModel.errorMessage)
+    }
+
+    /// 자정을 넘는 창도 창을 지나는 순서 그대로 예약된다 — 문구가 이 순서로 돈다.
+    func test_windowCrossingMidnight_schedulesInWindowOrder() async throws {
+        let (viewModel, _, _, scheduler) = try makeViewModel()
+        viewModel.updateStart(hour: 22, minute: 0)
+        viewModel.updateEnd(hour: 1, minute: 0)
+        viewModel.updateInterval(60)
+
+        let didSave = await viewModel.save()
+        XCTAssertTrue(didSave)
+
+        XCTAssertEqual(
+            scheduler.scheduled.last?.1.map(\.hour),
+            [22, 23, 0, 1]
+        )
     }
 
     func test_scheduleFailure_keepsPreviousScheduleAndLegacyNotifications() async throws {

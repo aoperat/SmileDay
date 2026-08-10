@@ -34,7 +34,7 @@ Kept solely so an existing user's store still opens. Do not add product logic to
 |------|-------------|
 | `SmileCue.swift` | `SmileCue` (id + text) and `SmileCueCatalog.all` — 8 Korean non-judgmental cues. This is the only user-facing guide copy |
 | `SmileGuide.swift` | Minimal run unit: `id` + `durationSeconds`; `SmileGuideCatalog.default` is the single guide (`"anytime-soft"`, 5s) |
-| `SmileReminderPattern.swift` | `ReminderTime` (validated hour/minute), `SmileReminderPattern` (window + interval, `allowedIntervals`, `.recommended` = 09:00–21:00/180m), `occurrences()` |
+| `SmileReminderPattern.swift` | `ReminderTime` (validated hour/minute), `SmileReminderPattern` (window + interval, `allowedIntervals` = 30/60/120/180/240m, `.recommended` = 09:00–21:00/180m), `occurrences()`. An end earlier than the start is an **overnight window**, not an error — only start == end is rejected. `occurrences()` walks the window, so an overnight one reads 22, 23, 00, 01: that is the order reminder messages cycle in. Anything needing clock order (the home screen's next reminder) sorts it itself |
 | `ReminderNotificationPayload.swift` | Notification `userInfo` round-trip; parses the current shape and the legacy `bucket`/`promptText` shape, returns nil otherwise |
 | `SDPalette.swift` | Raw design-token hex values + WCAG luminance/contrast helpers, so contrast is testable (the app target has no test bundle) |
 | `LiveSmileSample.swift` | One live frame narrowed to what the signal needs: two mouth-corner coefficients, gaze-offset degrees, optional ambient light. No blend-shape dictionary, no image |
