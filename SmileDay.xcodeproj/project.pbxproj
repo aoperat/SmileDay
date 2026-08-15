@@ -144,7 +144,7 @@
 				};
 			};
 			buildConfigurationList = 717555CF300B120400854524 /* Build configuration list for PBXProject "SmileDay" */;
-			developmentRegion = ko;
+			developmentRegion = en;
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
@@ -343,7 +343,8 @@
 				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "실시간 미소 신호를 보여주기 위해 전면 카메라를 사용합니다. 카메라 화면은 사용자가 켤 때만 표시하며, 사진과 영상을 저장하거나 전송하지 않습니다.";
+				INFOPLIST_KEY_CFBundleDisplayName = SmileDay;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -377,7 +378,8 @@
 				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
 				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
-				INFOPLIST_KEY_NSCameraUsageDescription = "실시간 미소 신호를 보여주기 위해 전면 카메라를 사용합니다. 카메라 화면은 사용자가 켤 때만 표시하며, 사진과 영상을 저장하거나 전송하지 않습니다.";
+				INFOPLIST_KEY_CFBundleDisplayName = SmileDay;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
