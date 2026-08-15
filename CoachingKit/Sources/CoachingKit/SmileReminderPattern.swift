@@ -67,6 +67,30 @@ public struct SmileReminderPattern: Equatable, Sendable {
         self.intervalMinutes = intervalMinutes
     }
 
+    /// 저장된 시·분 네 개에서 조립한다. 하나라도 성립하지 않으면 nil.
+    ///
+    /// 모델(`SmileReminderSchedule`)과 뷰모델(`SmileReminderScheduleViewModel`)이 똑같이
+    /// 필요로 하던 조립이다. 예전에는 양쪽에 같은 9줄이 따로 있었고, 유효성 규칙을 바꾸면
+    /// 두 곳을 함께 고쳐야 했다 — 한쪽만 고치면 화면은 받아주는 값을 저장소가 되읽지 못한다.
+    public init?(
+        startHour: Int,
+        startMinute: Int,
+        endHour: Int,
+        endMinute: Int,
+        intervalMinutes: Int
+    ) {
+        guard let start = try? ReminderTime(hour: startHour, minute: startMinute),
+              let end = try? ReminderTime(hour: endHour, minute: endMinute),
+              let pattern = try? SmileReminderPattern(
+                  startTime: start,
+                  endTime: end,
+                  intervalMinutes: intervalMinutes
+              ) else {
+            return nil
+        }
+        self = pattern
+    }
+
     /// 종료가 시작보다 이른 시각이면 그 창은 다음 날 종료 시각까지 이어진다.
     public var crossesMidnight: Bool {
         endTime.minutesSinceMidnight < startTime.minutesSinceMidnight

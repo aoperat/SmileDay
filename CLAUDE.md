@@ -13,9 +13,22 @@ cd CoachingKit && swift test --filter SmileMomentRepositoryTests
 
 # Build the iOS app (compile check for SwiftUI views / app-target code)
 xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build
+
+# Run the app-target unit tests (needs a simulator; hosted by SmileDay.app)
+xcodebuild test -project SmileDay.xcodeproj -scheme SmileDay \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+
+# Run a single app-target test class
+xcodebuild test -project SmileDay.xcodeproj -scheme SmileDay \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:SmileDayTests/ReminderIdentifierTests
 ```
 
-There is no lint configuration. SwiftUI views have no automated tests — a successful `xcodebuild` is the verification for view-layer changes.
+There is no lint configuration.
+
+`SmileDayTests/` covers the app target's **pure logic only** — notification identifier format, `NotificationRouter`, `SDFormat`, the `Color` token wrappers, and `LiveSmileSessionEndReason`. SwiftUI views themselves still have no automated tests; a successful `xcodebuild` remains the verification for view-layer changes. Anything testable without UIKit or ARKit belongs in `CoachingKit` instead.
+
+Note: newer `xcodebuild` prints per-case lines (`Test case '…' passed`) rather than an `All tests` summary — check for `** TEST SUCCEEDED **`. Pipe through `grep -a` if you filter the log; it contains bytes that make `grep` treat it as binary.
 
 Note: the tests are XCTest-based, so the final line of `swift test` output comes from the Swift Testing runner and reads "0 tests in 0 suites passed" — that is not a failure. Check for `Test Suite 'All tests' passed` in the output.
 

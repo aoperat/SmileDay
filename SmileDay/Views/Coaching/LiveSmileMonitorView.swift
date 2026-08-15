@@ -192,11 +192,8 @@ struct LiveSmileMonitorView: View {
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Button(SharedStrings.liveMonitorOpenCameraSettings) {
-                guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                UIApplication.shared.open(url)
-            }
-            .buttonStyle(SDPrimaryButtonStyle())
+            Button(SharedStrings.liveMonitorOpenCameraSettings, action: SDSystemSettings.open)
+                .buttonStyle(SDPrimaryButtonStyle())
 
             Button(SharedStrings.liveMonitorCloseAction) {
                 shutDown()
@@ -407,11 +404,8 @@ struct LiveSmileMonitorView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if failure == .permissionDenied {
-                Button(SharedStrings.openSystemSettings) {
-                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                    UIApplication.shared.open(url)
-                }
-                .buttonStyle(SDInkButtonStyle())
+                Button(SharedStrings.openSystemSettings, action: SDSystemSettings.open)
+                    .buttonStyle(SDInkButtonStyle())
             }
 
             Button(SharedStrings.liveMonitorCloseAction) {

@@ -13,9 +13,22 @@ cd CoachingKit && swift test --filter SmileMomentRepositoryTests
 
 # iOS 앱 빌드 (SwiftUI 뷰 / 앱 타겟 코드의 컴파일 확인)
 xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build
+
+# 앱 타깃 단위 테스트 (시뮬레이터 필요; SmileDay.app이 호스트)
+xcodebuild test -project SmileDay.xcodeproj -scheme SmileDay \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'
+
+# 앱 타깃의 특정 테스트 클래스만
+xcodebuild test -project SmileDay.xcodeproj -scheme SmileDay \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro' \
+  -only-testing:SmileDayTests/ReminderIdentifierTests
 ```
 
-린트 설정은 없습니다. SwiftUI 뷰에는 자동화된 테스트가 없으므로, 뷰 레이어 변경에 대한 검증은 `xcodebuild` 성공 여부로 판단합니다.
+린트 설정은 없습니다.
+
+`SmileDayTests/`는 앱 타깃의 **순수 로직만** 덮습니다 — 알림 식별자 형식, `NotificationRouter`, `SDFormat`, `Color` 토큰 래퍼, `LiveSmileSessionEndReason`. SwiftUI 뷰 자체에는 여전히 자동화된 테스트가 없으므로 뷰 레이어 변경의 검증은 `xcodebuild` 성공 여부입니다. UIKit이나 ARKit 없이 테스트할 수 있는 것은 앱 타깃이 아니라 `CoachingKit`에 넣습니다.
+
+참고: 최신 `xcodebuild`는 `All tests` 요약 대신 케이스별 줄(`Test case '…' passed`)을 찍습니다 — `** TEST SUCCEEDED **`를 확인하세요. 로그를 필터링할 때는 `grep -a`를 쓰세요. 로그에 `grep`이 이진 파일로 판단하는 바이트가 섞여 있습니다.
 
 참고: 테스트는 XCTest 기반이라 `swift test` 출력의 마지막 줄은 Swift Testing 러너가 남기는 "0 tests in 0 suites passed"인데, 이는 실패가 아닙니다. 출력에서 `Test Suite 'All tests' passed`를 확인하세요.
 

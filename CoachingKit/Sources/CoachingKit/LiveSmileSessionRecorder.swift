@@ -35,16 +35,40 @@ public struct LiveSmileSessionSummary: Equatable, Sendable {
 
     public let timeline: [LiveSmileObservation]
 
+    /// 칸 수는 만들 때 한 번만 센다.
+    ///
+    /// 예전에는 셋 다 `filter`로 도는 계산 프로퍼티였다. 그런데 `confidence` 하나가
+    /// `smilingRatio`와 `usableSeconds`를 거치며 여섯 번을 돌고, 요약 화면이 `unknownRatio`를
+    /// 한 번 더 부른다 — body 평가 한 번에 타임라인을 일곱 번 훑었다. 1시간 세션이면
+    /// 3,600칸 × 7이고, SwiftUI는 body를 자주 다시 평가한다.
+    ///
+    /// 타임라인은 만든 뒤 바뀌지 않으므로 셋을 저장해두면 순회가 한 번으로 줄고,
+    /// 아래 파생 값들은 전부 이 셋에서 나온다.
+    public let smilingSeconds: Int
+    public let notSmilingSeconds: Int
+    public let unknownSeconds: Int
+
     public init(timeline: [LiveSmileObservation]) {
         self.timeline = timeline
+
+        var smiling = 0
+        var notSmiling = 0
+        var unknown = 0
+        for observation in timeline {
+            switch observation {
+            case .smiling: smiling += 1
+            case .notSmiling: notSmiling += 1
+            case .unknown: unknown += 1
+            }
+        }
+        smilingSeconds = smiling
+        notSmilingSeconds = notSmiling
+        unknownSeconds = unknown
     }
 
     /// 요약 헤더에 쓰는 값. 그래프 가로축과 같다.
     public var totalSeconds: Int { timeline.count }
 
-    public var smilingSeconds: Int { timeline.filter { $0 == .smiling }.count }
-    public var notSmilingSeconds: Int { timeline.filter { $0 == .notSmiling }.count }
-    public var unknownSeconds: Int { timeline.filter { $0 == .unknown }.count }
     public var usableSeconds: Int { smilingSeconds + notSmilingSeconds }
 
     /// 판정 가능 시간이 0이면 nil. 한 번도 웃지 않았으면 0이다 — 둘은 다른 상태다.

@@ -82,7 +82,7 @@ struct LiveSmileSessionSummaryView: View {
                 .foregroundStyle(SDColor.muted)
 
             // 헤드라인은 측정한 시간이다. 그래프 가로축과 같은 값이어야 한다.
-            Text(durationText(summary.totalSeconds))
+            Text(SDFormat.duration(seconds: summary.totalSeconds))
                 .font(.title2.bold())
                 .foregroundStyle(SDColor.ink)
         }
@@ -140,12 +140,6 @@ struct LiveSmileSessionSummaryView: View {
         }
     }
 
-    private func durationText(_ seconds: Int) -> String {
-        let minutes = seconds / 60
-        let remainder = seconds % 60
-        guard minutes > 0 else { return "\(remainder)초" }
-        return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
-    }
 }
 
 /// 1초 칸을 이어 그린 띠. 측정 중과 요약이 같은 그림을 쓴다.

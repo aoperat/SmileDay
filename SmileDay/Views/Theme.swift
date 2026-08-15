@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoachingKit
 
 /// 모닝 글로우 디자인 토큰.
@@ -124,4 +125,37 @@ struct SDCloseButton: View {
 enum SDFormat {
     /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
     static let koreanLocale = Locale(identifier: "ko_KR")
+
+    /// 흘러간 시간. "45초" / "3분" / "3분 20초".
+    ///
+    /// 세션 길이와 알림 간격이 같은 규칙을 쓴다. 예전에는 설정 화면과 요약 화면에 글자만 다른
+    /// 같은 함수가 따로 있었다 — 한쪽에서 "1분 0초"를 고쳐도 다른 쪽은 그대로였다.
+    static func duration(seconds: Int) -> String {
+        let minutes = seconds / 60
+        let remainder = seconds % 60
+        guard minutes > 0 else { return "\(remainder)초" }
+        return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
+    }
+
+    /// 알림 반복 주기. "30분마다" / "3시간마다".
+    ///
+    /// 위 `duration`과 규칙이 다르다. 30분을 `분 / 60`으로 적으면 "0시간마다"가 되므로
+    /// 한 시간 미만은 분으로 적고, 되풀이한다는 뜻의 "마다"가 붙는다.
+    /// 두 함수를 나란히 두는 이유가 이것이다 — 규칙이 다르다는 사실이 눈에 보여야 한다.
+    static func reminderInterval(minutes: Int) -> String {
+        minutes < 60 ? "\(minutes)분마다" : "\(minutes / 60)시간마다"
+    }
+}
+
+/// iOS 설정 앱에서 이 앱의 화면을 연다.
+///
+/// 알림 권한과 카메라 권한은 둘 다 iOS가 한 번만 묻고, 거부되면 앱 안에서는 되돌릴 수 없다.
+/// 그래서 네 화면이 각자 이 안내를 띄우는데, 예전에는 URL을 만들고 여는 세 줄이 다섯 자리에
+/// 복사돼 있었다. 주소를 만들지 못하면 아무 일도 하지 않는다 — 열 곳이 없는데 열었다고
+/// 말하지 않는다.
+enum SDSystemSettings {
+    static func open() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
+    }
 }

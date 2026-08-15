@@ -8,11 +8,14 @@ public final class SmileReminderScheduleViewModel {
     /// 화면 두 곳(온보딩·설정)이 같은 문구를 써야 해서 여기 둔다.
     public static let invalidPatternMessage = "시작 시간과 종료 시간을 다르게 정해주세요."
 
-    public private(set) var startHour = 9
-    public private(set) var startMinute = 0
-    public private(set) var endHour = 21
-    public private(set) var endMinute = 0
-    public private(set) var intervalMinutes = 180
+    // 아직 저장된 일정이 없는 사용자가 처음 보는 값. 제품이 권하는 시간창 하나에서 나온다 —
+    // 추천을 바꾸려면 `SmileReminderPattern.recommended`만 고치면 화면까지 따라온다.
+    // (`SmileReminderSchedule`의 같은 숫자는 저장소 마이그레이션 계약이라 별개다.)
+    public private(set) var startHour = SmileReminderPattern.recommended.startTime.hour
+    public private(set) var startMinute = SmileReminderPattern.recommended.startTime.minute
+    public private(set) var endHour = SmileReminderPattern.recommended.endTime.hour
+    public private(set) var endMinute = SmileReminderPattern.recommended.endTime.minute
+    public private(set) var intervalMinutes = SmileReminderPattern.recommended.intervalMinutes
     public private(set) var isEnabled = true
     public private(set) var authorizationStatus: ReminderAuthorizationStatus?
     public private(set) var errorMessage: String?
@@ -58,13 +61,11 @@ public final class SmileReminderScheduleViewModel {
     }
 
     public var pattern: SmileReminderPattern? {
-        guard let start = try? ReminderTime(hour: startHour, minute: startMinute),
-              let end = try? ReminderTime(hour: endHour, minute: endMinute) else {
-            return nil
-        }
-        return try? SmileReminderPattern(
-            startTime: start,
-            endTime: end,
+        SmileReminderPattern(
+            startHour: startHour,
+            startMinute: startMinute,
+            endHour: endHour,
+            endMinute: endMinute,
             intervalMinutes: intervalMinutes
         )
     }
@@ -225,33 +226,21 @@ public final class SmileReminderScheduleViewModel {
             let legacyNotificationIDs = try legacyReminderRepository.pendingNotificationIDs()
 
             if isEnabled {
-                // 기존 그룹을 지우기 전에 새 그룹을 전부 등록한다. 등록 실패 시 저장값과
-                // 기존 알림을 그대로 남겨 사용자가 알림을 모두 잃지 않게 한다.
-                let newGroupID = groupIDFactory()
+                // 등록·저장·옛 그룹 취소의 순서는 ReminderGroupSwap이 지킨다. 여기서는
+                // 어디서 실패했는지에 따라 사용자에게 할 말만 고른다.
                 do {
-                    try await scheduler.scheduleDailyPattern(
-                        groupID: newGroupID,
-                        times: pattern.occurrences(),
-                        messages: messageStore.messages
+                    try await ReminderGroupSwap(
+                        scheduleRepository: scheduleRepository,
+                        scheduler: scheduler,
+                        groupIDFactory: groupIDFactory
+                    ).run(
+                        pattern: pattern,
+                        messages: messageStore.messages,
+                        previousGroupID: previousGroupID
                     )
-                } catch {
+                } catch ReminderGroupSwap.Failure.scheduling {
                     errorMessage = "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요."
                     return false
-                }
-
-                do {
-                    _ = try scheduleRepository.save(
-                        pattern: pattern,
-                        isEnabled: true,
-                        notificationGroupID: newGroupID
-                    )
-                } catch {
-                    scheduler.cancelGroup(id: newGroupID)
-                    throw error
-                }
-
-                if let previousGroupID, previousGroupID != newGroupID {
-                    scheduler.cancelGroup(id: previousGroupID)
                 }
             } else {
                 let schedule = try scheduleRepository.save(pattern: pattern, isEnabled: false)

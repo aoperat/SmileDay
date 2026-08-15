@@ -76,18 +76,7 @@ public final class SmileMomentRepository {
         guard let firstDay = calendar.date(byAdding: .day, value: -6, to: lastDay),
               let end = calendar.date(byAdding: .day, value: 1, to: lastDay) else { return [] }
 
-        let moments = try fetch(from: firstDay, to: end)
-        var countsByDay: [Date: Int] = [:]
-        for moment in moments {
-            countsByDay[calendar.startOfDay(for: moment.date), default: 0] += 1
-        }
-
-        var days: [SmileDayCount] = []
-        for offset in 0..<7 {
-            guard let day = calendar.date(byAdding: .day, value: offset, to: firstDay) else { continue }
-            days.append(SmileDayCount(date: day, count: countsByDay[day] ?? 0))
-        }
-        return days
+        return try dayCounts(from: firstDay, to: end, calendar: calendar)
     }
 
     /// `date`가 속한 달의 모든 날짜를 오래된 날부터 반환한다.
@@ -97,15 +86,25 @@ public final class SmileMomentRepository {
     public func monthlyCounts(containing date: Date, calendar: Calendar = .current) throws -> [SmileDayCount] {
         guard let month = calendar.dateInterval(of: .month, for: date) else { return [] }
 
-        let moments = try fetch(from: month.start, to: month.end)
+        return try dayCounts(from: month.start, to: month.end, calendar: calendar)
+    }
+
+    /// `start`가 속한 날부터 `end` 직전 날까지, 하루도 빠뜨리지 않고 센다.
+    ///
+    /// 최근 7일과 월간 달력이 필요로 하는 것이 같다 — 구간을 한 번 읽고, 날짜별로 묶고,
+    /// 기록이 없는 날을 0으로 채우는 일. 기간을 구하는 방식만 서로 다르므로 그것만 호출자가 정한다.
+    /// **빈 날을 채우는 것이 요점이다.** 저장된 것만 돌려주면 화면이 달력의 빈칸을 직접
+    /// 계산해야 하고, 쉬어간 날이 목록에서 사라져 "실패한 날"처럼 보이게 된다.
+    private func dayCounts(from start: Date, to end: Date, calendar: Calendar) throws -> [SmileDayCount] {
+        let moments = try fetch(from: start, to: end)
         var countsByDay: [Date: Int] = [:]
         for moment in moments {
             countsByDay[calendar.startOfDay(for: moment.date), default: 0] += 1
         }
 
         var days: [SmileDayCount] = []
-        var day = calendar.startOfDay(for: month.start)
-        while day < month.end {
+        var day = calendar.startOfDay(for: start)
+        while day < end {
             days.append(SmileDayCount(date: day, count: countsByDay[day] ?? 0))
             guard let nextDay = calendar.date(byAdding: .day, value: 1, to: day) else { break }
             day = nextDay

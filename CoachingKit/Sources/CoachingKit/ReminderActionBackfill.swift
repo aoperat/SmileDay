@@ -65,31 +65,22 @@ public struct ReminderActionBackfill {
             return false
         }
 
-        let previousGroupID = schedule.notificationGroupID
-        let newGroupID = groupIDFactory()
-
+        // 등록·저장·옛 그룹 취소의 순서는 ReminderGroupSwap이 지킨다. 어느 단계에서 실패하든
+        // 여기서 할 일은 같다 — 표시를 남기지 않고 물러나 다음 실행에서 다시 시도한다.
         do {
-            try await scheduler.scheduleDailyPattern(
-                groupID: newGroupID,
-                times: pattern.occurrences(),
-                messages: messageStore.messages
-            )
-        } catch {
-            return false
-        }
-
-        do {
-            _ = try scheduleRepository.save(
+            try await ReminderGroupSwap(
+                scheduleRepository: scheduleRepository,
+                scheduler: scheduler,
+                groupIDFactory: groupIDFactory
+            ).run(
                 pattern: pattern,
-                isEnabled: true,
-                notificationGroupID: newGroupID
+                messages: messageStore.messages,
+                previousGroupID: schedule.notificationGroupID
             )
         } catch {
-            scheduler.cancelGroup(id: newGroupID)
             return false
         }
 
-        scheduler.cancelGroup(id: previousGroupID)
         store.hasBackfilledReminderActions = true
         return true
     }

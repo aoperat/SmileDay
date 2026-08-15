@@ -41,10 +41,7 @@ struct SmileMVPHomeView: View {
                             NextReminderCard(
                                 state: viewModel.reminderDelivery,
                                 onOpenAppSettings: { isShowingSettings = true },
-                                onOpenSystemSettings: {
-                                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                                    UIApplication.shared.open(url)
-                                }
+                                onOpenSystemSettings: SDSystemSettings.open
                             )
 
                             RecentSevenDaysCard(

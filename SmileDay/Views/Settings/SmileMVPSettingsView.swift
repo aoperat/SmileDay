@@ -178,7 +178,7 @@ struct SmileMVPSettingsView: View {
             if nudgeSettings.isEnabled {
                 Picker(selection: nudgeBinding(\.intervalSeconds)) {
                     ForEach(LiveSmileNudgeSettings.allowedIntervalSeconds, id: \.self) { seconds in
-                        Text(intervalLabel(seconds)).tag(seconds)
+                        Text(SDFormat.duration(seconds: seconds)).tag(seconds)
                     }
                 } label: {
                     Text(SharedStrings.liveMonitorNudgeIntervalLabel)
@@ -214,13 +214,6 @@ struct SmileMVPSettingsView: View {
         )
     }
 
-    private func intervalLabel(_ seconds: Int) -> String {
-        guard seconds >= 60 else { return "\(seconds)초" }
-        let minutes = seconds / 60
-        let remainder = seconds % 60
-        return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
-    }
-
     private var permissionSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 10) {
@@ -228,10 +221,7 @@ struct SmileMVPSettingsView: View {
                     .font(.footnote)
                     .foregroundStyle(SDColor.ink)
 
-                Button(SharedStrings.openSystemSettings) {
-                    guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
-                    UIApplication.shared.open(url)
-                }
+                Button(SharedStrings.openSystemSettings, action: SDSystemSettings.open)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(SDColor.ink)
             }

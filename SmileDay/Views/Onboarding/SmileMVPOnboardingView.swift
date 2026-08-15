@@ -197,9 +197,7 @@ private struct OnboardingScheduleStep: View {
             isPresented: .constant(viewModel.wasPermissionDenied)
         ) {
             Button(SharedStrings.openSystemSettings) {
-                if let url = URL(string: UIApplication.openSettingsURLString) {
-                    UIApplication.shared.open(url)
-                }
+                SDSystemSettings.open()
                 viewModel.continueWithoutPermission()
                 if viewModel.didComplete { onFinished() }
             }
@@ -245,7 +243,7 @@ struct ReminderPatternControls: View {
                 set: { viewModel.updateInterval($0) }
             )) {
                 ForEach(SmileReminderPattern.allowedIntervals, id: \.self) { minutes in
-                    Text(Self.intervalLabel(minutes)).tag(minutes)
+                    Text(SDFormat.reminderInterval(minutes: minutes)).tag(minutes)
                 }
             }
             .foregroundStyle(SDColor.ink)
@@ -272,11 +270,6 @@ struct ReminderPatternControls: View {
             .padding(12)
             .background(SDColor.shell, in: RoundedRectangle(cornerRadius: 14))
         }
-    }
-
-    /// 30분을 `분 / 60`으로 적으면 "0시간마다"가 된다. 한 시간 미만은 분으로 적는다.
-    static func intervalLabel(_ minutes: Int) -> String {
-        minutes < 60 ? "\(minutes)분마다" : "\(minutes / 60)시간마다"
     }
 
     private func timeBinding(

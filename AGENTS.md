@@ -37,8 +37,10 @@ The core loop never uses the camera. One optional side mode ("실시간 미소 �
 cd CoachingKit && swift test                     # all package tests (runs on macOS, no simulator)
 cd CoachingKit && swift test --filter <ClassName> # single test class
 xcodebuild -project SmileDay.xcodeproj -scheme SmileDay -sdk iphonesimulator build  # view-layer verification
+xcodebuild test -project SmileDay.xcodeproj -scheme SmileDay \
+  -destination 'platform=iOS Simulator,name=iPhone 17 Pro'   # app-target unit tests (SmileDayTests)
 ```
-No lint config. SwiftUI views have no automated tests — a successful `xcodebuild` is the verification for view changes.
+No lint config. `SmileDayTests/` covers the app target's pure logic only (notification identifier format, `NotificationRouter`, `SDFormat`, `Color` token wrappers, `LiveSmileSessionEndReason`). SwiftUI views still have no automated tests — a successful `xcodebuild` is the verification for view changes. Put anything testable without UIKit/ARKit in `CoachingKit` instead.
 Note: `swift test` output ends with the Swift Testing runner's "0 tests in 0 suites passed" line — not a failure; the suite is XCTest-based, so check for `Test Suite 'All tests' passed`.
 
 ### Common Patterns

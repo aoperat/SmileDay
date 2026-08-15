@@ -66,7 +66,7 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
             components.hour = time.hour
             components.minute = time.minute
             let trigger = UNCalendarNotificationTrigger(dateMatching: components, repeats: true)
-            let identifier = dailyIdentifier(groupID: groupID, time: time)
+            let identifier = Self.dailyIdentifier(groupID: groupID, hour: time.hour, minute: time.minute)
             let request = UNNotificationRequest(identifier: identifier, content: content, trigger: trigger)
             do {
                 try await center.add(request)
@@ -83,19 +83,27 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
     /// 예약된 시각만 골라 지우려면 이전 패턴을 어딘가에서 다시 계산해야 하는데, 그 계산이
     /// 한 번만 어긋나도 지우지 못한 반복 알림이 영영 울린다 — 사용자가 앱에서 되돌릴 방법이
     /// 없는 종류의 고장이다. 하루의 분(1,440개)을 통째로 넘기면 그럴 일이 없고, 비용은 문자열
-    /// 생성과 요청 한 번뿐이다. 식별자 형식은 기기에 이미 깔린 빌드와의 호환 계약이라
-    /// 바꾸지 않는다.
+    /// 생성과 요청 한 번뿐이다.
     func cancelGroup(id: String) {
         let identifiers = (0..<24).flatMap { hour in
             (0..<60).map { minute in
-                "\(id)-daily-\(String(format: "%02d", hour))\(String(format: "%02d", minute))"
+                Self.dailyIdentifier(groupID: id, hour: hour, minute: minute)
             }
         }
         center.removePendingNotificationRequests(withIdentifiers: identifiers)
     }
 
-    private func dailyIdentifier(groupID: String, time: ReminderTime) -> String {
-        "\(groupID)-daily-\(String(format: "%02d", time.hour))\(String(format: "%02d", time.minute))"
+    /// 반복 알림 하나의 식별자.
+    ///
+    /// **등록하는 쪽과 취소하는 쪽이 반드시 같은 문자열을 만들어야 한다.** 위 `cancelGroup`이
+    /// 하루치를 통째로 지우는 이유가 바로 그 어긋남을 없애기 위해서인데, 정작 형식 자체가 두
+    /// 곳에 따로 적혀 있으면 그 방어가 반만 작동한다 — 한쪽만 고치는 순간 취소되지 않은 반복
+    /// 알림이 영영 울리고, 사용자가 앱에서 되돌릴 방법이 없다. 그래서 형식은 여기 한 곳에만 둔다.
+    ///
+    /// 문자열 형식 자체는 기기에 이미 깔린 빌드와의 호환 계약이라 바꾸지 않는다.
+    /// 옛 빌드가 예약해둔 알림도 같은 규칙으로 만들어져 있어야 지워진다.
+    static func dailyIdentifier(groupID: String, hour: Int, minute: Int) -> String {
+        "\(groupID)-daily-\(String(format: "%02d", hour))\(String(format: "%02d", minute))"
     }
 
     // MARK: - 알림 썸네일
