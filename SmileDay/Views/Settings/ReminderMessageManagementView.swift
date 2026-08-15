@@ -10,7 +10,7 @@ struct ReminderMessageManagementView: View {
     private struct Editor: Identifiable {
         let id = UUID()
         let messageID: String?
-        let title: String
+        let title: LocalizedStringResource
         var text: String
     }
 
@@ -21,7 +21,7 @@ struct ReminderMessageManagementView: View {
                     Button {
                         editor = Editor(
                             messageID: message.id,
-                            title: "메시지 수정",
+                            title: .Settings.editMessageTitle,
                             text: message.resolvedText
                         )
                     } label: {
@@ -29,7 +29,7 @@ struct ReminderMessageManagementView: View {
                             .foregroundStyle(SDColor.ink)
                             .multilineTextAlignment(.leading)
                     }
-                    .accessibilityHint("두 번 탭하여 메시지를 수정합니다")
+                    .accessibilityHint(Text(.Settings.editMessageHint))
                 }
                 .onMove { source, destination in
                     viewModel.move(fromOffsets: source, toOffset: destination)
@@ -43,17 +43,17 @@ struct ReminderMessageManagementView: View {
                     }
                 }
             } header: {
-                Text("알림 메시지")
+                Text(.Settings.messagesListHeader)
                     .foregroundStyle(SDColor.ink)
             } footer: {
-                Text("위에서부터 알림 시간 순서대로 반복해 사용해요. 바꾸면 다음 알림부터 바로 적용돼요.")
+                Text(.Settings.messagesListFooter)
                     .foregroundStyle(SDColor.muted)
             }
             .listRowBackground(Color.white)
         }
         .scrollContentBackground(.hidden)
         .background(SDColor.cream)
-        .navigationTitle("메시지 관리")
+        .navigationTitle(Text(.Settings.manageMessagesNavigationTitle))
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
             ToolbarItem(placement: .topBarLeading) {
@@ -61,11 +61,11 @@ struct ReminderMessageManagementView: View {
             }
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    editor = Editor(messageID: nil, title: "메시지 추가", text: "")
+                    editor = Editor(messageID: nil, title: .Settings.addMessage, text: "")
                 } label: {
                     Image(systemName: "plus")
                 }
-                .accessibilityLabel("메시지 추가")
+                .accessibilityLabel(Text(.Settings.addMessage))
             }
         }
         .sheet(item: $editor) { editor in
@@ -94,13 +94,13 @@ struct ReminderMessageManagementView: View {
             .presentationDetents([.medium])
         }
         .alert(
-            "메시지를 삭제할 수 없어요",
+            Text(.Settings.cannotDeleteTitle),
             isPresented: Binding(
                 get: { editor == nil && viewModel.error != nil },
                 set: { if !$0 { viewModel.clearError() } }
             )
         ) {
-            Button("확인") {
+            Button(.Settings.okAction) {
                 viewModel.clearError()
             }
         } message: {
@@ -114,13 +114,13 @@ private struct ReminderMessageEditor: View {
     @State private var text: String
     @State private var validationMessage: String?
 
-    let title: String
+    let title: LocalizedStringResource
     let currentValidationMessage: () -> String?
     let onCancel: () -> Void
     let onSave: (String) -> Bool
 
     init(
-        title: String,
+        title: LocalizedStringResource,
         initialText: String,
         validationMessage: @escaping () -> String?,
         onCancel: @escaping () -> Void,
@@ -153,16 +153,16 @@ private struct ReminderMessageEditor: View {
                     }
                 }
             }
-            .navigationTitle(title)
+            .navigationTitle(Text(title))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
-                    Button("취소", action: onCancel)
+                    Button(.Settings.cancelAction, action: onCancel)
                 }
                 ToolbarItem(placement: .confirmationAction) {
-                    Button("저장") {
+                    Button(.Settings.saveAction) {
                         if !onSave(text) {
-                            validationMessage = currentValidationMessage() ?? "메시지를 확인해주세요."
+                            validationMessage = currentValidationMessage() ?? String(localized: .Settings.checkMessagePrompt)
                         }
                     }
                     .disabled(text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)

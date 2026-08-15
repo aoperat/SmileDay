@@ -123,15 +123,15 @@ struct SDCloseButton: View {
 }
 
 enum SDFormat {
-    /// 흘러간 시간. "45초" / "3분" / "3분 20초".
+    /// 흘러간 시간. "45초" / "3분" / "3분 20초" / "45 sec" / "3 min" / "3 min, 20 sec".
     ///
     /// 세션 길이와 알림 간격이 같은 규칙을 쓴다. 예전에는 설정 화면과 요약 화면에 글자만 다른
     /// 같은 함수가 따로 있었다 — 한쪽에서 "1분 0초"를 고쳐도 다른 쪽은 그대로였다.
+    ///
+    /// 단위와 복수는 로케일이 그린다. `Duration`은 0인 단위를 감추므로 60초는 "1분 0초"가
+    /// 아니라 "1분"이고, 0초는 "0초"다 — 예전 손 계산과 ko_KR에서 글자까지 같다(실측).
     static func duration(seconds: Int) -> String {
-        let minutes = seconds / 60
-        let remainder = seconds % 60
-        guard minutes > 0 else { return "\(remainder)초" }
-        return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
+        Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated))
     }
 
     /// 알림 반복 주기. "30분마다" / "3시간마다" / "every 30 minutes" / "every 3 hours".

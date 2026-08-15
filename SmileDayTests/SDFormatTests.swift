@@ -10,6 +10,10 @@ final class SDFormatTests: XCTestCase {
 
     // MARK: - 흘러간 시간
 
+    // 로케일을 탄다. `duration`은 `Duration` 포맷으로 그리므로 한국어 문구는 앱을 호스트한
+    // 시뮬레이터가 한국어일 때 나온다. 예전의 손 계산("N분 M초")과 글자까지 같아야 한다 —
+    // 아래 단언은 그때 그대로다.
+
     func test_duration_1분_미만은_초로_적는다() {
         XCTAssertEqual(SDFormat.duration(seconds: 0), "0초")
         XCTAssertEqual(SDFormat.duration(seconds: 1), "1초")

@@ -48,7 +48,7 @@ struct SmileMVPSettingsView: View {
                                 }
                             }
                         )) {
-                            Text("미소 알림")
+                            Text(.smileRemindersTitle)
                                 .foregroundStyle(SDColor.ink)
                         }
                         .tint(SDColor.sunDeep)
@@ -66,11 +66,11 @@ struct SmileMVPSettingsView: View {
                                 .foregroundStyle(SDColor.alert)
                         }
                     } header: {
-                        Text("반복 설정")
+                        Text(.Settings.repeatSectionTitle)
                             .foregroundStyle(SDColor.ink)
                     } footer: {
                         // 저장 버튼이 없으므로 반영됐다는 사실은 여기서 말한다.
-                        Text(viewModel.isSaving ? "저장 중…" : "바꾸면 바로 적용돼요. 놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요.")
+                        Text(viewModel.isSaving ? .Settings.savingIndicator : .Settings.repeatFooter)
                             .foregroundStyle(SDColor.muted)
                     }
                     .listRowBackground(Color.white)
@@ -88,18 +88,18 @@ struct SmileMVPSettingsView: View {
                                 )
                             } label: {
                                 HStack {
-                                    Label("메시지 관리", systemImage: "text.bubble")
+                                    Label(.Settings.manageMessagesLabel, systemImage: "text.bubble")
                                         .foregroundStyle(SDColor.ink)
                                     Spacer()
-                                    Text("\(messageViewModel.messages.count)개")
+                                    Text(.Settings.messageCount(messageViewModel.messages.count))
                                         .foregroundStyle(SDColor.muted)
                                 }
                             }
                         } header: {
-                            Text("알림 문구")
+                            Text(.Settings.messagesSectionTitle)
                                 .foregroundStyle(SDColor.ink)
                         } footer: {
-                            Text("추가·수정·삭제하거나 순서를 바꿀 수 있어요.")
+                            Text(.Settings.messagesFooter)
                                 .foregroundStyle(SDColor.muted)
                         }
                         .listRowBackground(Color.white)
@@ -113,7 +113,7 @@ struct SmileMVPSettingsView: View {
         }
         .scrollContentBackground(.hidden)
         .background(SDColor.cream)
-        .navigationTitle("설정")
+        .navigationTitle(Text(.Settings.settingsNavigationTitle))
         .navigationBarTitleDisplayMode(.inline)
         .toolbarColorScheme(.light, for: .navigationBar)
         .toolbarBackground(SDColor.cream, for: .navigationBar)
@@ -271,22 +271,22 @@ struct SmileMVPSettingsView: View {
                 .accessibilityHidden(true)
         }
         .accessibilityElement(children: .combine)
-        .accessibilityHint("사파리에서 열려요")
+        .accessibilityHint(Text(.Settings.opensInSafariHint))
     }
 
     private var dataSection: some View {
         Section {
-            Label("모든 기록은 이 기기에만 저장됩니다", systemImage: "iphone")
+            Label(.Settings.dataOnDeviceOnly, systemImage: "iphone")
                 .foregroundStyle(SDColor.ink)
-            Label("외부 서버로 전송되지 않습니다", systemImage: "lock.shield")
+            Label(.Settings.dataNeverSent, systemImage: "lock.shield")
                 .foregroundStyle(SDColor.ink)
-            Label("앱을 삭제하면 모든 기록이 함께 삭제됩니다", systemImage: "trash")
+            Label(.Settings.dataDeletedWithApp, systemImage: "trash")
                 .foregroundStyle(SDColor.ink)
         } header: {
-            Text("데이터 저장 위치")
+            Text(.Settings.dataLocationTitle)
                 .foregroundStyle(SDColor.ink)
         } footer: {
-            Text("완료한 시각만 저장해요. 실시간 확인은 사진을 남기지 않고, 그 결과도 화면을 닫으면 사라져요.")
+            Text(.Settings.dataLocationFooter)
                 .foregroundStyle(SDColor.muted)
         }
         .listRowBackground(Color.white)
