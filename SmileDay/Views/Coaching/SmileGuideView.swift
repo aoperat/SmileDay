@@ -70,7 +70,7 @@ struct SmileGuideView: View {
                             .multilineTextAlignment(.center)
                             .padding(.horizontal, 28)
 
-                        Text("턱과 어깨 힘을 빼고 편안하게 미소 지어보세요.")
+                        Text(.Coaching.guideRelaxHint)
                             .font(.body)
                             .foregroundStyle(SDColor.muted)
                             .multilineTextAlignment(.center)
@@ -93,7 +93,7 @@ struct SmileGuideView: View {
         switch viewModel.phase {
         case .ready:
             VStack(spacing: 12) {
-                Text("\(SmileGuideCatalog.default.durationSeconds)초 동안 함께 있어요")
+                Text(.Coaching.guideDurationTitle(SmileGuideCatalog.default.durationSeconds))
                     .font(.footnote)
                     .foregroundStyle(SDColor.muted)
 
@@ -105,13 +105,13 @@ struct SmileGuideView: View {
             }
 
         case .running(let remainingSeconds):
-            Text("\(remainingSeconds)")
+            Text(remainingSeconds, format: .number)
                 .font(.system(size: 72, weight: .bold, design: .rounded).monospacedDigit())
                 .foregroundStyle(SDColor.ink)
                 // Reduce Motion에서는 숫자만 바뀌고 커지는 전환을 생략한다.
                 .contentTransition(reduceMotion ? .identity : .numericText())
                 .animation(reduceMotion ? nil : .snappy, value: remainingSeconds)
-                .accessibilityLabel("\(remainingSeconds)초 남았어요")
+                .accessibilityLabel(Text(.Coaching.guideRemainingSeconds(remainingSeconds)))
 
         case .completed:
             VStack(spacing: 14) {
@@ -141,7 +141,7 @@ struct SmileGuideView: View {
                     .padding(.horizontal, 40)
                 }
 
-                Button("닫기") { dismiss() }
+                Button(.Coaching.guideCloseAction) { dismiss() }
                     .buttonStyle(SDInkButtonStyle())
                     .padding(.horizontal, 40)
             }

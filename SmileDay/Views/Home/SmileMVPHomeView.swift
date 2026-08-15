@@ -192,11 +192,11 @@ private struct LiveMonitorCard: View {
                     .accessibilityHidden(true)
 
                 VStack(alignment: .leading, spacing: 2) {
-                    Text(SharedStrings.liveMonitorTitle)
+                    Text(.Coaching.liveMonitorTitle)
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
 
-                    Text(SharedStrings.liveMonitorEntrySummary)
+                    Text(.Coaching.liveMonitorEntrySummary)
                         .font(.caption)
                         .foregroundStyle(SDColor.muted)
                         .multilineTextAlignment(.leading)
@@ -214,7 +214,7 @@ private struct LiveMonitorCard: View {
         .buttonStyle(.plain)
         .sdCard(padding: 14, cornerRadius: 20)
         .accessibilityElement(children: .combine)
-        .accessibilityHint(SharedStrings.liveMonitorEntrySummary)
+        .accessibilityHint(Text(.Coaching.liveMonitorEntrySummary))
     }
 }
 

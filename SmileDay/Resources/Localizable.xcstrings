@@ -177,7 +177,21 @@
       "ko" : { "stringUnit" : { "state" : "translated", "value" : "웃으면 좋잖아요" } } } },
     "closeAccessibilityLabel" : { "extractionState" : "manual", "localizations" : {
       "en" : { "stringUnit" : { "state" : "needs_review", "value" : "나가기" } },
-      "ko" : { "stringUnit" : { "state" : "translated", "value" : "나가기" } } } }
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "나가기" } } } },
+    "liveMonitorNudgeTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "translated", "value" : "Smile!" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "Smile!" } }
+      }
+    },
+    "liveMonitorNudgeBody" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "잠깐 입꼬리를 올려볼까요?" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠깐 입꼬리를 올려볼까요?" } }
+      }
+    }
   },
   "version" : "1.1"
 }

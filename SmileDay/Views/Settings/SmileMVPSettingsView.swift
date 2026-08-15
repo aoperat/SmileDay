@@ -172,7 +172,7 @@ struct SmileMVPSettingsView: View {
     private var liveMonitorNudgeSection: some View {
         Section {
             Toggle(isOn: nudgeBinding(\.isEnabled)) {
-                Text(SharedStrings.liveMonitorNudgeToggle)
+                Text(.Coaching.liveMonitorNudgeToggle)
                     .foregroundStyle(SDColor.ink)
             }
             .tint(SDColor.sunDeep)
@@ -183,21 +183,21 @@ struct SmileMVPSettingsView: View {
                         Text(SDFormat.duration(seconds: seconds)).tag(seconds)
                     }
                 } label: {
-                    Text(SharedStrings.liveMonitorNudgeIntervalLabel)
+                    Text(.Coaching.liveMonitorNudgeIntervalLabel)
                         .foregroundStyle(SDColor.ink)
                 }
 
                 Toggle(isOn: nudgeBinding(\.isHapticEnabled)) {
-                    Text(SharedStrings.liveMonitorNudgeHapticToggle)
+                    Text(.Coaching.liveMonitorNudgeHapticToggle)
                         .foregroundStyle(SDColor.ink)
                 }
                 .tint(SDColor.sunDeep)
             }
         } header: {
-            Text(SharedStrings.liveMonitorNudgeSectionTitle)
+            Text(.Coaching.liveMonitorNudgeSectionTitle)
                 .foregroundStyle(SDColor.ink)
         } footer: {
-            Text(SharedStrings.liveMonitorNudgeFooter)
+            Text(.Coaching.liveMonitorNudgeFooter)
                 .foregroundStyle(SDColor.muted)
         }
         .listRowBackground(Color.white)

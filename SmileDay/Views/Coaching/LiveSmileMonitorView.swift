@@ -135,21 +135,31 @@ struct LiveSmileMonitorView: View {
 
     // MARK: - 시작 전
 
+    /// 시작 전 안내. 무엇이 켜지고 무엇이 남지 않는지 먼저 말한다.
+    /// 문구가 아니라 위치로 구분한다 — 두 번역이 우연히 같아져도 줄이 합쳐지지 않는다.
+    private let introPoints: [LocalizedStringResource] = [
+        .Coaching.liveMonitorIntroCamera,
+        .Coaching.liveMonitorIntroPreview,
+        .Coaching.liveMonitorIntroGraph,
+        .Coaching.liveMonitorIntroNoStorage,
+        .Coaching.liveMonitorIntroBattery,
+    ]
+
     private var introSection: some View {
         VStack(spacing: 20) {
-            Text(SharedStrings.liveMonitorTitle)
+            Text(.Coaching.liveMonitorTitle)
                 .font(.title2.bold())
                 .foregroundStyle(SDColor.ink)
 
-            Text(SharedStrings.liveMonitorEntrySummary)
+            Text(.Coaching.liveMonitorEntrySummary)
                 .font(.subheadline)
                 .foregroundStyle(SDColor.muted)
                 .multilineTextAlignment(.center)
 
             VStack(alignment: .leading, spacing: 10) {
-                ForEach(SharedStrings.liveMonitorIntroPoints, id: \.self) { point in
+                ForEach(Array(introPoints.enumerated()), id: \.offset) { _, point in
                     HStack(alignment: .firstTextBaseline, spacing: 8) {
-                        Text("·")
+                        Text(verbatim: "·")
                             .foregroundStyle(SDColor.muted)
                             .accessibilityHidden(true)
                         Text(point)
@@ -162,7 +172,7 @@ struct LiveSmileMonitorView: View {
             .frame(maxWidth: .infinity, alignment: .leading)
             .sdCard()
 
-            Button(SharedStrings.liveMonitorStartAction) {
+            Button(.Coaching.liveMonitorStartAction) {
                 beginSession()
             }
             .buttonStyle(SDPrimaryButtonStyle())
@@ -180,22 +190,22 @@ struct LiveSmileMonitorView: View {
                 .foregroundStyle(SDColor.sunDeep)
                 .accessibilityHidden(true)
 
-            Text(SharedStrings.liveMonitorCameraRequiredTitle)
+            Text(.Coaching.liveMonitorCameraRequiredTitle)
                 .font(.headline)
                 .foregroundStyle(SDColor.ink)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Text(SharedStrings.liveMonitorCameraRequiredDetail)
+            Text(.Coaching.liveMonitorCameraRequiredDetail)
                 .font(.subheadline)
                 .foregroundStyle(SDColor.muted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
-            Button(SharedStrings.liveMonitorOpenCameraSettings, action: SDSystemSettings.open)
+            Button(.Coaching.liveMonitorOpenCameraSettings, action: SDSystemSettings.open)
                 .buttonStyle(SDPrimaryButtonStyle())
 
-            Button(SharedStrings.liveMonitorCloseAction) {
+            Button(.Coaching.liveMonitorCloseAction) {
                 shutDown()
                 dismiss()
             }
@@ -238,19 +248,19 @@ struct LiveSmileMonitorView: View {
                 statusText(viewModel)
             }
 
-            Text(SharedStrings.liveMonitorLevelMeaning)
+            Text(.Coaching.liveMonitorLevelMeaning)
                 .font(.caption)
                 .foregroundStyle(SDColor.muted)
                 .multilineTextAlignment(.center)
                 .fixedSize(horizontal: false, vertical: true)
 
             HStack(spacing: 12) {
-                Button(SharedStrings.liveMonitorRecalibrateAction) {
+                Button(.Coaching.liveMonitorRecalibrateAction) {
                     viewModel.recalibrate()
                 }
                 .buttonStyle(SDInkButtonStyle())
 
-                Button(SharedStrings.liveMonitorCloseAction) {
+                Button(.Coaching.liveMonitorCloseAction) {
                     finishAndShowSummary(viewModel, endedBy: .userEnded)
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
@@ -266,7 +276,7 @@ struct LiveSmileMonitorView: View {
 
     /// 진동이나 알림을 놓쳤어도 화면을 보면 알 수 있게 잠깐 크게 띄운다.
     private func showNudgeCue() {
-        AccessibilityNotification.Announcement(SharedStrings.liveMonitorNudgeBody).post()
+        AccessibilityNotification.Announcement(String(localized: .liveMonitorNudgeBody)).post()
         withAnimation(reduceMotion ? nil : .easeOut(duration: 0.2)) {
             isShowingNudgeCue = true
         }
@@ -289,8 +299,8 @@ struct LiveSmileMonitorView: View {
                 Image(systemName: isShowingPreview ? "eye.slash" : "eye")
                     .font(.caption.weight(.semibold))
                 Text(isShowingPreview
-                     ? SharedStrings.liveMonitorHidePreview
-                     : SharedStrings.liveMonitorShowPreview)
+                     ? .Coaching.liveMonitorHidePreview
+                     : .Coaching.liveMonitorShowPreview)
                     .font(.footnote.weight(.semibold))
             }
             .foregroundStyle(SDColor.ink)
@@ -302,7 +312,7 @@ struct LiveSmileMonitorView: View {
     }
 
     private var privacyBadge: some View {
-        Text(SharedStrings.liveMonitorPrivacyBadge)
+        Text(.Coaching.liveMonitorPrivacyBadge)
             .font(.caption.weight(.semibold))
             .foregroundStyle(SDColor.ink)
             .padding(.horizontal, 12)
@@ -318,7 +328,7 @@ struct LiveSmileMonitorView: View {
         let filled = level.map { $0.rawValue + 1 } ?? 0
 
         return VStack(spacing: 14) {
-            Text(SharedStrings.liveMonitorLevelLabel)
+            Text(.Coaching.liveMonitorLevelLabel)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(SDColor.muted)
 
@@ -333,11 +343,11 @@ struct LiveSmileMonitorView: View {
         .padding(.horizontal, 8)
         // VoiceOver가 프레임마다 값을 읽지 않도록 자주 갱신되는 요소로 표시하지 않는다.
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(SharedStrings.liveMonitorLevelLabel)
+        .accessibilityLabel(Text(.Coaching.liveMonitorLevelLabel))
         .accessibilityValue(
             filled == 0
-                ? "측정 준비 중"
-                : "\(LiveSmileLevel.allCases.count)단계 중 \(filled)단계"
+                ? String(localized: .Coaching.liveMonitorPreparing)
+                : String(localized: .Coaching.liveMonitorLevelSteps(LiveSmileLevel.allCases.count, filled))
         )
         // Reduce Motion에서는 칸이 채워지는 보간을 생략한다.
         .animation(reduceMotion ? nil : .easeOut(duration: 0.18), value: filled)
@@ -356,11 +366,11 @@ struct LiveSmileMonitorView: View {
     /// 알림이 울린 직후 잠깐 나타나는 표시. 재촉이 아니라 부르는 말투로 둔다.
     private var nudgeCue: some View {
         VStack(spacing: 4) {
-            Text(SharedStrings.liveMonitorNudgeTitle)
+            Text(.liveMonitorNudgeTitle)
                 .font(.system(size: 34, weight: .bold, design: .rounded))
                 .foregroundStyle(SDColor.sunDeep)
 
-            Text(SharedStrings.liveMonitorNudgeBody)
+            Text(.liveMonitorNudgeBody)
                 .font(.subheadline)
                 .foregroundStyle(SDColor.ink)
         }
@@ -382,12 +392,12 @@ struct LiveSmileMonitorView: View {
 
     private var restartSection: some View {
         VStack(spacing: 16) {
-            Text(SharedStrings.liveMonitorInterrupted)
+            Text(.Coaching.liveMonitorInterrupted)
                 .font(.headline)
                 .foregroundStyle(SDColor.ink)
                 .multilineTextAlignment(.center)
 
-            Button(SharedStrings.liveMonitorStartAction) {
+            Button(.Coaching.liveMonitorStartAction) {
                 needsRestart = false
                 startMeasuring()
             }
@@ -408,7 +418,7 @@ struct LiveSmileMonitorView: View {
                     .buttonStyle(SDInkButtonStyle())
             }
 
-            Button(SharedStrings.liveMonitorCloseAction) {
+            Button(.Coaching.liveMonitorCloseAction) {
                 shutDown()
                 dismiss()
             }
@@ -421,13 +431,13 @@ struct LiveSmileMonitorView: View {
     private func statusMessage(_ viewModel: LiveSmileMonitorViewModel) -> String {
         switch viewModel.state {
         case .idle, .requestingPermission, .calibrating:
-            return SharedStrings.liveMonitorCalibrating
+            return String(localized: .Coaching.liveMonitorCalibrating)
         case .qualityIssue(.faceNotFound):
-            return SharedStrings.liveMonitorFaceNotFound
+            return String(localized: .Coaching.liveMonitorFaceNotFound)
         case .qualityIssue(.notFacingCamera):
-            return SharedStrings.liveMonitorNotFacingCamera
+            return String(localized: .Coaching.liveMonitorNotFacingCamera)
         case .qualityIssue(.tooDark):
-            return SharedStrings.liveMonitorTooDark
+            return String(localized: .Coaching.liveMonitorTooDark)
         case .failed(let failure):
             return failureMessage(failure)
         case .monitoring:
@@ -437,18 +447,18 @@ struct LiveSmileMonitorView: View {
 
     private func levelMessage(_ level: LiveSmileLevel?) -> String {
         switch level {
-        case .resting, .none: SharedStrings.liveMonitorLevelResting
-        case .starting: SharedStrings.liveMonitorLevelStarting
-        case .holding: SharedStrings.liveMonitorLevelHolding
-        case .clear: SharedStrings.liveMonitorLevelClear
+        case .resting, .none: String(localized: .Coaching.liveMonitorLevelResting)
+        case .starting: String(localized: .Coaching.liveMonitorLevelStarting)
+        case .holding: String(localized: .Coaching.liveMonitorLevelHolding)
+        case .clear: String(localized: .Coaching.liveMonitorLevelClear)
         }
     }
 
     private func failureMessage(_ failure: LiveSmileFailure) -> String {
         switch failure {
-        case .permissionDenied: SharedStrings.liveMonitorPermissionDenied
-        case .unsupportedDevice: SharedStrings.liveMonitorUnsupported
-        case .sessionFailed: SharedStrings.liveMonitorSessionFailed
+        case .permissionDenied: String(localized: .Coaching.liveMonitorPermissionDenied)
+        case .unsupportedDevice: String(localized: .Coaching.liveMonitorUnsupported)
+        case .sessionFailed: String(localized: .Coaching.liveMonitorSessionFailed)
         }
     }
 

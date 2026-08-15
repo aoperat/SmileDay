@@ -11,11 +11,11 @@ enum LiveSmileSessionEndReason {
     case leftTheApp
     case interrupted
 
-    var notice: String? {
+    var notice: LocalizedStringResource? {
         switch self {
         case .userEnded: nil
-        case .leftTheApp: SharedStrings.liveSummaryEndedByLeavingApp
-        case .interrupted: SharedStrings.liveSummaryEndedByInterruption
+        case .leftTheApp: .Coaching.liveSummaryEndedByLeavingApp
+        case .interrupted: .Coaching.liveSummaryEndedByInterruption
         }
     }
 }
@@ -45,7 +45,7 @@ struct LiveSmileSessionSummaryView: View {
 
                 switch summary.confidence {
                 case .noMeasurement:
-                    Text(SharedStrings.liveSummaryNoMeasurement)
+                    Text(.Coaching.liveSummaryNoMeasurement)
                         .font(.headline)
                         .foregroundStyle(SDColor.ink)
                 case .low(let value):
@@ -60,13 +60,13 @@ struct LiveSmileSessionSummaryView: View {
                     timelineBand
                 }
 
-                Text(SharedStrings.liveSummaryMeaning)
+                Text(.Coaching.liveSummaryMeaning)
                     .font(.caption)
                     .foregroundStyle(SDColor.muted)
                     .multilineTextAlignment(.center)
                     .fixedSize(horizontal: false, vertical: true)
 
-                Button(SharedStrings.liveSummaryCloseAction, action: onClose)
+                Button(.Coaching.liveSummaryCloseAction, action: onClose)
                     .buttonStyle(SDPrimaryButtonStyle())
             }
             .padding(.horizontal, 24)
@@ -77,7 +77,7 @@ struct LiveSmileSessionSummaryView: View {
 
     private var header: some View {
         VStack(spacing: 4) {
-            Text(SharedStrings.liveSummaryTitle)
+            Text(.Coaching.liveSummaryTitle)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(SDColor.muted)
 
@@ -92,20 +92,21 @@ struct LiveSmileSessionSummaryView: View {
     /// 두 줄로 따로 둔다.
     private func ratio(_ value: Double, isLowConfidence: Bool) -> some View {
         VStack(spacing: 6) {
-            Text("\(Int((value * 100).rounded()))%")
+            Text(value, format: .percent.precision(.fractionLength(0)))
                 .font(.system(size: 44, weight: .bold, design: .rounded).monospacedDigit())
                 .foregroundStyle(SDColor.ink)
 
-            Text(SharedStrings.liveSummaryRatioLabel)
+            Text(.Coaching.liveSummaryRatioLabel)
                 .font(.footnote)
                 .foregroundStyle(SDColor.muted)
 
-            Text("\(SharedStrings.liveSummaryLegendUnknown) \(Int((summary.unknownRatio * 100).rounded()))%")
+            // 합성한 문장이라 카탈로그 키로 뽑히지 않게 verbatim으로 둔다.
+            Text(verbatim: "\(String(localized: .Coaching.liveSummaryLegendUnknown)) \(summary.unknownRatio.formatted(.percent.precision(.fractionLength(0))))")
                 .font(.caption)
                 .foregroundStyle(SDColor.muted)
 
             if isLowConfidence {
-                Text(SharedStrings.liveSummaryLowConfidence)
+                Text(.Coaching.liveSummaryLowConfidence)
                     .font(.caption.weight(.semibold))
                     .foregroundStyle(SDColor.alert)
                     .multilineTextAlignment(.center)
@@ -121,9 +122,9 @@ struct LiveSmileSessionSummaryView: View {
                 .frame(height: 34)
 
             HStack(spacing: 14) {
-                legend(SharedStrings.liveSummaryLegendSmiling, SDColor.apricot)
-                legend(SharedStrings.liveSummaryLegendNotSmiling, SDColor.shell)
-                legend(SharedStrings.liveSummaryLegendUnknown, SDColor.muted.opacity(0.35))
+                legend(.Coaching.liveSummaryLegendSmiling, SDColor.apricot)
+                legend(.Coaching.liveSummaryLegendNotSmiling, SDColor.shell)
+                legend(.Coaching.liveSummaryLegendUnknown, SDColor.muted.opacity(0.35))
             }
             .font(.caption2)
             .foregroundStyle(SDColor.muted)
@@ -133,7 +134,7 @@ struct LiveSmileSessionSummaryView: View {
         .accessibilityHidden(true)
     }
 
-    private func legend(_ text: String, _ color: Color) -> some View {
+    private func legend(_ text: LocalizedStringResource, _ color: Color) -> some View {
         HStack(spacing: 4) {
             RoundedRectangle(cornerRadius: 3).fill(color).frame(width: 10, height: 10)
             Text(text)

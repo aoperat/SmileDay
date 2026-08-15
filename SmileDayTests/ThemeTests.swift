@@ -89,25 +89,30 @@ final class LiveSmileSessionEndReasonTests: XCTestCase {
         XCTAssertNil(LiveSmileSessionEndReason.userEnded.notice)
     }
 
-    func test_화면을_벗어났으면_그_이유를_말한다() {
+    func test_화면을_벗어났으면_그_이유를_말한다() throws {
         XCTAssertEqual(
-            LiveSmileSessionEndReason.leftTheApp.notice,
-            SharedStrings.liveSummaryEndedByLeavingApp
+            try resolved(LiveSmileSessionEndReason.leftTheApp),
+            String(localized: .Coaching.liveSummaryEndedByLeavingApp)
         )
     }
 
-    func test_카메라가_멈췄으면_그_이유를_말한다() {
+    func test_카메라가_멈췄으면_그_이유를_말한다() throws {
         XCTAssertEqual(
-            LiveSmileSessionEndReason.interrupted.notice,
-            SharedStrings.liveSummaryEndedByInterruption
+            try resolved(LiveSmileSessionEndReason.interrupted),
+            String(localized: .Coaching.liveSummaryEndedByInterruption)
         )
     }
 
     /// 두 안내는 서로 다른 사건이다. 같은 문구를 쓰면 구분한 의미가 없다.
-    func test_두_안내가_서로_다르다() {
+    func test_두_안내가_서로_다르다() throws {
         XCTAssertNotEqual(
-            LiveSmileSessionEndReason.leftTheApp.notice,
-            LiveSmileSessionEndReason.interrupted.notice
+            try resolved(LiveSmileSessionEndReason.leftTheApp),
+            try resolved(LiveSmileSessionEndReason.interrupted)
         )
+    }
+
+    /// `LocalizedStringResource`는 비교할 수 없어 카탈로그에서 해석한 문장으로 견준다.
+    private func resolved(_ reason: LiveSmileSessionEndReason) throws -> String {
+        String(localized: try XCTUnwrap(reason.notice))
     }
 }
