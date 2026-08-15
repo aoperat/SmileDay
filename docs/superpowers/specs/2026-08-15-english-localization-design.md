@@ -408,4 +408,5 @@ LiveSmileSessionSummaryView:146-147            같은 계산 세 번째
 ## 11. 미확인 항목
 
 - ~~0단계~~ **실측 통과 (2026-08-15, 계획 Task 1).** String Catalog 키(`probeDeliveryTime`)를 지연 해석 키로 넣은 알림이 시뮬레이터에서 한국어일 때 "탐침-KO", 같은 페이로드를 English로 전환 후 보내면 "PROBE-EN"으로 표시됐다 — 표시 시점 언어를 따른다. (`simctl push`의 `title-loc-key` 경로로 확인; 로컬 알림의 `localizedUserNotificationString`도 같은 `titleLocalizationKey` 경로다. 최종 검증(Task 14)에서 실기기로 한 번 더 본다.)
-- 같은 테이블 안에서 두 키가 sanitize 후 같은 Swift 심볼로 뭉칠 때 Xcode의 처리 (에러/경고/접미사) — 키 두어 개로 실측 후 확정.
+- ~~심볼 이름 변환 규칙~~ **실측 확정 (계획 Task 8).** `Settings.xcstrings`의 `messageError.tooLong`(값에 `%lld`) → `.Settings.messageErrorTooLong(_:)`, `scheduleError.schedulingFailed` → `.Settings.scheduleErrorSchedulingFailed`. 점 제거 + 세그먼트 camelCase, 플레이스홀더가 있으면 함수. 빌드 통과로 확인.
+- 같은 테이블 안에서 두 키가 sanitize 후 같은 Swift 심볼로 뭉칠 때 Xcode의 처리 (에러/경고/접미사) — 아직 미확인. 그런 키 쌍을 만들지 않으면 문제없다.
