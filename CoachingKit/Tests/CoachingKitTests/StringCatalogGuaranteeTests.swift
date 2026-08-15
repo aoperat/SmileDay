@@ -126,4 +126,26 @@ final class StringCatalogGuaranteeTests: XCTestCase {
             XCTAssertNotNil(coaching.strings[key], "Coaching catalog missing '\(key)'")
         }
     }
+
+    func test_everyDefaultReminderMessage_hasACatalogEntry_andEnglishIsDistinct_andShort() throws {
+        let base = try Self.loadCatalog("Localizable")
+        var english: [String] = []
+        for message in ReminderMessageCatalog.defaults {
+            let key = "reminderMessage.\(message.id)"
+            let langs = try XCTUnwrap(base.strings[key], "Localizable missing '\(key)'")
+            let en = try XCTUnwrap(langs["en"])
+            XCTAssertLessThanOrEqual(en.count, 100, "\(key) en exceeds the 100-char edit limit")
+            english.append(en)
+        }
+        XCTAssertEqual(Set(english).count, english.count, "default reminder messages must resolve to distinct English — duplicate check depends on it")
+    }
+
+    /// 마이그레이션 스냅샷은 1.x 원문 그대로여야 하고, 카탈로그의 ko 값과도 같아야 한다.
+    /// (한국어 문구를 안 바꾼다는 2절 원칙의 기계 검사이기도 하다.)
+    func test_legacyKoreanSnapshot_matchesCatalogKorean() throws {
+        let base = try Self.loadCatalog("Localizable")
+        for (id, legacy) in ReminderMessageMigration.legacyKoreanDefaults {
+            XCTAssertEqual(base.strings["reminderMessage.\(id)"]?["ko"], legacy, id)
+        }
+    }
 }

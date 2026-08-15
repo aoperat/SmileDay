@@ -44,8 +44,10 @@ final class UserNotificationReminderScheduler: ReminderScheduling {
         var addedIdentifiers: [String] = []
         for (index, time) in times.enumerated() {
             let content = UNMutableNotificationContent()
-            content.title = "스마일데이"
-            content.body = availableMessages[index % availableMessages.count].text
+            content.title = String(localized: "notificationAppName")
+            // 예약 시점의 언어로 굳는다. 사용자가 언어를 바꾸면 설정을 다시 저장할 때
+            // 새 언어로 다시 예약된다 — 문구 변경과 같은 경로다.
+            content.body = availableMessages[index % availableMessages.count].resolvedText
             content.sound = .default
             // 썸네일은 장식이다. 만들지 못해도 알림 자체는 그대로 예약한다 — 5초를 떠올리게
             // 하는 것이 알림의 일이고, 그림이 없다고 그 일을 걸러서는 안 된다.

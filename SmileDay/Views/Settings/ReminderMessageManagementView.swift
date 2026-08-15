@@ -22,10 +22,10 @@ struct ReminderMessageManagementView: View {
                         editor = Editor(
                             messageID: message.id,
                             title: "메시지 수정",
-                            text: message.text
+                            text: message.resolvedText
                         )
                     } label: {
-                        Text(message.text)
+                        Text(message.resolvedText)
                             .foregroundStyle(SDColor.ink)
                             .multilineTextAlignment(.leading)
                     }

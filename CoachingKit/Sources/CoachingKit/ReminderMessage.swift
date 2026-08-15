@@ -3,49 +3,23 @@ import Observation
 
 public struct ReminderMessage: Identifiable, Codable, Equatable, Sendable {
     public let id: String
-    public var text: String
+    /// nil이면 기본 문구 — 표시·예약 시점에 id로 카탈로그에서 해석한다.
+    /// 값이 있으면 사용자가 직접 쓴 문구이고, 언어가 바뀌어도 번역하지 않는다.
+    public var text: String?
 
-    public init(id: String = UUID().uuidString, text: String) {
+    public init(id: String = UUID().uuidString, text: String? = nil) {
         self.id = id
         self.text = text
     }
 }
 
 public enum ReminderMessageCatalog {
+    /// 기본 문구의 id. 문구 자체는 앱 타깃 `Localizable.xcstrings`의 `reminderMessage.<id>`.
+    /// **id는 기기에 예약된 알림이 키로 들고 있는 호환 계약이다 — 바꾸지 않는다.**
     public static let defaults: [ReminderMessage] = [
-        ReminderMessage(
-            id: "gentle-five-seconds",
-            text: "지금 괜찮다면 5초만 편안하게 미소 지어보세요."
-        ),
-        ReminderMessage(
-            id: "release-shoulders",
-            text: "잠깐 어깨 힘을 빼고 입꼬리를 살짝 올려볼까요?"
-        ),
-        ReminderMessage(
-            id: "warm-greeting",
-            text: "반가운 사람에게 인사하듯 가볍게 미소 지어보세요."
-        ),
-        ReminderMessage(
-            id: "comfortable-is-enough",
-            text: "크게 웃지 않아도 괜찮아요. 편안한 미소면 충분해요."
-        ),
-        ReminderMessage(
-            id: "remember-gratitude",
-            text: "고마운 사람을 떠올리며 잠깐 미소 지어볼까요?"
-        ),
-        ReminderMessage(
-            id: "relax-expression",
-            text: "화면에서 눈을 떼고 얼굴의 힘을 가볍게 풀어볼까요?"
-        ),
-        ReminderMessage(
-            id: "kind-to-self",
-            text: "오늘의 나에게 따뜻한 표정을 보내볼까요?"
-        ),
-        ReminderMessage(
-            id: "bright-as-comfortable",
-            text: "지금 잠깐, 편한 만큼 밝게 웃어볼까요?"
-        ),
-    ]
+        "gentle-five-seconds", "release-shoulders", "warm-greeting", "comfortable-is-enough",
+        "remember-gratitude", "relax-expression", "kind-to-self", "bright-as-comfortable",
+    ].map { ReminderMessage(id: $0) }
 }
 
 public protocol ReminderMessageStoring: AnyObject {
@@ -53,7 +27,10 @@ public protocol ReminderMessageStoring: AnyObject {
 }
 
 public final class UserDefaultsReminderMessageStore: ReminderMessageStoring {
-    private static let key = "reminderMessages.v1"
+    /// v1은 `text`가 항상 있던 시절의 데이터다. **읽기만 하고 절대 쓰지 않는다** — 옛 빌드가
+    /// 다시 켜져도(백업 복원, TestFlight 병행) 자기 데이터를 온전히 본다.
+    private static let legacyKey = "reminderMessages.v1"
+    private static let key = "reminderMessages.v2"
     private let defaults: UserDefaults
     private let encoder = JSONEncoder()
     private let decoder = JSONDecoder()
@@ -64,12 +41,19 @@ public final class UserDefaultsReminderMessageStore: ReminderMessageStoring {
 
     public var messages: [ReminderMessage] {
         get {
-            guard let data = defaults.data(forKey: Self.key),
-                  let decoded = try? decoder.decode([ReminderMessage].self, from: data),
-                  !decoded.isEmpty else {
-                return ReminderMessageCatalog.defaults
+            if let data = defaults.data(forKey: Self.key),
+               let decoded = try? decoder.decode([ReminderMessage].self, from: data),
+               !decoded.isEmpty {
+                return decoded
             }
-            return decoded
+            if let data = defaults.data(forKey: Self.legacyKey),
+               let decoded = try? decoder.decode([ReminderMessage].self, from: data),
+               !decoded.isEmpty {
+                // 플래그로 막지 않는다 — v2가 없을 때마다 다시 승격한다. 백업 복원으로 v1만
+                // 되살아나도 다음 읽기에서 그대로 맞춰진다.
+                return ReminderMessageMigration.promoteUntouchedDefaults(decoded)
+            }
+            return ReminderMessageCatalog.defaults
         }
         set {
             let value = newValue.isEmpty ? ReminderMessageCatalog.defaults : newValue
@@ -94,9 +78,13 @@ public final class ReminderMessageViewModel {
     public private(set) var error: ReminderMessageError?
 
     private let store: ReminderMessageStoring
+    /// 항목을 화면 문구로 푼다. 앱은 카탈로그를, 테스트는 항등 함수를 넘긴다 — 이 패키지는
+    /// 카탈로그를 읽을 수 없어서(스펙 4.3절) 해석을 밖에서 받는다.
+    private let resolve: (ReminderMessage) -> String
 
-    public init(store: ReminderMessageStoring) {
+    public init(store: ReminderMessageStoring, resolve: @escaping (ReminderMessage) -> String) {
         self.store = store
+        self.resolve = resolve
         messages = store.messages
     }
 
@@ -114,7 +102,14 @@ public final class ReminderMessageViewModel {
               let text = validated(text, excludingID: id) else {
             return false
         }
-        messages[index].text = text
+        // 기본 문구를 열어보고 그대로 저장하면 굳지 않는다 — 해석값과 같으면 nil로 되돌린다.
+        let asDefault = ReminderMessage(id: id, text: nil)
+        let isCatalogDefault = ReminderMessageCatalog.defaults.contains { $0.id == id }
+        if isCatalogDefault, resolve(asDefault) == text {
+            messages[index].text = nil
+        } else {
+            messages[index].text = text
+        }
         persist()
         return true
     }
@@ -156,7 +151,7 @@ public final class ReminderMessageViewModel {
             error = .tooLong(limit: 100)
             return nil
         }
-        guard !messages.contains(where: { $0.id != excludingID && $0.text == text }) else {
+        guard !messages.contains(where: { $0.id != excludingID && resolve($0) == text }) else {
             error = .duplicate
             return nil
         }

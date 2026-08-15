@@ -21,7 +21,34 @@
         "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Open guide" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "가이드 열기" } }
       }
-    }
+    },
+    "reminderMessage.gentle-five-seconds" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Five easy seconds, if now works." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 괜찮다면 5초만 편안하게 미소 지어보세요." } } } },
+    "reminderMessage.release-shoulders" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Drop your shoulders. Let the corners rise." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠깐 어깨 힘을 빼고 입꼬리를 살짝 올려볼까요?" } } } },
+    "reminderMessage.warm-greeting" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Like you just spotted a friend." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "반가운 사람에게 인사하듯 가볍게 미소 지어보세요." } } } },
+    "reminderMessage.comfortable-is-enough" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Doesn't have to be big. Easy is plenty." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "크게 웃지 않아도 괜찮아요. 편안한 미소면 충분해요." } } } },
+    "reminderMessage.remember-gratitude" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Someone you're grateful for — picture them." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "고마운 사람을 떠올리며 잠깐 미소 지어볼까요?" } } } },
+    "reminderMessage.relax-expression" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Look away from the screen. Let your face go." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "화면에서 눈을 떼고 얼굴의 힘을 가볍게 풀어볼까요?" } } } },
+    "reminderMessage.kind-to-self" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Something warm, for today's you." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘의 나에게 따뜻한 표정을 보내볼까요?" } } } },
+    "reminderMessage.bright-as-comfortable" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "As bright as feels easy. Just for a second." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 잠깐, 편한 만큼 밝게 웃어볼까요?" } } } },
+    "notificationAppName" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "translated", "value" : "SmileDay" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이" } } } }
   },
   "version" : "1.1"
 }

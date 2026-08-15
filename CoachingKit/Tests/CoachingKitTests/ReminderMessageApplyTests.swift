@@ -8,7 +8,8 @@ import SwiftData
 final class ReminderMessageApplyTests: XCTestCase {
     private final class MockScheduler: ReminderScheduling {
         /// 등록할 때마다 그 시점의 문구를 그대로 남긴다. 알림에 실제로 실리는 값이다.
-        private(set) var scheduledMessages: [[String]] = []
+        /// nil은 "기본 문구" — 앱 타깃이 예약 직전에 카탈로그에서 해석한다.
+        private(set) var scheduledMessages: [[String?]] = []
         private(set) var cancelledGroups: [String] = []
 
         func requestAuthorization() async -> Bool { true }

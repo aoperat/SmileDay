@@ -142,7 +142,9 @@ struct SmileMVPSettingsView: View {
                 )
             }
             if messageViewModel == nil {
-                messageViewModel = ReminderMessageViewModel(store: reminderMessageStore)
+                messageViewModel = ReminderMessageViewModel(store: reminderMessageStore) {
+                    $0.resolvedText
+                }
             }
             await loadSettings()
         }
