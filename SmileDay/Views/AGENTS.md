@@ -40,7 +40,7 @@ No view tests. Verify with `xcodebuild -project SmileDay.xcodeproj -scheme Smile
 ### Common Patterns
 - Container styling via `.sdCard()`; CTAs via `SDPrimaryButtonStyle` (yellow gradient pill) / `SDInkButtonStyle`; screen backgrounds use `SDColor.cream`.
 - **The primary color is yellow, and text on it is `ink`, never white.** White scores 1.7:1 on `sun` — far under the 3:1 large-text floor — while `ink` scores 7.7:1. `SDPalette.whiteOnColorBackgrounds` is deliberately empty and `inkOnPrimaryBackgrounds` carries the contrast test instead. For icon tints and switches use `sunDeep`; `sun` itself is 1.4:1 on cream and invisible as a glyph.
-- Date formatting goes through `SDFormat.koreanLocale` so output does not follow the device locale.
+- Dates are rendered with `Text(_:format:)` so they inherit the environment `calendar`/`locale` that `SmileDayApp` injects; strings that need a `String` (accessibility labels) pass `@Environment(\.calendar)`/`\.locale` into `.formatted(...)` explicitly. There is no pinned Korean locale.
 - `SmileArc` is reused for the splash logo and the guide screen's drawn face.
 - `SDColor` only wraps tokens the UI actually uses; raw hex values and their contrast tests live in `CoachingKit/SDPalette.swift`, because the app target has no test bundle. Add a token in both places or not at all.
 

@@ -123,9 +123,6 @@ struct SDCloseButton: View {
 }
 
 enum SDFormat {
-    /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
-    static let koreanLocale = Locale(identifier: "ko_KR")
-
     /// 흘러간 시간. "45초" / "3분" / "3분 20초".
     ///
     /// 세션 길이와 알림 간격이 같은 규칙을 쓴다. 예전에는 설정 화면과 요약 화면에 글자만 다른

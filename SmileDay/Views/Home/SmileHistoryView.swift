@@ -5,18 +5,20 @@ import CoachingKit
 struct SmileHistoryView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
+    /// 격자 계산과 날짜 표시가 같은 달력을 봐야 한다. 앱이 주입한 그레고리력이며,
+    /// `firstWeekday`는 지역 설정에서 온다 — 일요일 시작을 가정하지 않는다.
+    @Environment(\.calendar) private var calendar
 
     @State private var viewModel: SmileHistoryViewModel?
     @State private var loadFailed = false
 
     private let columns = Array(repeating: GridItem(.flexible(), spacing: 6), count: 7)
 
-    private var calendar: Calendar {
-        var value = Calendar(identifier: .gregorian)
-        value.locale = SDFormat.koreanLocale
-        value.timeZone = .current
-        value.firstWeekday = 1
-        return value
+    /// `veryShortWeekdaySymbols`는 항상 일요일부터 오므로 `firstWeekday`만큼 돌린다.
+    private var weekdayHeaders: [String] {
+        let symbols = calendar.veryShortWeekdaySymbols
+        let shift = calendar.firstWeekday - 1
+        return Array(symbols[shift...] + symbols[..<shift])
     }
 
     var body: some View {
@@ -42,7 +44,7 @@ struct SmileHistoryView: View {
                 }
             }
         }
-        .navigationTitle("기록")
+        .navigationTitle(Text(.Home.historyNavigationTitle))
         .navigationBarTitleDisplayMode(.inline)
         .onAppear {
             if viewModel == nil {
@@ -67,11 +69,11 @@ struct SmileHistoryView: View {
                 Image(systemName: "chevron.left")
                     .frame(width: 44, height: 44)
             }
-            .accessibilityLabel("이전 달")
+            .accessibilityLabel(Text(.Home.previousMonth))
 
             Spacer()
 
-            Text(viewModel.displayedMonth.formatted(.dateTime.locale(SDFormat.koreanLocale).year().month()))
+            Text(viewModel.displayedMonth, format: .dateTime.year().month())
                 .font(.title3.bold())
                 .foregroundStyle(SDColor.ink)
                 .accessibilityAddTraits(.isHeader)
@@ -86,16 +88,16 @@ struct SmileHistoryView: View {
             }
             .disabled(!viewModel.canShowNextMonth)
             .opacity(viewModel.canShowNextMonth ? 1 : 0.3)
-            .accessibilityLabel("다음 달")
+            .accessibilityLabel(Text(.Home.nextMonth))
         }
         .foregroundStyle(SDColor.sunDeep)
     }
 
     private func monthSummary(_ viewModel: SmileHistoryViewModel) -> some View {
         HStack(spacing: 12) {
-            HistoryStat(title: "이번 달 미소", value: "\(viewModel.monthTotal)번")
+            HistoryStat(title: .Home.monthSmileTitle, value: .Home.smileCount(viewModel.monthTotal))
             Divider()
-            HistoryStat(title: "웃어본 날", value: "\(viewModel.activeDayCount)일")
+            HistoryStat(title: .Home.activeDaysTitle, value: .Home.activeDayCount(viewModel.activeDayCount))
         }
         .frame(maxWidth: .infinity)
         .sdCard()
@@ -105,14 +107,18 @@ struct SmileHistoryView: View {
     private func monthCalendar(_ viewModel: SmileHistoryViewModel) -> some View {
         VStack(spacing: 12) {
             LazyVGrid(columns: columns, spacing: 6) {
-                ForEach(["일", "월", "화", "수", "목", "금", "토"], id: \.self) { weekday in
-                    Text(weekday)
+                // 영어의 very-short 기호는 S·T가 겹치고 프랑스어는 M이 겹친다 — `id: \.self`면
+                // 열이 빠져 격자가 어긋난다. 위치가 id다.
+                ForEach(Array(weekdayHeaders.enumerated()), id: \.offset) { _, symbol in
+                    Text(symbol)
                         .font(.caption.weight(.semibold))
                         .foregroundStyle(SDColor.muted)
                         .frame(maxWidth: .infinity)
                 }
 
-                ForEach(0..<leadingBlankCount(for: viewModel.days), id: \.self) { _ in
+                // 게으른 격자는 형제 ForEach의 id를 한 이름 공간으로 본다. 머리글이 0…6을
+                // 쓰므로 빈 칸이 같은 정수를 쓰면 머리글 칸으로 잡혀 높이가 어긋난다.
+                ForEach(leadingBlankIDs(for: viewModel.days), id: \.self) { _ in
                     Color.clear.frame(height: 54)
                 }
 
@@ -134,18 +140,18 @@ struct SmileHistoryView: View {
     private func selectedDayCard(date: Date, count: Int) -> some View {
         HStack {
             VStack(alignment: .leading, spacing: 4) {
-                Text(date.formatted(.dateTime.locale(SDFormat.koreanLocale).month().day().weekday(.wide)))
+                Text(date, format: .dateTime.month().day().weekday(.wide))
                     .font(.subheadline)
                     .foregroundStyle(SDColor.muted)
 
-                Text(count == 0 ? "기록이 비어 있어요" : "웃어본 순간")
+                Text(count == 0 ? .Home.emptyDay : .Home.smiledMoments)
                     .font(.headline)
                     .foregroundStyle(SDColor.ink)
             }
 
             Spacer()
 
-            Text("\(count)번")
+            Text(.Home.smileCount(count))
                 .font(.title2.bold().monospacedDigit())
                 .foregroundStyle(SDColor.ink)
         }
@@ -155,7 +161,11 @@ struct SmileHistoryView: View {
 
     private func leadingBlankCount(for days: [SmileDayCount]) -> Int {
         guard let firstDate = days.first?.date else { return 0 }
-        return calendar.component(.weekday, from: firstDate) - 1
+        return (calendar.component(.weekday, from: firstDate) - calendar.firstWeekday + 7) % 7
+    }
+
+    private func leadingBlankIDs(for days: [SmileDayCount]) -> [String] {
+        (0..<leadingBlankCount(for: days)).map { "leading-\($0)" }
     }
 
     private func changeMonth(_ action: () throws -> Void) {
@@ -178,8 +188,8 @@ struct SmileHistoryView: View {
 }
 
 private struct HistoryStat: View {
-    let title: String
-    let value: String
+    let title: LocalizedStringResource
+    let value: LocalizedStringResource
 
     var body: some View {
         VStack(spacing: 5) {
@@ -196,6 +206,9 @@ private struct HistoryStat: View {
 }
 
 private struct HistoryDayCell: View {
+    @Environment(\.calendar) private var calendar
+    @Environment(\.locale) private var locale
+
     let day: SmileDayCount
     let isSelected: Bool
     let isSelectable: Bool
@@ -204,10 +217,10 @@ private struct HistoryDayCell: View {
     var body: some View {
         Button(action: onSelect) {
             VStack(spacing: 4) {
-                Text(day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).day()))
+                Text(day.date, format: .dateTime.day())
                     .font(.subheadline.weight(isSelected ? .bold : .regular).monospacedDigit())
 
-                Text(day.hasSmile ? "\(day.count)번" : " ")
+                Text(day.hasSmile ? String(localized: .Home.smileCount(day.count)) : " ")
                     .font(.caption2.weight(.semibold).monospacedDigit())
             }
             .foregroundStyle(SDColor.ink)
@@ -221,9 +234,14 @@ private struct HistoryDayCell: View {
         .buttonStyle(.plain)
         .disabled(!isSelectable)
         .opacity(isSelectable ? 1 : 0.35)
-        .accessibilityLabel(
-            "\(day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).month().day())) \(day.count)번"
-        )
+        .accessibilityLabel(accessibilityLabel)
         .accessibilityAddTraits(isSelected ? .isSelected : [])
+    }
+
+    /// `Text(_:format:)`만 환경의 캘린더·로캘을 상속한다. String이 필요한 접근성 라벨은
+    /// 같은 값을 명시적으로 넘겨 격자의 날짜와 같은 달력으로 읽히게 한다.
+    private var accessibilityLabel: String {
+        let date = day.date.formatted(Date.FormatStyle(locale: locale, calendar: calendar).month().day())
+        return String(localized: .Home.dayAccessibility(date, day.count))
     }
 }

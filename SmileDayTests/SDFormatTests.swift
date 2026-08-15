@@ -57,11 +57,4 @@ final class SDFormatTests: XCTestCase {
         XCTAssertEqual(labels, ["30분마다", "1시간마다", "2시간마다", "3시간마다", "4시간마다"])
         XCTAssertFalse(labels.contains { $0.hasPrefix("0") })
     }
-
-    // MARK: - 로캘
-
-    /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
-    func test_로캘이_한국어로_고정돼있다() {
-        XCTAssertEqual(SDFormat.koreanLocale.identifier, "ko_KR")
-    }
 }

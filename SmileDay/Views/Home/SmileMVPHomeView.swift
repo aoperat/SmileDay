@@ -55,7 +55,7 @@ struct SmileMVPHomeView: View {
                     }
                 }
             }
-            .navigationTitle("스마일데이")
+            .navigationTitle(Text(.Home.homeNavigationTitle))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -65,7 +65,7 @@ struct SmileMVPHomeView: View {
                         Image(systemName: "gearshape")
                             .foregroundStyle(SDColor.sunDeep)
                     }
-                    .accessibilityLabel("설정")
+                    .accessibilityLabel(Text(.Home.settingsAccessibilityLabel))
                 }
             }
             .navigationDestination(isPresented: $isShowingSettings) {
@@ -156,16 +156,16 @@ private struct TodayCard: View {
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(SDColor.muted)
 
-                Text("\(count)번")
+                Text(.Home.smileCount(count))
                     .font(.system(size: 40, weight: .bold, design: .rounded).monospacedDigit())
                     .foregroundStyle(SDColor.ink)
 
-                Text(count == 0 ? String(localized: .noSmileYetToday) : "오늘 웃어본 순간이 하나씩 쌓이고 있어요.")
+                Text(count == 0 ? .noSmileYetToday : .Home.momentsAddingUp)
                     .font(.subheadline)
                     .foregroundStyle(SDColor.muted)
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("오늘 미소 \(count)번")
+            .accessibilityLabel(Text(.Home.todaySmileCountAccessibility(count)))
 
             Button(.smileNowAction, action: onStart)
                 .buttonStyle(SDPrimaryButtonStyle())
@@ -256,7 +256,7 @@ private struct NextReminderCard: View {
                     .foregroundStyle(SDColor.muted)
 
                 if case .scheduled(let reminder) = state {
-                    Text(reminder.date.formatted(.dateTime.locale(SDFormat.koreanLocale).hour().minute()))
+                    Text(reminder.date, format: .dateTime.hour().minute())
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
                 } else {
@@ -329,7 +329,7 @@ private struct RecentSevenDaysCard: View {
 
                     Spacer()
 
-                    Text("총 \(totalCount)번")
+                    Text(.Home.recentTotalCount(totalCount))
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
 
@@ -350,11 +350,14 @@ private struct RecentSevenDaysCard: View {
         .buttonStyle(.plain)
         .sdCard()
         .accessibilityElement(children: .combine)
-        .accessibilityHint("월별 기록 보기")
+        .accessibilityHint(Text(.Home.historyHint))
     }
 }
 
 private struct DayDot: View {
+    @Environment(\.calendar) private var calendar
+    @Environment(\.locale) private var locale
+
     let day: SmileDayCount
 
     var body: some View {
@@ -375,14 +378,19 @@ private struct DayDot: View {
                 .font(.caption.bold().monospacedDigit())
                 .foregroundStyle(day.count > 0 ? SDColor.ink : SDColor.muted)
 
-            Text(day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).weekday(.narrow)))
+            Text(day.date, format: .dateTime.weekday(.narrow))
                 .font(.caption2)
                 .foregroundStyle(SDColor.muted)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel(
-            "\(day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).month().day())) \(day.count)번"
-        )
+        .accessibilityLabel(accessibilityLabel)
+    }
+
+    /// `Text(_:format:)`만 환경의 캘린더·로캘을 상속한다. String이 필요한 접근성 라벨은
+    /// 같은 값을 명시적으로 넘겨 화면의 날짜와 같은 달력으로 읽히게 한다.
+    private var accessibilityLabel: String {
+        let date = day.date.formatted(Date.FormatStyle(locale: locale, calendar: calendar).month().day())
+        return String(localized: .Home.dayAccessibility(date, day.count))
     }
 }
