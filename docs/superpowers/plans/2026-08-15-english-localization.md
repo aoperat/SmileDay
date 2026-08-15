@@ -1842,7 +1842,7 @@ EOF
 
 **Files:** 없음 (검증만)
 
-- [ ] **Step 1: 자동 검증 전부**
+- [x] **Step 1: 자동 검증 전부**
 
 ```bash
 cd CoachingKit && swift test 2>&1 | grep -E "Test Suite 'All tests'|error:|failed"; cd ..
@@ -1852,7 +1852,7 @@ grep -rn "SDFormat.koreanLocale\|SharedStrings\.\|ko_KR" SmileDay/ CoachingKit/S
 ```
 Expected: 두 테스트 통과, `missing_lang=0`, 마지막 grep `clean`.
 
-- [ ] **Step 2: CoachingKit에 표시용 String 반환 public API가 없는지 (스펙 10절)**
+- [x] **Step 2: CoachingKit에 표시용 String 반환 public API가 없는지 (스펙 10절)**
 
 ```bash
 python3 - <<'PY'
@@ -1870,7 +1870,7 @@ PY
 ```
 Expected: `ReminderMessageMigration.swift`의 스냅샷 8줄만 남는다(의도 — 마이그레이션 데이터).
 
-- [ ] **Step 3: 시뮬레이터 수동 검증 — 한국어**
+- [x] **Step 3: 시뮬레이터 수동 검증 — 한국어**
 
 한국어 시뮬레이터로 전 화면 훑기: 온보딩(신규 설치) → 홈 → 가이드 → 기록(월간 달력, 요일 헤더 일~토, 오늘 선택) → 설정 → 알림 문구 관리(기본 문구 열고 저장 → 목록에서 여전히 기본으로 보이는지) → 실시간 확인 인트로 → 세션 요약. **모든 문구가 오늘과 동일**해야 한다. 홈 화면 아이콘 이름 "스마일데이".
 
@@ -1886,7 +1886,7 @@ Expected: `ReminderMessageMigration.swift`의 스냅샷 8줄만 남는다(의도
 
 Task 0 커밋 시점 빌드를 시뮬레이터에 설치 → 알림 켜고 문구 하나 편집 → 이 브랜치 빌드로 덮어 설치 → 앱 실행 → 설정 → 알림 문구 관리: 편집한 문구는 그대로, 나머지는 기본. **여기까지는 v2가 아직 없다** — 읽기 경로는 승격만 하고 쓰지 않는다. 문구 하나를 더 편집(또는 순서 변경)한 뒤 `xcrun simctl spawn booted defaults read <bundle-id> reminderMessages.v1`이 **바이트 그대로** 있고 `reminderMessages.v2`가 새로 생겼는지. 다음 알림이 도착하는지.
 
-- [ ] **Step 7: 스펙 상태 갱신 + 커밋**
+- [x] **Step 7: 스펙 상태 갱신 + 커밋**
 
 스펙 상단 상태를 "승인됨 — **1단계 구현 완료 (날짜)**"로. 미확인 항목 11절에 심볼 이름 변환 실측 결과를 기록.
 

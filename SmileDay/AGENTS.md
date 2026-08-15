@@ -9,7 +9,7 @@ The iOS app target: SwiftUI views and platform services. Contains no business lo
 ## Key Files
 | File | Description |
 |------|-------------|
-| `SmileDayApp.swift` | `@main` App — wires AppDelegate via adaptor, reads the shared container from `PersistenceController`, hosts `RootView` with `ko_KR` locale, injects `NotificationRouter` into the environment |
+| `SmileDayApp.swift` | `@main` App — wires AppDelegate via adaptor, reads the shared container from `PersistenceController`, hosts `RootView` with a Gregorian `\.calendar` in the current locale (no locale pin), injects `NotificationRouter` into the environment |
 
 ## Subdirectories
 | Directory | Purpose |

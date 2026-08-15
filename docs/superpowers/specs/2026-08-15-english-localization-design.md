@@ -1,7 +1,7 @@
 # 영어 지원 설계
 
 - 날짜: 2026-08-15
-- 상태: 승인됨 (2026-08-15 3차 개정 — 검토 3종 + 실측 반영)
+- 상태: 승인됨 — **1단계(배관) 구현 완료 (2026-08-15, 브랜치 `feature/live-smile-monitor`, `d6f638f`…)**. 자동 검증 전부 통과: CoachingKit 301 tests, 앱 테스트, 카탈로그 게이트 181키/`missing_lang=0`/`needs_review=183`, CoachingKit 사용자 문자열 0(마이그레이션 스냅샷 8줄 제외), 한국어 보존 diff(placeholder 치환 외 차이 없음). 시뮬레이터: 한국어 기록 화면 정상, 영어 기기에서 영어 UI·"SmileDay" 아이콘. **실기기/탭이 필요해 남긴 것**: 영국 지역 요일 헤더 7열, 로컬 알림 언어 전환(push 경로로는 통과), v1→v2 업그레이드 경로, `.accessibility5`+SE. 계획 Task 14 Step 3–6 참조. 2단계(영어 집필 — `needs_review` 183개)와 7절(스토어·정책)은 미착수.
 - 배경: 앱은 한국어 단일 언어로 빌드된다 (`developmentRegion = ko`, `knownRegions = (ko, Base)`). String Catalog도 `.strings`도 없고 사용자 문구 약 200개(실측: 앱 타깃 176 + CoachingKit 25)가 Swift 리터럴로 흩어져 있다. `SmileDayApp.swift:29`가 로케일을 `ko_KR`로 고정해 기기 언어를 무시한다. 이미 출시되어 실사용자가 있으므로 저장된 데이터와 기기에 예약된 알림을 깨지 않아야 한다.
 - 선행 문서: `docs/english-copy-deck.md` (2026-07-31) — 톤 규칙과 문구 초안 약 40개. 이 설계는 그 문서의 "나중에 할 엔지니어링" 절을 실행 가능한 형태로 확정하되, **소스 언어에 대한 그 문서의 결정은 뒤집는다**(3절).
 

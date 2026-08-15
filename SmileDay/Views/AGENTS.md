@@ -10,7 +10,7 @@ SwiftUI screens for the frequency-first flow. `RootView` gates splash → remind
 | File | Description |
 |------|-------------|
 | `RootView.swift` | App entry gate: splash while loading → reminder onboarding when needed → home |
-| `Theme.swift` | Design tokens: `SDColor` palette + gradients, `Color(hex:)`, `SmileArc` shape, `.sdCard()` modifier, `SDPrimaryButtonStyle`/`SDInkButtonStyle`, `SDCloseButton`, `SDFormat` (pinned `ko_KR` locale) |
+| `Theme.swift` | Design tokens: `SDColor` palette + gradients, `Color(hex:)`, `SmileArc` shape, `.sdCard()` modifier, `SDPrimaryButtonStyle`/`SDInkButtonStyle`, `SDCloseButton`, `SDFormat` (`Duration`-based duration and interval formatters), `SDSystemSettings` |
 
 ## Subdirectories
 | Directory | Purpose |
