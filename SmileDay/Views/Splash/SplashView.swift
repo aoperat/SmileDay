@@ -13,11 +13,11 @@ struct SplashView: View {
                     .stroke(SDColor.ink, style: StrokeStyle(lineWidth: 6, lineCap: .round))
                     .frame(width: 96, height: 48)
 
-                Text("스마일데이")
+                Text(.splashTitle)
                     .font(.title.bold())
                     .foregroundStyle(SDColor.ink)
 
-                Text("웃으면 좋잖아요")
+                Text(.splashTagline)
                     .font(.subheadline)
                     .foregroundStyle(SDColor.ink.opacity(0.75))
             }

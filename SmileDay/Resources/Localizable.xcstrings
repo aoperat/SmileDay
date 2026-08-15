@@ -48,7 +48,136 @@
       "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 잠깐, 편한 만큼 밝게 웃어볼까요?" } } } },
     "notificationAppName" : { "extractionState" : "manual", "localizations" : {
       "en" : { "stringUnit" : { "state" : "translated", "value" : "SmileDay" } },
-      "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이" } } } }
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이" } } } },
+    "smileNowAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Take five seconds" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 한 번 웃기" } } } },
+    "guideStartAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Start" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "시작" } } } },
+    "guideCompleted" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "That's one more." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘 한 번 더 웃어봤어요" } } } },
+    "guideSaveFailed" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Couldn't save that one. Try again?" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "기록을 저장하지 못했어요. 다시 시도해주세요." } } } },
+    "guideRetrySaveAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "다시 시도" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } } } },
+    "todayCountTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Smiles today" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘 미소" } } } },
+    "recentSevenDaysTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Last 7 days" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "최근 7일" } } } },
+    "nextReminderTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Next reminder" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "다음 알림" } } } },
+    "noReminderYet" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "No reminders set" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정된 알림이 없어요" } } } },
+    "noSmileYetToday" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Today's still open" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "아직 오늘의 미소가 없어요" } } } },
+    "notificationDeniedNotice" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림이 꺼져 있어요. 설정 앱에서 켜면 정한 시간에 알려드릴게요." } } } },
+    "openSystemSettings" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "설정 앱 열기" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정 앱 열기" } } } },
+    "privacyPolicyTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "개인정보처리방침" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "개인정보처리방침" } } } },
+    "supportTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "고객지원" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "고객지원" } } } },
+    "legalSectionTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "약관과 문의" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "약관과 문의" } } } },
+    "legalSectionFooter" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "브라우저가 열려요. 문의는 이메일로 답변드려요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "브라우저가 열려요. 문의는 이메일로 답변드려요." } } } },
+    "reminderBlockedTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림이 오지 않아요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림이 오지 않아요" } } } },
+    "reminderBlockedDetail" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "iOS 설정에서 알림이 꺼져 있어요. 켜야 정한 시간에 알려드릴 수 있어요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "iOS 설정에서 알림이 꺼져 있어요. 켜야 정한 시간에 알려드릴 수 있어요." } } } },
+    "reminderNotRequestedTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림을 켜면 잊지 않아요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림을 켜면 잊지 않아요" } } } },
+    "reminderNotRequestedDetail" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "정한 시간에 짧게 알려드릴게요. 지금 켤 수 있어요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "정한 시간에 짧게 알려드릴게요. 지금 켤 수 있어요." } } } },
+    "reminderOffTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림이 꺼져 있어요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림이 꺼져 있어요" } } } },
+    "reminderOffDetail" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "이 앱은 알림으로 미소를 떠올리게 해요. 설정에서 언제든 켤 수 있어요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 앱은 알림으로 미소를 떠올리게 해요. 설정에서 언제든 켤 수 있어요." } } } },
+    "reminderTurnOnAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 켜기" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 켜기" } } } },
+    "reminderWindowCrossesMidnight" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "자정을 넘는 시간창이에요. 종료 시간은 다음 날로 봐요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "자정을 넘는 시간창이에요. 종료 시간은 다음 날로 봐요." } } } },
+    "skipRemindersConfirmTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 없이 시작할까요?" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 없이 시작할까요?" } } } },
+    "skipRemindersConfirmMessage" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "스마일데이는 정한 시간에 알림으로 미소를 떠올리게 해요. 알림이 없으면 앱을 직접 열어야 기억할 수 있어요. 나중에 설정에서 켤 수 있어요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이는 정한 시간에 알림으로 미소를 떠올리게 해요. 알림이 없으면 앱을 직접 열어야 기억할 수 있어요. 나중에 설정에서 켤 수 있어요." } } } },
+    "skipRemindersConfirmAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 없이 시작" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 없이 시작" } } } },
+    "skipRemindersCancelAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 받을래요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 받을래요" } } } },
+    "onboardingPermissionDeniedTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림이 꺼진 채로 시작해요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림이 꺼진 채로 시작해요" } } } },
+    "onboardingPermissionDeniedMessage" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 권한이 거부돼서 정한 시간에 알려드릴 수 없어요. iOS는 이 요청을 한 번만 물어보기 때문에, 켜려면 설정 앱에서 바꿔야 해요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 권한이 거부돼서 정한 시간에 알려드릴 수 없어요. iOS는 이 요청을 한 번만 물어보기 때문에, 켜려면 설정 앱에서 바꿔야 해요." } } } },
+    "onboardingContinueAnyway" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "이대로 시작하기" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "이대로 시작하기" } } } },
+    "disableRemindersConfirmTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "정말 알림을 끌까요?" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "정말 알림을 끌까요?" } } } },
+    "disableRemindersConfirmMessage" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "예약된 알림이 모두 취소돼요. 앱을 직접 열어야 미소 시간을 시작할 수 있어요. 언제든 다시 켤 수 있어요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "예약된 알림이 모두 취소돼요. 앱을 직접 열어야 미소 시간을 시작할 수 있어요. 언제든 다시 켤 수 있어요." } } } },
+    "disableRemindersConfirmAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 끄기" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 끄기" } } } },
+    "disableRemindersCancelAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "그대로 둘래요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "그대로 둘래요" } } } },
+    "startupFailedTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "앱을 시작하지 못했어요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱을 시작하지 못했어요" } } } },
+    "startupFailedBody" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "앱을 완전히 종료한 뒤 다시 열어주세요.\n계속되면 기기를 재시동해 주세요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱을 완전히 종료한 뒤 다시 열어주세요.\n계속되면 기기를 재시동해 주세요." } } } },
+    "dataLoadFailedTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "앱 데이터를 불러오지 못했어요" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱 데이터를 불러오지 못했어요" } } } },
+    "dataLoadFailedBody" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "기존 기록은 그대로 있어요. 잠시 후 다시 시도해주세요." } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "기존 기록은 그대로 있어요. 잠시 후 다시 시도해주세요." } } } },
+    "retryAction" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "다시 시도" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 시도" } } } },
+    "splashTitle" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "SmileDay" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이" } } } },
+    "splashTagline" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Smile, just because" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "웃으면 좋잖아요" } } } },
+    "closeAccessibilityLabel" : { "extractionState" : "manual", "localizations" : {
+      "en" : { "stringUnit" : { "state" : "needs_review", "value" : "나가기" } },
+      "ko" : { "stringUnit" : { "state" : "translated", "value" : "나가기" } } } }
   },
   "version" : "1.1"
 }

@@ -404,7 +404,7 @@ struct LiveSmileMonitorView: View {
                 .fixedSize(horizontal: false, vertical: true)
 
             if failure == .permissionDenied {
-                Button(SharedStrings.openSystemSettings, action: SDSystemSettings.open)
+                Button(.openSystemSettings, action: SDSystemSettings.open)
                     .buttonStyle(SDInkButtonStyle())
             }
 

@@ -118,7 +118,7 @@ struct SDCloseButton: View {
                 .background(.white.opacity(0.9), in: Circle())
                 .shadow(color: SDColor.ink.opacity(0.15), radius: 6, y: 2)
         }
-        .accessibilityLabel("나가기")
+        .accessibilityLabel(Text(.closeAccessibilityLabel))
     }
 }
 

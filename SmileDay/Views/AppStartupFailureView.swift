@@ -15,11 +15,11 @@ struct AppStartupFailureView: View {
                         .accessibilityHidden(true)
 
                     VStack(spacing: 8) {
-                        Text("앱을 시작하지 못했어요")
+                        Text(.startupFailedTitle)
                             .font(.title2.bold())
                             .foregroundStyle(SDColor.ink)
 
-                        Text("앱을 완전히 종료한 뒤 다시 열어주세요.\n계속되면 기기를 재시동해 주세요.")
+                        Text(.startupFailedBody)
                             .font(.body)
                             .foregroundStyle(SDColor.muted)
                             .multilineTextAlignment(.center)
@@ -45,16 +45,16 @@ struct AppDataLoadFailureView: View {
                 .foregroundStyle(SDColor.sunDeep)
                 .accessibilityHidden(true)
 
-            Text("앱 데이터를 불러오지 못했어요")
+            Text(.dataLoadFailedTitle)
                 .font(.headline)
                 .foregroundStyle(SDColor.ink)
 
-            Text("기존 기록은 그대로 있어요. 잠시 후 다시 시도해주세요.")
+            Text(.dataLoadFailedBody)
                 .font(.subheadline)
                 .foregroundStyle(SDColor.muted)
                 .multilineTextAlignment(.center)
 
-            Button("다시 시도", action: onRetry)
+            Button(.retryAction, action: onRetry)
                 .buttonStyle(SDInkButtonStyle())
         }
         .padding(24)

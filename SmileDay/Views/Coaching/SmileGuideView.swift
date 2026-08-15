@@ -97,7 +97,7 @@ struct SmileGuideView: View {
                     .font(.footnote)
                     .foregroundStyle(SDColor.muted)
 
-                Button(SharedStrings.guideStartAction) {
+                Button(.guideStartAction) {
                     Task { await viewModel.start() }
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
@@ -116,13 +116,13 @@ struct SmileGuideView: View {
         case .completed:
             VStack(spacing: 14) {
                 if viewModel.saveFailed {
-                    Text(SharedStrings.guideSaveFailed)
+                    Text(.guideSaveFailed)
                         .font(.headline)
                         .foregroundStyle(SDColor.alert)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 } else {
-                    Text(SharedStrings.guideCompleted)
+                    Text(.guideCompleted)
                         .font(.title3.bold())
                         .foregroundStyle(SDColor.ink)
                 }
@@ -130,7 +130,7 @@ struct SmileGuideView: View {
                 // 안내한 행동을 실제로 할 수 있어야 한다. 5초는 이미 지났으므로 다시 세지 않고
                 // 같은 완료를 재저장한다.
                 if viewModel.saveFailed {
-                    Button(SharedStrings.guideRetrySaveAction) {
+                    Button(.guideRetrySaveAction) {
                         viewModel.retrySave()
                         // 성공했을 때만 완료 감촉을 준다. 처음 완료의 onAppear는 다시 불리지 않는다.
                         if !viewModel.saveFailed {

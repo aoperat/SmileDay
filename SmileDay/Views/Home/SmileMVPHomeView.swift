@@ -152,7 +152,7 @@ private struct TodayCard: View {
     var body: some View {
         VStack(alignment: .leading, spacing: 18) {
             VStack(alignment: .leading, spacing: 5) {
-                Text(SharedStrings.todayCountTitle)
+                Text(.todayCountTitle)
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(SDColor.muted)
 
@@ -160,14 +160,14 @@ private struct TodayCard: View {
                     .font(.system(size: 40, weight: .bold, design: .rounded).monospacedDigit())
                     .foregroundStyle(SDColor.ink)
 
-                Text(count == 0 ? SharedStrings.noSmileYetToday : "오늘 웃어본 순간이 하나씩 쌓이고 있어요.")
+                Text(count == 0 ? String(localized: .noSmileYetToday) : "오늘 웃어본 순간이 하나씩 쌓이고 있어요.")
                     .font(.subheadline)
                     .foregroundStyle(SDColor.muted)
             }
             .accessibilityElement(children: .combine)
             .accessibilityLabel("오늘 미소 \(count)번")
 
-            Button(SharedStrings.smileNowAction, action: onStart)
+            Button(.smileNowAction, action: onStart)
                 .buttonStyle(SDPrimaryButtonStyle())
         }
         .sdCard()
@@ -234,7 +234,7 @@ private struct NextReminderCard: View {
             if state.needsAttention {
                 Button(action: action) { card }
                     .buttonStyle(.plain)
-                    .accessibilityHint(SharedStrings.reminderTurnOnAction)
+                    .accessibilityHint(Text(.reminderTurnOnAction))
             } else {
                 card
             }
@@ -265,7 +265,7 @@ private struct NextReminderCard: View {
                         .foregroundStyle(SDColor.ink)
                         .fixedSize(horizontal: false, vertical: true)
 
-                    Text(SharedStrings.reminderTurnOnAction)
+                    Text(.reminderTurnOnAction)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.sunDeep)
                         .padding(.top, 6)
@@ -285,21 +285,22 @@ private struct NextReminderCard: View {
         .accessibilityElement(children: .combine)
     }
 
-    private var title: String {
+    private var title: LocalizedStringResource {
         switch state {
-        case .scheduled: SharedStrings.nextReminderTitle
-        case .blockedByPermission: SharedStrings.reminderBlockedTitle
-        case .permissionNotRequested: SharedStrings.reminderNotRequestedTitle
-        case .off: SharedStrings.reminderOffTitle
+        case .scheduled: .nextReminderTitle
+        case .blockedByPermission: .reminderBlockedTitle
+        case .permissionNotRequested: .reminderNotRequestedTitle
+        case .off: .reminderOffTitle
         }
     }
 
+    /// `.scheduled`는 위에서 시각을 그리므로 여기까지 오지 않는다.
     private var detail: String {
         switch state {
         case .scheduled: ""
-        case .blockedByPermission: SharedStrings.reminderBlockedDetail
-        case .permissionNotRequested: SharedStrings.reminderNotRequestedDetail
-        case .off: SharedStrings.reminderOffDetail
+        case .blockedByPermission: String(localized: .reminderBlockedDetail)
+        case .permissionNotRequested: String(localized: .reminderNotRequestedDetail)
+        case .off: String(localized: .reminderOffDetail)
         }
     }
 
@@ -322,7 +323,7 @@ private struct RecentSevenDaysCard: View {
         Button(action: onOpen) {
             VStack(alignment: .leading, spacing: 14) {
                 HStack {
-                    Text(SharedStrings.recentSevenDaysTitle)
+                    Text(.recentSevenDaysTitle)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.muted)
 

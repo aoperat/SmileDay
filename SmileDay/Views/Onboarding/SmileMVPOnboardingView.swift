@@ -177,36 +177,36 @@ private struct OnboardingScheduleStep: View {
         // "알림 받을래요"라는 선택지가 사라지고, 되돌릴 방법이 없는 것처럼 보인다.
         // 한 번 더 묻는 의미는 두 선택지가 나란히 보일 때만 생긴다.
         .alert(
-            SharedStrings.skipRemindersConfirmTitle,
+            Text(.skipRemindersConfirmTitle),
             isPresented: $isConfirmingSkip
         ) {
-            Button(SharedStrings.skipRemindersCancelAction, role: .cancel) {}
-            Button(SharedStrings.skipRemindersConfirmAction, role: .destructive) {
+            Button(.skipRemindersCancelAction, role: .cancel) {}
+            Button(.skipRemindersConfirmAction, role: .destructive) {
                 Task {
                     await viewModel.skipReminders()
                     if viewModel.didComplete { onFinished() }
                 }
             }
         } message: {
-            Text(SharedStrings.skipRemindersConfirmMessage)
+            Text(.skipRemindersConfirmMessage)
         }
         // 시스템 권한 대화상자는 한 번만 뜬다. 거부했다면 앱에서 다시 물을 수 없으므로
         // 무엇이 없어졌는지와 어디서 되돌리는지를 여기서 알려준다.
         .alert(
-            SharedStrings.onboardingPermissionDeniedTitle,
+            Text(.onboardingPermissionDeniedTitle),
             isPresented: .constant(viewModel.wasPermissionDenied)
         ) {
-            Button(SharedStrings.openSystemSettings) {
+            Button(.openSystemSettings) {
                 SDSystemSettings.open()
                 viewModel.continueWithoutPermission()
                 if viewModel.didComplete { onFinished() }
             }
-            Button(SharedStrings.onboardingContinueAnyway, role: .cancel) {
+            Button(.onboardingContinueAnyway, role: .cancel) {
                 viewModel.continueWithoutPermission()
                 if viewModel.didComplete { onFinished() }
             }
         } message: {
-            Text(SharedStrings.onboardingPermissionDeniedMessage)
+            Text(.onboardingPermissionDeniedMessage)
         }
     }
 }
@@ -260,7 +260,7 @@ struct ReminderPatternControls: View {
 
                 // 22:00~02:00을 잘못 고른 것으로 읽지 않게, 그렇게 이해했다고 말해준다.
                 if viewModel.crossesMidnight {
-                    Text(SharedStrings.reminderWindowCrossesMidnight)
+                    Text(.reminderWindowCrossesMidnight)
                         .font(.caption)
                         .foregroundStyle(SDColor.muted)
                         .fixedSize(horizontal: false, vertical: true)

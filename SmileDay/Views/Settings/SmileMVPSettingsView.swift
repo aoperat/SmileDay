@@ -119,16 +119,16 @@ struct SmileMVPSettingsView: View {
         .toolbarBackground(SDColor.cream, for: .navigationBar)
         .toolbarBackground(.visible, for: .navigationBar)
         .alert(
-            SharedStrings.disableRemindersConfirmTitle,
+            Text(.disableRemindersConfirmTitle),
             isPresented: $isConfirmingDisable
         ) {
             // 취소하면 토글은 저절로 제자리로 돌아온다 — viewModel.isEnabled를 읽기 때문이다.
-            Button(SharedStrings.disableRemindersCancelAction, role: .cancel) {}
-            Button(SharedStrings.disableRemindersConfirmAction, role: .destructive) {
+            Button(.disableRemindersCancelAction, role: .cancel) {}
+            Button(.disableRemindersConfirmAction, role: .destructive) {
                 viewModel?.updateEnabled(false)
             }
         } message: {
-            Text(SharedStrings.disableRemindersConfirmMessage)
+            Text(.disableRemindersConfirmMessage)
         }
         .task {
             if viewModel == nil {
@@ -219,11 +219,11 @@ struct SmileMVPSettingsView: View {
     private var permissionSection: some View {
         Section {
             VStack(alignment: .leading, spacing: 10) {
-                Text(SharedStrings.notificationDeniedNotice)
+                Text(.notificationDeniedNotice)
                     .font(.footnote)
                     .foregroundStyle(SDColor.ink)
 
-                Button(SharedStrings.openSystemSettings, action: SDSystemSettings.open)
+                Button(.openSystemSettings, action: SDSystemSettings.open)
                 .font(.footnote.weight(.semibold))
                 .foregroundStyle(SDColor.ink)
             }
@@ -238,29 +238,29 @@ struct SmileMVPSettingsView: View {
     /// 남겨두면 링크가 있다고 믿게 만든다.
     private var legalSection: some View {
         Section {
-            if let url = URL(string: SharedStrings.privacyPolicyURLString) {
+            if let url = URL(string: SDLinks.privacyPolicy) {
                 Link(destination: url) {
-                    externalLinkLabel(SharedStrings.privacyPolicyTitle, systemImage: "hand.raised")
+                    externalLinkLabel(.privacyPolicyTitle, systemImage: "hand.raised")
                 }
             }
 
-            if let url = URL(string: SharedStrings.supportURLString) {
+            if let url = URL(string: SDLinks.support) {
                 Link(destination: url) {
-                    externalLinkLabel(SharedStrings.supportTitle, systemImage: "questionmark.circle")
+                    externalLinkLabel(.supportTitle, systemImage: "questionmark.circle")
                 }
             }
         } header: {
-            Text(SharedStrings.legalSectionTitle)
+            Text(.legalSectionTitle)
                 .foregroundStyle(SDColor.ink)
         } footer: {
-            Text(SharedStrings.legalSectionFooter)
+            Text(.legalSectionFooter)
                 .foregroundStyle(SDColor.muted)
         }
         .listRowBackground(Color.white)
     }
 
     /// 앱 밖으로 나간다는 사실을 화살표로 알린다. VoiceOver도 같은 안내를 받는다.
-    private func externalLinkLabel(_ title: String, systemImage: String) -> some View {
+    private func externalLinkLabel(_ title: LocalizedStringResource, systemImage: String) -> some View {
         HStack {
             Label(title, systemImage: systemImage)
                 .foregroundStyle(SDColor.ink)
