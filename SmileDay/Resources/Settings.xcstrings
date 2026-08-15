@@ -1,7 +1,48 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-
+    "messageError.empty" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지를 입력해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지를 입력해주세요." } }
+      }
+    },
+    "messageError.tooLong" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지는 %lld자 이내로 입력해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지는 %lld자 이내로 입력해주세요." } }
+      }
+    },
+    "messageError.duplicate" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "같은 메시지가 이미 있어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "같은 메시지가 이미 있어요." } }
+      }
+    },
+    "messageError.lastRemaining" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 메시지는 한 개 이상 남겨주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 메시지는 한 개 이상 남겨주세요." } }
+      }
+    },
+    "scheduleError.schedulingFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요." } }
+      }
+    },
+    "scheduleError.persistenceFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 설정을 저장하지 못했어요. 다시 시도해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 설정을 저장하지 못했어요. 다시 시도해주세요." } }
+      }
+    }
   },
   "version" : "1.1"
 }

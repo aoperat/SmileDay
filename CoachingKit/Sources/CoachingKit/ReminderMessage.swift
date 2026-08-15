@@ -91,7 +91,7 @@ public final class InMemoryReminderMessageStore: ReminderMessageStoring {
 @Observable
 public final class ReminderMessageViewModel {
     public private(set) var messages: [ReminderMessage]
-    public private(set) var errorMessage: String?
+    public private(set) var error: ReminderMessageError?
 
     private let store: ReminderMessageStoring
 
@@ -122,7 +122,7 @@ public final class ReminderMessageViewModel {
     @discardableResult
     public func remove(id: String) -> Bool {
         guard messages.count > 1 else {
-            errorMessage = "알림 메시지는 한 개 이상 남겨주세요."
+            error = .lastRemaining
             return false
         }
         guard let index = messages.firstIndex(where: { $0.id == id }) else { return false }
@@ -143,29 +143,29 @@ public final class ReminderMessageViewModel {
     }
 
     public func clearError() {
-        errorMessage = nil
+        error = nil
     }
 
     private func validated(_ rawText: String, excludingID: String? = nil) -> String? {
         let text = rawText.trimmingCharacters(in: .whitespacesAndNewlines)
         guard !text.isEmpty else {
-            errorMessage = "메시지를 입력해주세요."
+            error = .empty
             return nil
         }
         guard text.count <= 100 else {
-            errorMessage = "메시지는 100자 이내로 입력해주세요."
+            error = .tooLong(limit: 100)
             return nil
         }
         guard !messages.contains(where: { $0.id != excludingID && $0.text == text }) else {
-            errorMessage = "같은 메시지가 이미 있어요."
+            error = .duplicate
             return nil
         }
-        errorMessage = nil
+        error = nil
         return text
     }
 
     private func persist() {
         store.messages = messages
-        errorMessage = nil
+        error = nil
     }
 }

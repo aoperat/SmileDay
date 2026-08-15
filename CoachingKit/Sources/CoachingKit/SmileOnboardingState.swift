@@ -43,8 +43,8 @@ public final class SmileOnboardingViewModel {
         self.store = store
     }
 
-    public var errorMessage: String? {
-        schedule.errorMessage
+    public var error: ReminderScheduleError? {
+        schedule.error
     }
 
     public var isSaving: Bool {

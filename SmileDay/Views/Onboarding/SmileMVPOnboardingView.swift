@@ -131,13 +131,13 @@ private struct OnboardingScheduleStep: View {
                 ReminderPatternControls(viewModel: viewModel.schedule)
                     .sdCard()
 
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
+                if let error = viewModel.error {
+                    Text(error.message)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.alert)
                         .frame(maxWidth: .infinity, alignment: .leading)
-                } else if viewModel.schedule.pattern == nil {
-                    Text(SmileReminderScheduleViewModel.invalidPatternMessage)
+                } else if !viewModel.schedule.isPatternValid {
+                    Text(.invalidPattern)
                         .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.alert)
                         .frame(maxWidth: .infinity, alignment: .leading)

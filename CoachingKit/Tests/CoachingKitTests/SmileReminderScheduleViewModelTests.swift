@@ -150,7 +150,8 @@ final class SmileReminderScheduleViewModelTests: XCTestCase {
         XCTAssertFalse(didSave)
         XCTAssertNil(try schedules.fetchCurrent())
         XCTAssertTrue(scheduler.scheduled.isEmpty)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.isPatternValid)
+        XCTAssertNil(viewModel.error)
     }
 
     /// 자정을 넘는 창도 창을 지나는 순서 그대로 예약된다 — 문구가 이 순서로 돈다.
@@ -192,7 +193,7 @@ final class SmileReminderScheduleViewModelTests: XCTestCase {
         XCTAssertEqual(stored.notificationGroupID, "old-group")
         XCTAssertTrue(scheduler.cancelledGroups.isEmpty)
         XCTAssertTrue(scheduler.cancelledLegacy.isEmpty)
-        XCTAssertEqual(viewModel.errorMessage, "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요.")
+        XCTAssertEqual(viewModel.error, .schedulingFailed)
     }
 
     func test_successfulReplacement_schedulesNewGroupBeforeCancellingOldGroup() async throws {

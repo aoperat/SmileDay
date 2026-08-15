@@ -119,7 +119,8 @@ final class ScheduleImmediateApplyTests: XCTestCase {
         viewModel.updateEnd(hour: 21, minute: 0)
         await viewModel.waitForPendingApply()
 
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.isPatternValid)
+        XCTAssertNil(viewModel.error)
         XCTAssertNotEqual(try repository.fetchCurrent()?.endHour, 21)
     }
 
@@ -132,7 +133,7 @@ final class ScheduleImmediateApplyTests: XCTestCase {
         viewModel.updateEnd(hour: 2, minute: 0)
         await viewModel.waitForPendingApply()
 
-        XCTAssertNil(viewModel.errorMessage)
+        XCTAssertNil(viewModel.error)
         XCTAssertEqual(try repository.fetchCurrent()?.startHour, 22)
         XCTAssertEqual(try repository.fetchCurrent()?.endHour, 2)
     }

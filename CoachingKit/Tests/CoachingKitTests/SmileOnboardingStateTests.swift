@@ -130,7 +130,8 @@ final class SmileOnboardingStateTests: XCTestCase {
         XCTAssertNil(try repository.fetchCurrent())
         XCTAssertFalse(store.hasCompletedOnboarding)
         XCTAssertFalse(viewModel.didComplete)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertFalse(viewModel.schedule.isPatternValid)
+        XCTAssertNil(viewModel.error)
     }
 
     func test_scheduleFailure_doesNotCompleteOrPersistSchedule() async throws {
@@ -142,7 +143,7 @@ final class SmileOnboardingStateTests: XCTestCase {
         XCTAssertNil(try repository.fetchCurrent())
         XCTAssertFalse(store.hasCompletedOnboarding)
         XCTAssertFalse(viewModel.didComplete)
-        XCTAssertNotNil(viewModel.errorMessage)
+        XCTAssertEqual(viewModel.error, .schedulingFailed)
     }
 
     func test_userDefaultsStore_roundTripsFlag() throws {

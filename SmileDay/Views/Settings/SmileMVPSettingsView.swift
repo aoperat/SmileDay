@@ -56,12 +56,12 @@ struct SmileMVPSettingsView: View {
                         ReminderPatternControls(viewModel: viewModel)
                             .padding(.vertical, 6)
 
-                        if let errorMessage = viewModel.errorMessage {
-                            Text(errorMessage)
+                        if let error = viewModel.error {
+                            Text(error.message)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(SDColor.alert)
-                        } else if viewModel.pattern == nil {
-                            Text(SmileReminderScheduleViewModel.invalidPatternMessage)
+                        } else if !viewModel.isPatternValid {
+                            Text(.invalidPattern)
                                 .font(.footnote.weight(.semibold))
                                 .foregroundStyle(SDColor.alert)
                         }

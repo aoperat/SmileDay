@@ -46,13 +46,13 @@ final class ReminderMessageTests: XCTestCase {
         )
 
         XCTAssertFalse(viewModel.add(text: " \n "))
-        XCTAssertEqual(viewModel.errorMessage, "메시지를 입력해주세요.")
+        XCTAssertEqual(viewModel.error, .empty)
 
         XCTAssertFalse(viewModel.add(text: only.text))
-        XCTAssertEqual(viewModel.errorMessage, "같은 메시지가 이미 있어요.")
+        XCTAssertEqual(viewModel.error, .duplicate)
 
         XCTAssertFalse(viewModel.remove(id: only.id))
-        XCTAssertEqual(viewModel.errorMessage, "알림 메시지는 한 개 이상 남겨주세요.")
+        XCTAssertEqual(viewModel.error, .lastRemaining)
         XCTAssertEqual(viewModel.messages, [only])
     }
 

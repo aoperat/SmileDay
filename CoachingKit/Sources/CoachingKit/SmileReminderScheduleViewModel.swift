@@ -4,9 +4,9 @@ import Observation
 @MainActor
 @Observable
 public final class SmileReminderScheduleViewModel {
-    /// 시작이 종료보다 늦어도 된다 — 자정을 넘는 창이다. 같은 시각만 만들 수 없다.
-    /// 화면 두 곳(온보딩·설정)이 같은 문구를 써야 해서 여기 둔다.
-    public static let invalidPatternMessage = "시작 시간과 종료 시간을 다르게 정해주세요."
+    /// 시작·종료가 같은 시각이면 만들 수 없는 창이다. 화면이 안내 문구를 띄울지 판단하는 값.
+    /// 시작이 종료보다 늦은 것은 자정을 넘는 창이라 유효하다.
+    public var isPatternValid: Bool { pattern != nil }
 
     // 아직 저장된 일정이 없는 사용자가 처음 보는 값. 제품이 권하는 시간창 하나에서 나온다 —
     // 추천을 바꾸려면 `SmileReminderPattern.recommended`만 고치면 화면까지 따라온다.
@@ -18,7 +18,7 @@ public final class SmileReminderScheduleViewModel {
     public private(set) var intervalMinutes = SmileReminderPattern.recommended.intervalMinutes
     public private(set) var isEnabled = true
     public private(set) var authorizationStatus: ReminderAuthorizationStatus?
-    public private(set) var errorMessage: String?
+    public private(set) var error: ReminderScheduleError?
     public private(set) var isSaving = false
 
     private let scheduleRepository: SmileReminderScheduleRepository
@@ -97,26 +97,26 @@ public final class SmileReminderScheduleViewModel {
     public func updateStart(hour: Int, minute: Int) {
         startHour = hour
         startMinute = minute
-        errorMessage = nil
+        error = nil
         applyChangesSoon()
     }
 
     public func updateEnd(hour: Int, minute: Int) {
         endHour = hour
         endMinute = minute
-        errorMessage = nil
+        error = nil
         applyChangesSoon()
     }
 
     public func updateInterval(_ minutes: Int) {
         intervalMinutes = minutes
-        errorMessage = nil
+        error = nil
         applyChangesSoon()
     }
 
     public func updateEnabled(_ enabled: Bool) {
         isEnabled = enabled
-        errorMessage = nil
+        error = nil
         // 켤 때만 권한을 묻는다. 끄거나 시간을 바꿀 때 대화상자가 뜨면 안 된다.
         applyChangesSoon(requestAuthorization: enabled)
     }
@@ -207,13 +207,10 @@ public final class SmileReminderScheduleViewModel {
     @discardableResult
     public func save(requestAuthorization: Bool = false) async -> Bool {
         guard !isSaving else { return false }
-        guard let pattern else {
-            errorMessage = SmileReminderScheduleViewModel.invalidPatternMessage
-            return false
-        }
+        guard let pattern else { return false }
 
         isSaving = true
-        errorMessage = nil
+        error = nil
         defer { isSaving = false }
 
         if requestAuthorization {
@@ -239,7 +236,7 @@ public final class SmileReminderScheduleViewModel {
                         previousGroupID: previousGroupID
                     )
                 } catch ReminderGroupSwap.Failure.scheduling {
-                    errorMessage = "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요."
+                    self.error = .schedulingFailed
                     return false
                 }
             } else {
@@ -256,7 +253,7 @@ public final class SmileReminderScheduleViewModel {
             }
             return true
         } catch {
-            errorMessage = "알림 설정을 저장하지 못했어요. 다시 시도해주세요."
+            self.error = .persistenceFailed
             return false
         }
     }

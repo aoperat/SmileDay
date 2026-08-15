@@ -8,6 +8,13 @@
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "웃었어요" } }
       }
     },
+    "invalidPattern" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "시작 시간과 종료 시간을 다르게 정해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "시작 시간과 종료 시간을 다르게 정해주세요." } }
+      }
+    },
     "reminderAction.open-guide" : {
       "extractionState" : "manual",
       "localizations" : {

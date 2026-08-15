@@ -72,7 +72,7 @@ struct ReminderMessageManagementView: View {
             ReminderMessageEditor(
                 title: editor.title,
                 initialText: editor.text,
-                validationMessage: { viewModel.errorMessage },
+                validationMessage: { viewModel.error?.message },
                 onCancel: {
                     viewModel.clearError()
                     self.editor = nil
@@ -96,7 +96,7 @@ struct ReminderMessageManagementView: View {
         .alert(
             "메시지를 삭제할 수 없어요",
             isPresented: Binding(
-                get: { editor == nil && viewModel.errorMessage != nil },
+                get: { editor == nil && viewModel.error != nil },
                 set: { if !$0 { viewModel.clearError() } }
             )
         ) {
@@ -104,7 +104,7 @@ struct ReminderMessageManagementView: View {
                 viewModel.clearError()
             }
         } message: {
-            Text(viewModel.errorMessage ?? "")
+            Text(viewModel.error?.message ?? "")
         }
     }
 }
