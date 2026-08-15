@@ -61,6 +61,11 @@ struct RootView: View {
             scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
             scheduler: UserNotificationReminderScheduler()
         ).runIfNeeded()
+        // 옛 빌드가 평문으로 굳혀둔 알림을 배달 시점 해석 키로 한 번 바꾼다. 위와 같은 규칙.
+        await LocalizedReminderBackfill(
+            scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
+            scheduler: UserNotificationReminderScheduler()
+        ).runIfNeeded()
         if keepSplashVisible {
             try? await Task.sleep(for: .seconds(1.3))
         }
