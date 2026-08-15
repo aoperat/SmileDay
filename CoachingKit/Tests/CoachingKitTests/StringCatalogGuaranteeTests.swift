@@ -60,4 +60,59 @@ final class StringCatalogGuaranteeTests: XCTestCase {
         let catalogs = try Self.loadAll()
         XCTAssertEqual(catalogs.count, Self.catalogNames.count)
     }
+
+    // MARK: - 보증
+
+    /// 한국어 금지어. 기존 SmileCueTests·ReminderMessageTests의 목록을 합쳤다.
+    private static let bannedKorean = ["사랑받", "예뻐", "인상 개선", "교정", "치료", "더 크게", "잘 웃", "리프팅", "젊어진"]
+    /// 영어 금지어. 스펙 2절 — 영어권 심사(1.4.1)에서 직접 걸리는 말.
+    private static let bannedEnglish = [
+        "lift", "tone", "firm", "anti-aging", "rejuvenat", "wrinkle", "therap",
+        "treatment", "cure", "heal", "depression", "anxiety", "mood disorder", "clinical",
+    ]
+
+    func test_koreanValues_avoidBannedWording() throws {
+        for catalog in try Self.loadAll() {
+            for (key, langs) in catalog.strings {
+                guard let ko = langs["ko"] else { continue }
+                for word in Self.bannedKorean {
+                    XCTAssertFalse(ko.contains(word), "\(catalog.name).\(key) ko contains banned '\(word)'")
+                }
+            }
+        }
+    }
+
+    func test_englishValues_avoidBannedWording() throws {
+        for catalog in try Self.loadAll() {
+            for (key, langs) in catalog.strings {
+                guard let en = langs["en"]?.lowercased() else { continue }
+                for word in Self.bannedEnglish {
+                    // 단어 경계를 대충 본다 — "lift"가 "uplifting"에 걸리면 그것도 잡는 게 맞다.
+                    XCTAssertFalse(en.contains(word), "\(catalog.name).\(key) en contains banned '\(word)'")
+                }
+            }
+        }
+    }
+
+    func test_everyKey_hasNonEmptyKoreanAndEnglish() throws {
+        for catalog in try Self.loadAll() {
+            for (key, langs) in catalog.strings {
+                let ko = langs["ko"]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                let en = langs["en"]?.trimmingCharacters(in: .whitespacesAndNewlines) ?? ""
+                XCTAssertFalse(ko.isEmpty, "\(catalog.name).\(key): ko is empty")
+                XCTAssertFalse(en.isEmpty, "\(catalog.name).\(key): en is empty")
+            }
+        }
+    }
+
+    /// 제품 불변식 — 큐 중 하나는 "떠올릴 게 없어도 괜찮다"고 말해야 한다.
+    /// SmileCueTests.test_catalog_allowsHavingNothingPositiveToRecall 을 여기로 옮겼다.
+    func test_cues_allowHavingNothingPositiveToRecall() throws {
+        let coaching = try Self.loadCatalog("Coaching")
+        let koValues = coaching.strings.values.compactMap { $0["ko"] }
+        XCTAssertTrue(
+            koValues.contains { $0.contains("떠오르는 장면이 없어도 괜찮아요") },
+            "Coaching catalog lost the 'nothing needed' cue"
+        )
+    }
 }
