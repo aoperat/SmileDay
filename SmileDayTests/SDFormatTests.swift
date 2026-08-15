@@ -38,7 +38,11 @@ final class SDFormatTests: XCTestCase {
 
     // MARK: - 반복 주기
 
-    /// 30분을 `분 / 60`으로 적으면 "0시간마다"가 된다. 한 시간 미만은 분으로 적는다.
+    // 이 아래는 로케일을 탄다. `reminderInterval`은 길이를 `Duration` 포맷으로 그리고 "마다"를
+    // 카탈로그에서 가져오므로, 한국어 문구는 앱을 호스트한 시뮬레이터가 한국어일 때 나온다.
+    // 예전의 손 계산 결과와 글자까지 같아야 한다 — 이 테스트가 그 동등성을 고정한다.
+
+    /// 30분을 `분 / 60`으로 적으면 "0시간마다"가 된다. 한 시간 미만은 분으로 나와야 한다.
     func test_reminderInterval_한시간_미만은_분으로_적는다() {
         XCTAssertEqual(SDFormat.reminderInterval(minutes: 30), "30분마다")
         XCTAssertEqual(SDFormat.reminderInterval(minutes: 59), "59분마다")

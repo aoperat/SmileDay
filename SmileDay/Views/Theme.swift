@@ -134,13 +134,16 @@ enum SDFormat {
         return remainder == 0 ? "\(minutes)분" : "\(minutes)분 \(remainder)초"
     }
 
-    /// 알림 반복 주기. "30분마다" / "3시간마다".
+    /// 알림 반복 주기. "30분마다" / "3시간마다" / "every 30 minutes" / "every 3 hours".
     ///
-    /// 위 `duration`과 규칙이 다르다. 30분을 `분 / 60`으로 적으면 "0시간마다"가 되므로
-    /// 한 시간 미만은 분으로 적고, 되풀이한다는 뜻의 "마다"가 붙는다.
-    /// 두 함수를 나란히 두는 이유가 이것이다 — 규칙이 다르다는 사실이 눈에 보여야 한다.
+    /// 길이는 로케일이 그리고(단위 이름·복수·간격), "마다"만 카탈로그 키가 든다.
+    /// 예전에는 `분 / 60`으로 시간을 셌는데, 30분이 "0시간마다"가 되지 않게 분기를 손으로 두고
+    /// 있었다. `Duration`은 0인 단위를 감추므로 그 분기가 필요 없다 — 30분은 "30분",
+    /// 3시간은 "3시간"으로 예전과 글자까지 같다(ko_KR 실측).
     static func reminderInterval(minutes: Int) -> String {
-        minutes < 60 ? "\(minutes)분마다" : "\(minutes / 60)시간마다"
+        let duration = Duration.seconds(minutes * 60)
+        let length = duration.formatted(.units(allowed: [.hours, .minutes], width: .wide))
+        return String(localized: .reminderEvery(length))
     }
 }
 

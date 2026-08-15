@@ -191,6 +191,20 @@
         "en" : { "stringUnit" : { "state" : "needs_review", "value" : "잠깐 입꼬리를 올려볼까요?" } },
         "ko" : { "stringUnit" : { "state" : "translated", "value" : "잠깐 입꼬리를 올려볼까요?" } }
       }
+    },
+    "smileRemindersTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "미소 알림" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미소 알림" } }
+      }
+    },
+    "reminderEvery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "every %@" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%@마다" } }
+      }
     }
   },
   "version" : "1.1"

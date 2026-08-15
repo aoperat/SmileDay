@@ -25,19 +25,19 @@ struct SmileMVPOnboardingView: View {
                 case .purpose:
                     IntroStep(
                         systemImage: "face.smiling",
-                        title: "스마일데이",
-                        message: "평소 잘 웃지 않는 나를 위해,\n하루에 몇 번 잠깐 웃어보는 시간을 만들어요.",
-                        detail: "표정을 찍거나 점수를 매기지 않아요. 웃어본 횟수만 이 기기에 기록해요.",
-                        actionTitle: "다음",
+                        title: .splashTitle,
+                        message: .Onboarding.introMessage,
+                        detail: .Onboarding.introDetail,
+                        actionTitle: .Onboarding.nextAction,
                         action: { step = .whyNotification }
                     )
                 case .whyNotification:
                     IntroStep(
                         systemImage: "bell.badge",
-                        title: "잊지 않도록 알려드릴게요",
-                        message: "활동 시간과 반복 주기를 정하면\n알림이 미소를 떠올려줘요.",
-                        detail: "알림을 놓쳐도 재촉하거나 몰아서 보내지 않아요.",
-                        actionTitle: "시간 정하기",
+                        title: .Onboarding.whyRemindersTitle,
+                        message: .Onboarding.whyRemindersMessage,
+                        detail: .Onboarding.whyRemindersDetail,
+                        actionTitle: .Onboarding.setTimesAction,
                         action: { step = .schedule }
                     )
                 case .schedule:
@@ -62,10 +62,10 @@ struct SmileMVPOnboardingView: View {
 
 private struct IntroStep: View {
     let systemImage: String
-    let title: String
-    let message: String
-    let detail: String
-    let actionTitle: String
+    let title: LocalizedStringResource
+    let message: LocalizedStringResource
+    let detail: LocalizedStringResource
+    let actionTitle: LocalizedStringResource
     let action: () -> Void
 
     var body: some View {
@@ -120,10 +120,10 @@ private struct OnboardingScheduleStep: View {
         ScrollView {
             VStack(alignment: .leading, spacing: 20) {
                 VStack(alignment: .leading, spacing: 6) {
-                    Text("미소 알림")
+                    Text(.smileRemindersTitle)
                         .font(.title2.bold())
                         .foregroundStyle(SDColor.ink)
-                    Text("정한 시간 안에서 같은 간격으로 알려드려요.")
+                    Text(.Onboarding.remindersFooter)
                         .font(.body)
                         .foregroundStyle(SDColor.muted)
                 }
@@ -153,19 +153,19 @@ private struct OnboardingScheduleStep: View {
                         // 버튼이 노랑이라 흰 스피너는 1.7:1로 사실상 보이지 않는다.
                         ProgressView().tint(SDColor.ink)
                     } else {
-                        Text("이 시간으로 시작하기")
+                        Text(.Onboarding.startWithTheseTimesAction)
                     }
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
                 .disabled(viewModel.isSaving || viewModel.schedule.pattern == nil)
 
                 // 알림이 이 앱의 유일한 흐름이라 한 번 더 확인한다. 막지는 않는다.
-                Button("알림 없이 시작하기") { isConfirmingSkip = true }
+                Button(.Onboarding.startWithoutRemindersAction) { isConfirmingSkip = true }
                     .font(.subheadline.weight(.semibold))
                     .foregroundStyle(SDColor.ink)
                     .frame(maxWidth: .infinity)
 
-                Text("알림 권한을 허용하지 않아도 앱에서 직접 미소 시간을 시작할 수 있어요.")
+                Text(.Onboarding.permissionOptionalNote)
                     .font(.footnote)
                     .foregroundStyle(SDColor.muted)
                     .multilineTextAlignment(.center)
@@ -228,17 +228,17 @@ struct ReminderPatternControls: View {
 
     var body: some View {
         VStack(spacing: 16) {
-            DatePicker("시작 시간", selection: startTime, displayedComponents: .hourAndMinute)
+            DatePicker(.Onboarding.startTimeLabel, selection: startTime, displayedComponents: .hourAndMinute)
                 .foregroundStyle(SDColor.ink)
 
             Divider()
 
-            DatePicker("종료 시간", selection: endTime, displayedComponents: .hourAndMinute)
+            DatePicker(.Onboarding.endTimeLabel, selection: endTime, displayedComponents: .hourAndMinute)
                 .foregroundStyle(SDColor.ink)
 
             Divider()
 
-            Picker("반복 주기", selection: Binding(
+            Picker(.Onboarding.intervalPickerLabel, selection: Binding(
                 get: { viewModel.intervalMinutes },
                 set: { viewModel.updateInterval($0) }
             )) {
@@ -253,7 +253,7 @@ struct ReminderPatternControls: View {
                     Image(systemName: "bell.fill")
                         .foregroundStyle(SDColor.ink)
                         .accessibilityHidden(true)
-                    Text("하루 \(viewModel.occurrenceTimes.count)번 알려드려요")
+                    Text(.Onboarding.dailyReminderCount(viewModel.occurrenceTimes.count))
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
                 }
