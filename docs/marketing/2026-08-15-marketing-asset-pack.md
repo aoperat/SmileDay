@@ -18,6 +18,20 @@
 
 기존 자산: `2026-08-05-app-store-metadata-ko.md`(한국어 스토어 원본 — 변경하지 않음), `2026-08-14-blog-launch-post-ko.md`(런칭 글), 인스타그램 캐러셀·스크린샷.
 
+## 블로그 초고 (2026-08-15 추가)
+
+블로그 주제 50개 중 우선순위 상위 5개의 초고. 선정 기준은 SEO 문서의 **즉시 선점 한국어 키워드 전부(5·21·46·49)** + 최상위 차별점 키워드(33)를 덮는 조합이다.
+
+| 주제 # | 파일 | 타깃 키워드 | 1차 채널 |
+|---|---|---|---|
+| 2 | `2026-08-15-blog-02-no-camera-ko.md` | 33, 30 | 디스콰이엇 |
+| 3 | `2026-08-15-blog-03-no-streak-ko.md` | **49**, 44 | 브런치 |
+| 9 | `2026-08-15-blog-09-five-seconds-ko.md` | **46**, 93 | 디스콰이엇 |
+| 11 | `2026-08-15-blog-11-neutral-face-habit-ko.md` | **5**, 10 | 브런치 |
+| 13 | `2026-08-15-blog-13-awkward-smile-ko.md` | **21**, 27 | 브런치 |
+
+발행 순서 제안: 11 → 13 → 3 → 2 → 9. 검색 유입 글(11, 13)을 먼저 올려 색인을 쌓고, 서사 글은 커뮤니티 반응이 필요한 시점에 낸다.
+
 ## 모든 자산의 공통 규칙
 
 1. **건강·미용 효과를 말하지 않는다** (App Store 1.4.1). 금지: 리프팅, 젊어진다, 교정한다, 치료 / lift, tone, firm, anti-aging, rejuvenate, wrinkle, therapy, treatment, cure, heal, depression, anxiety, mood disorder, clinically.
