@@ -1884,7 +1884,7 @@ Expected: `ReminderMessageMigration.swift`의 스냅샷 8줄만 남는다(의도
 
 - [ ] **Step 6: 업그레이드 경로 검증**
 
-Task 0 커밋 시점 빌드를 시뮬레이터에 설치 → 알림 켜고 문구 하나 편집 → 이 브랜치 빌드로 덮어 설치 → 앱 실행 → 설정 → 알림 문구 관리: 편집한 문구는 그대로, 나머지는 기본. `xcrun simctl spawn booted defaults read <bundle-id> reminderMessages.v1`이 그대로 있고 `reminderMessages.v2`가 새로 생겼는지. 다음 알림이 도착하는지.
+Task 0 커밋 시점 빌드를 시뮬레이터에 설치 → 알림 켜고 문구 하나 편집 → 이 브랜치 빌드로 덮어 설치 → 앱 실행 → 설정 → 알림 문구 관리: 편집한 문구는 그대로, 나머지는 기본. **여기까지는 v2가 아직 없다** — 읽기 경로는 승격만 하고 쓰지 않는다. 문구 하나를 더 편집(또는 순서 변경)한 뒤 `xcrun simctl spawn booted defaults read <bundle-id> reminderMessages.v1`이 **바이트 그대로** 있고 `reminderMessages.v2`가 새로 생겼는지. 다음 알림이 도착하는지.
 
 - [ ] **Step 7: 스펙 상태 갱신 + 커밋**
 

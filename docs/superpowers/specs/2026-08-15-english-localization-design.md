@@ -211,7 +211,7 @@ public struct ReminderMessage: Identifiable, Codable, Equatable, Sendable {
 
 **Codable 호환은 실측됐다.** 합성 `Decodable`은 옵셔널에 `decodeIfPresent`를 쓰므로 기존 JSON(`text` 있음)은 그대로 디코딩된다. 반대로 `text: nil`을 인코딩하면 키가 생략되어 **구버전 빌드는 그 JSON을 디코딩하지 못한다** — 그리고 `UserDefaultsReminderMessageStore.messages`의 getter가 `try?`로 실패를 삼키고 기본값을 돌려주므로, 구버전이 그 데이터를 읽는 순간 사용자가 쓴 문구가 조용히 사라진다.
 
-**그래서 저장 키를 올린다: `reminderMessages.v1` → `reminderMessages.v2`. v1은 건드리지 않는다.** 신 버전은 v2가 없으면 v1을 읽어 승격 후 v2에 쓴다. 구버전(TestFlight 병행 설치, 백업 복원, 심사자의 구버전 검증)은 v1을 온전히 본다.
+**그래서 저장 키를 올린다: `reminderMessages.v1` → `reminderMessages.v2`. v1은 건드리지 않는다.** 신 버전은 v2가 없으면 **매 읽기마다** v1을 읽어 승격한 값을 돌려주고, v2는 **다음 저장(추가·수정·삭제·순서 변경) 시점에** 처음 쓴다 — 읽기만으로는 v2가 생기지 않는다. 한 번도 편집하지 않는 사용자는 v1이 계속 원본이므로, 앞으로 v3를 만들 때 v2가 있다고 가정하면 안 된다. 구버전(TestFlight 병행 설치, 백업 복원, 심사자의 구버전 검증)은 v1을 온전히 본다.
 
 **승격 규칙:**
 
