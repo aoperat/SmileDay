@@ -115,4 +115,14 @@ final class StringCatalogGuaranteeTests: XCTestCase {
             "Coaching catalog lost the 'nothing needed' cue"
         )
     }
+
+    /// id는 CoachingKit, 문구는 앱 카탈로그로 갈라졌다. 큐를 추가하며 한쪽만 손대면 가이드
+    /// 화면에 키 문자열이 뜬다 — 그 어긋남을 여기서 잡는다.
+    func test_everySmileCue_hasACatalogEntry() throws {
+        let coaching = try Self.loadCatalog("Coaching")
+        for cue in SmileCueCatalog.all {
+            let key = "smileCue.\(cue.id)"
+            XCTAssertNotNil(coaching.strings[key], "Coaching catalog missing '\(key)'")
+        }
+    }
 }

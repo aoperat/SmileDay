@@ -2,22 +2,12 @@ import XCTest
 @testable import CoachingKit
 
 final class SmileCueTests: XCTestCase {
-    func test_catalog_isNonEmptyUniqueAndNonJudgmental() {
+    func test_catalog_isNonEmptyAndUnique() {
         XCTAssertFalse(SmileCueCatalog.all.isEmpty)
         XCTAssertEqual(Set(SmileCueCatalog.all.map(\.id)).count, SmileCueCatalog.all.count)
-
-        let banned = ["사랑받", "예뻐", "인상 개선", "교정", "치료", "더 크게", "잘 웃"]
-        for cue in SmileCueCatalog.all {
-            XCTAssertFalse(cue.text.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
-            for word in banned {
-                XCTAssertFalse(cue.text.contains(word), "\(cue.id): \(word)")
-            }
-        }
     }
-
-    func test_catalog_allowsHavingNothingPositiveToRecall() {
-        XCTAssertTrue(SmileCueCatalog.all.contains { $0.text.contains("떠오르는 장면이 없어도 괜찮아요") })
-    }
+    // 금지어·공백·"떠올릴 게 없어도 괜찮다" 불변식은 StringCatalogGuaranteeTests로 옮겼다 —
+    // 문구가 앱 카탈로그로 갔기 때문이다.
 
     func test_selector_cyclesWithoutImmediateRepeat_andPersistsCursor() {
         let store = InMemorySmileCueCursorStore()

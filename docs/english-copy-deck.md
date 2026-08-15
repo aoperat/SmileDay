@@ -94,6 +94,8 @@
 | 떠오르는 장면이 없어도 괜찮아요. 잠깐 얼굴의 힘만 빼보세요. | **Nothing has to come to mind. Just let your face loosen.** |
 | 지금 괜찮다면 입꼬리를 살짝 올려볼까요? | **If you're up for it, let the corners lift a little.** |
 
+> `lift`는 심사 위험어 목록에 있어 자동 검사(`StringCatalogGuaranteeTests`)에 걸린다. 카탈로그에는 `let the corners rise a little`로 시딩했다 — 2단계에서 최종 표현을 정한다.
+
 ### 알림 문구 (`ReminderMessageCatalog`)
 
 알림은 짧아야 한다. 잠금화면에서 두 줄을 넘기면 잘린다.
