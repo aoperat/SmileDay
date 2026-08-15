@@ -1,7 +1,20 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
-
+    "reminderAction.smile-recorded" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "I smiled" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "웃었어요" } }
+      }
+    },
+    "reminderAction.open-guide" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Open guide" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "가이드 열기" } }
+      }
+    }
   },
   "version" : "1.1"
 }

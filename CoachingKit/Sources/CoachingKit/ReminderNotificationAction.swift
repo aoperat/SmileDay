@@ -7,20 +7,12 @@ import Foundation
 /// 값을 바꾸면 그 알림들의 버튼이 눌려도 어느 동작인지 알 수 없게 된다 —
 /// `ReminderNotificationPayload`의 key와 같은 이유로 고정이다.
 ///
-/// 실제 `UNNotificationCategory`는 앱 타깃이 만든다. 패키지는 식별자와 문구만 갖는다.
+/// 실제 `UNNotificationCategory`는 앱 타깃이 만든다. 패키지는 식별자만 갖는다. 문구는 앱 타깃(`Localizable.xcstrings`의 `reminderAction.<rawValue>`)에 있다.
 public enum ReminderNotificationAction: String, CaseIterable, Equatable, Sendable {
     /// 앱을 열지 않고 그 자리에서 기록한다.
     case recordSmile = "smile-recorded"
     /// 앱을 앞으로 가져와 미소 가이드를 연다. 알림 본문을 탭한 것과 같은 결과다.
     case openGuide = "open-guide"
-
-    /// 버튼에 보이는 문구. 재촉이 아니라 방금 한 일을 그대로 적는 말투로 둔다.
-    public var title: String {
-        switch self {
-        case .recordSmile: "웃었어요"
-        case .openGuide: "가이드 열기"
-        }
-    }
 
     /// 앱을 앞으로 가져와야 하는 동작인지. 기록은 화면 없이 끝난다.
     public var opensApp: Bool {

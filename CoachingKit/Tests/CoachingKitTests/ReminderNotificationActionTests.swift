@@ -36,29 +36,4 @@ final class ReminderNotificationActionTests: XCTestCase {
     func test_openGuide_opensTheApp() {
         XCTAssertTrue(ReminderNotificationAction.openGuide.opensApp)
     }
-
-    // MARK: - 문구
-
-    func test_titles_areKoreanAndNonEmpty() {
-        for action in ReminderNotificationAction.allCases {
-            XCTAssertFalse(action.title.isEmpty)
-            XCTAssertTrue(
-                action.title.contains(where: { ("가"..."힣").contains($0) }),
-                "\(action)의 문구가 한국어가 아니다: \(action.title)"
-            )
-        }
-    }
-
-    /// 건강 효과 문구(App Store 1.4.1)와 순위·연속 실패 어휘를 쓰지 않는다.
-    func test_titles_avoidBannedWording() {
-        let banned = ["리프팅", "젊어", "교정", "치료", "연속", "실패", "달성"]
-        for action in ReminderNotificationAction.allCases {
-            for word in banned {
-                XCTAssertFalse(
-                    action.title.contains(word),
-                    "\(action)의 문구에 금지어 '\(word)'가 있다: \(action.title)"
-                )
-            }
-        }
-    }
 }
