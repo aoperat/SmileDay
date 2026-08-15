@@ -1,34 +1,34 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "dailyReminderCount" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "variations" : {
-            "plural" : {
-              "one" : {
-                "stringUnit" : {
-                  "state" : "needs_review",
-                  "value" : "We'll remind you %lld time a day"
+  "sourceLanguage": "en",
+  "strings": {
+    "dailyReminderCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "We'll remind you %lld time a day"
                 }
               },
-              "other" : {
-                "stringUnit" : {
-                  "state" : "needs_review",
-                  "value" : "We'll remind you %lld times a day"
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "We'll remind you %lld times a day"
                 }
               }
             }
           }
         },
-        "ko" : {
-          "variations" : {
-            "plural" : {
-              "other" : {
-                "stringUnit" : {
-                  "state" : "translated",
-                  "value" : "하루 %lld번 알려드려요"
+        "ko": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "하루 %lld번 알려드려요"
                 }
               }
             }
@@ -36,244 +36,244 @@
         }
       }
     },
-    "endTimeLabel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "종료 시간"
+    "endTimeLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "End time"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "종료 시간"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "종료 시간"
           }
         }
       }
     },
-    "intervalPickerLabel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "반복 주기"
+    "intervalPickerLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Interval"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "반복 주기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "반복 주기"
           }
         }
       }
     },
-    "introDetail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "No photos, no scores. Just a count, kept on this phone."
+    "introDetail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "No photos, no scores. Just a count, kept on this phone."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "표정을 찍거나 점수를 매기지 않아요. 웃어본 횟수만 이 기기에 기록해요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "표정을 찍거나 점수를 매기지 않아요. 웃어본 횟수만 이 기기에 기록해요."
           }
         }
       }
     },
-    "introMessage" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "For the days that go by without one. A few short moments to smile."
+    "introMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "For the days that go by without one. A few short moments to smile."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "평소 잘 웃지 않는 나를 위해,\n하루에 몇 번 잠깐 웃어보는 시간을 만들어요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "평소 잘 웃지 않는 나를 위해,\n하루에 몇 번 잠깐 웃어보는 시간을 만들어요."
           }
         }
       }
     },
-    "nextAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "다음"
+    "nextAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Next"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "다음"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "다음"
           }
         }
       }
     },
-    "permissionOptionalNote" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "알림 권한을 허용하지 않아도 앱에서 직접 미소 시간을 시작할 수 있어요."
+    "permissionOptionalNote": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Even without notification permission, you can start a smile moment from the app itself."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "알림 권한을 허용하지 않아도 앱에서 직접 미소 시간을 시작할 수 있어요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 권한을 허용하지 않아도 앱에서 직접 미소 시간을 시작할 수 있어요."
           }
         }
       }
     },
-    "remindersFooter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "정한 시간 안에서 같은 간격으로 알려드려요."
+    "remindersFooter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Evenly spaced reminders within the window you set."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "정한 시간 안에서 같은 간격으로 알려드려요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "정한 시간 안에서 같은 간격으로 알려드려요."
           }
         }
       }
     },
-    "setTimesAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "시간 정하기"
+    "setTimesAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Set the times"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시간 정하기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시간 정하기"
           }
         }
       }
     },
-    "startTimeLabel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "시작 시간"
+    "startTimeLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start time"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "시작 시간"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "시작 시간"
           }
         }
       }
     },
-    "startWithTheseTimesAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "이 시간으로 시작하기"
+    "startWithTheseTimesAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start with these times"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "이 시간으로 시작하기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "이 시간으로 시작하기"
           }
         }
       }
     },
-    "startWithoutRemindersAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Start without reminders"
+    "startWithoutRemindersAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Start without reminders"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "알림 없이 시작하기"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 없이 시작하기"
           }
         }
       }
     },
-    "whyRemindersDetail" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "Miss one and nothing piles up. We won't ask twice."
+    "whyRemindersDetail": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Miss one and nothing piles up. We won't ask twice."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "알림을 놓쳐도 재촉하거나 몰아서 보내지 않아요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림을 놓쳐도 재촉하거나 몰아서 보내지 않아요."
           }
         }
       }
     },
-    "whyRemindersMessage" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "활동 시간과 반복 주기를 정하면\n알림이 미소를 떠올려줘요."
+    "whyRemindersMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Choose your active hours and how often —\nreminders bring a smile to mind."
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "활동 시간과 반복 주기를 정하면\n알림이 미소를 떠올려줘요."
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "활동 시간과 반복 주기를 정하면\n알림이 미소를 떠올려줘요."
           }
         }
       }
     },
-    "whyRemindersTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "needs_review",
-            "value" : "A reminder, so it doesn't slip"
+    "whyRemindersTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "A reminder, so it doesn't slip"
           }
         },
-        "ko" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "잊지 않도록 알려드릴게요"
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "잊지 않도록 알려드릴게요"
           }
         }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }

@@ -1,228 +1,551 @@
 {
-  "sourceLanguage" : "en",
-  "strings" : {
-    "messageError.empty" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지를 입력해주세요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지를 입력해주세요." } }
+  "sourceLanguage": "en",
+  "strings": {
+    "addMessage": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add message"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지 추가"
+          }
+        }
       }
     },
-    "messageError.tooLong" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지는 %lld자 이내로 입력해주세요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지는 %lld자 이내로 입력해주세요." } }
+    "cancelAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Cancel"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "취소"
+          }
+        }
       }
     },
-    "messageError.duplicate" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "같은 메시지가 이미 있어요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "같은 메시지가 이미 있어요." } }
+    "cannotDeleteTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Can't delete this message"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지를 삭제할 수 없어요"
+          }
+        }
       }
     },
-    "messageError.lastRemaining" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 메시지는 한 개 이상 남겨주세요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 메시지는 한 개 이상 남겨주세요." } }
+    "checkMessagePrompt": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Check the message and try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지를 확인해주세요."
+          }
+        }
       }
     },
-    "scheduleError.schedulingFailed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요." } }
+    "dataDeletedWithApp": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Deleting the app deletes all records with it"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "앱을 삭제하면 모든 기록이 함께 삭제됩니다"
+          }
+        }
       }
     },
-    "scheduleError.persistenceFailed" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 설정을 저장하지 못했어요. 다시 시도해주세요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 설정을 저장하지 못했어요. 다시 시도해주세요." } }
+    "dataLocationFooter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Only completion times are saved. Live smile check keeps no photos, and its results disappear when you close the screen."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "완료한 시각만 저장해요. 실시간 확인은 사진을 남기지 않고, 그 결과도 화면을 닫으면 사라져요."
+          }
+        }
       }
     },
-    "repeatSectionTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "반복 설정" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "반복 설정" } }
+    "dataLocationTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Where your data lives"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "데이터 저장 위치"
+          }
+        }
       }
     },
-    "savingIndicator" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "저장 중…" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장 중…" } }
+    "dataNeverSent": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Nothing is sent to any server"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "외부 서버로 전송되지 않습니다"
+          }
+        }
       }
     },
-    "repeatFooter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "바꾸면 바로 적용돼요. 놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "바꾸면 바로 적용돼요. 놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요." } }
+    "dataOnDeviceOnly": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "All records stay on this device"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "모든 기록은 이 기기에만 저장됩니다"
+          }
+        }
       }
     },
-    "manageMessagesLabel" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지 관리" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지 관리" } }
+    "editMessageHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Double-tap to edit this message"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "두 번 탭하여 메시지를 수정합니다"
+          }
+        }
       }
     },
-    "messageCount" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "variations" : { "plural" : {
-          "one" : { "stringUnit" : { "state" : "needs_review", "value" : "%lld message" } },
-          "other" : { "stringUnit" : { "state" : "needs_review", "value" : "%lld messages" } }
-        } } },
-        "ko" : { "variations" : { "plural" : {
-          "other" : { "stringUnit" : { "state" : "translated", "value" : "%lld개" } }
-        } } }
+    "editMessageTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Edit message"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지 수정"
+          }
+        }
       }
     },
-    "messagesSectionTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 문구" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 문구" } }
+    "manageMessagesLabel": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage messages"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지 관리"
+          }
+        }
       }
     },
-    "messagesFooter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "추가·수정·삭제하거나 순서를 바꿀 수 있어요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "추가·수정·삭제하거나 순서를 바꿀 수 있어요." } }
+    "manageMessagesNavigationTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Manage messages"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지 관리"
+          }
+        }
       }
     },
-    "settingsNavigationTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "설정" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "설정" } }
+    "messageCount": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "variations": {
+            "plural": {
+              "one": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld message"
+                }
+              },
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld messages"
+                }
+              }
+            }
+          }
+        },
+        "ko": {
+          "variations": {
+            "plural": {
+              "other": {
+                "stringUnit": {
+                  "state": "translated",
+                  "value": "%lld개"
+                }
+              }
+            }
+          }
+        }
       }
     },
-    "opensInSafariHint" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "사파리에서 열려요" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "사파리에서 열려요" } }
+    "messageError.duplicate": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "That message already exists."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "같은 메시지가 이미 있어요."
+          }
+        }
       }
     },
-    "dataOnDeviceOnly" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "모든 기록은 이 기기에만 저장됩니다" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "모든 기록은 이 기기에만 저장됩니다" } }
+    "messageError.empty": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Enter a message."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지를 입력해주세요."
+          }
+        }
       }
     },
-    "dataNeverSent" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "외부 서버로 전송되지 않습니다" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "외부 서버로 전송되지 않습니다" } }
+    "messageError.lastRemaining": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep at least one message."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 메시지는 한 개 이상 남겨주세요."
+          }
+        }
       }
     },
-    "dataDeletedWithApp" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "앱을 삭제하면 모든 기록이 함께 삭제됩니다" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "앱을 삭제하면 모든 기록이 함께 삭제됩니다" } }
+    "messageError.tooLong": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Keep the message within %lld characters."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "메시지는 %lld자 이내로 입력해주세요."
+          }
+        }
       }
     },
-    "dataLocationTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "데이터 저장 위치" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "데이터 저장 위치" } }
+    "messagesFooter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Add, edit, delete, or reorder."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "추가·수정·삭제하거나 순서를 바꿀 수 있어요."
+          }
+        }
       }
     },
-    "dataLocationFooter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "완료한 시각만 저장해요. 실시간 확인은 사진을 남기지 않고, 그 결과도 화면을 닫으면 사라져요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "완료한 시각만 저장해요. 실시간 확인은 사진을 남기지 않고, 그 결과도 화면을 닫으면 사라져요." } }
+    "messagesListFooter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Used in order from the top, one per reminder time, then repeating. Changes apply from the next reminder."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "위에서부터 알림 시간 순서대로 반복해 사용해요. 바꾸면 다음 알림부터 바로 적용돼요."
+          }
+        }
       }
     },
-    "editMessageTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지 수정" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지 수정" } }
+    "messagesListHeader": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder messages"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 메시지"
+          }
+        }
       }
     },
-    "editMessageHint" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "두 번 탭하여 메시지를 수정합니다" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "두 번 탭하여 메시지를 수정합니다" } }
+    "messagesSectionTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Reminder wording"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 문구"
+          }
+        }
       }
     },
-    "messagesListHeader" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 메시지" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 메시지" } }
+    "okAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "OK"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "확인"
+          }
+        }
       }
     },
-    "messagesListFooter" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "위에서부터 알림 시간 순서대로 반복해 사용해요. 바꾸면 다음 알림부터 바로 적용돼요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "위에서부터 알림 시간 순서대로 반복해 사용해요. 바꾸면 다음 알림부터 바로 적용돼요." } }
+    "opensInSafariHint": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Opens in Safari"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "사파리에서 열려요"
+          }
+        }
       }
     },
-    "manageMessagesNavigationTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지 관리" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지 관리" } }
+    "repeatFooter": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Changes apply right away. Reminders that have passed won't ring later or arrive in a batch."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "바꾸면 바로 적용돼요. 놓친 알림은 다시 울리거나 한꺼번에 보내지 않아요."
+          }
+        }
       }
     },
-    "addMessage" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지 추가" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지 추가" } }
+    "repeatSectionTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Repeat settings"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "반복 설정"
+          }
+        }
       }
     },
-    "cannotDeleteTitle" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지를 삭제할 수 없어요" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지를 삭제할 수 없어요" } }
+    "saveAction": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Save"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장"
+          }
+        }
       }
     },
-    "okAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "확인" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "확인" } }
+    "savingIndicator": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Saving…"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "저장 중…"
+          }
+        }
       }
     },
-    "cancelAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "취소" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "취소" } }
+    "scheduleError.persistenceFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't save the reminder settings. Try again."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림 설정을 저장하지 못했어요. 다시 시도해주세요."
+          }
+        }
       }
     },
-    "saveAction" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "저장" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "저장" } }
+    "scheduleError.schedulingFailed": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Couldn't schedule the reminders. Your existing ones are untouched."
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "알림을 등록하지 못했어요. 기존 알림은 그대로 유지했어요."
+          }
+        }
       }
     },
-    "checkMessagePrompt" : {
-      "extractionState" : "manual",
-      "localizations" : {
-        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "메시지를 확인해주세요." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "메시지를 확인해주세요." } }
+    "settingsNavigationTitle": {
+      "extractionState": "manual",
+      "localizations": {
+        "en": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "Settings"
+          }
+        },
+        "ko": {
+          "stringUnit": {
+            "state": "translated",
+            "value": "설정"
+          }
+        }
       }
     }
   },
-  "version" : "1.1"
+  "version": "1.1"
 }
