@@ -27,6 +27,4 @@ public final class ReminderSetting {
         self.guideID = guideID
     }
 
-    // 카드 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 여기에 편의 프로퍼티를 두면
-    // 사용자가 만든 카드를 못 찾고 조용히 기본 카드로 떨어진다.
 }

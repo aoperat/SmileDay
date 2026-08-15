@@ -1,9 +1,8 @@
 import SwiftUI
 import SwiftData
+import UIKit
 import CoachingKit
 
-/// 첫 실행 설정. 카메라도 기준선도 없다.
-/// 사용자가 알림 시간을 확정한 다음에야 권한을 묻고, 거부해도 앱에는 들어갈 수 있다.
 struct SmileMVPOnboardingView: View {
     @Environment(\.modelContext) private var modelContext
     let onFinished: () -> Void
@@ -14,7 +13,7 @@ struct SmileMVPOnboardingView: View {
     private enum Step {
         case purpose
         case whyNotification
-        case reminders
+        case schedule
     }
 
     var body: some View {
@@ -26,35 +25,35 @@ struct SmileMVPOnboardingView: View {
                 case .purpose:
                     IntroStep(
                         systemImage: "face.smiling",
-                        title: "스마일데이",
-                        message: "원하는 시간에 알림을 받고,\n잠깐 미소 짓는 습관을 만들어보세요.",
-                        detail: "표정을 찍거나 점수를 매기지 않아요. 알림을 받고 몇 초 웃어본 것만 기록해요.",
-                        actionTitle: "다음",
+                        title: .splashTitle,
+                        message: .Onboarding.introMessage,
+                        detail: .Onboarding.introDetail,
+                        actionTitle: .Onboarding.nextAction,
                         action: { step = .whyNotification }
                     )
                 case .whyNotification:
                     IntroStep(
                         systemImage: "bell.badge",
-                        title: "잊지 않도록 알려드릴게요",
-                        message: "미소는 마음먹는다고 떠오르지 않아요.\n정해둔 시간에 알림이 대신 떠올려줍니다.",
-                        detail: "알림은 이 기기 안에서만 울려요. 서버로 보내는 정보는 없어요.",
-                        actionTitle: "시간 정하기",
-                        action: { step = .reminders }
+                        title: .Onboarding.whyRemindersTitle,
+                        message: .Onboarding.whyRemindersMessage,
+                        detail: .Onboarding.whyRemindersDetail,
+                        actionTitle: .Onboarding.setTimesAction,
+                        action: { step = .schedule }
                     )
-                case .reminders:
-                    ReminderSetupStep(viewModel: viewModel, onFinished: onFinished)
+                case .schedule:
+                    OnboardingScheduleStep(viewModel: viewModel, onFinished: onFinished)
                 }
             }
         }
         .onAppear {
             guard viewModel == nil else { return }
+            let schedule = SmileReminderScheduleViewModel(
+                scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
+                legacyReminderRepository: LegacyReminderRepository(modelContext: modelContext),
+                scheduler: UserNotificationReminderScheduler()
+            )
             viewModel = SmileOnboardingViewModel(
-                reminderRepository: ReminderRepository(modelContext: modelContext),
-                library: SmileGuideLibrary(
-                    modelContext: modelContext,
-                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
-                ),
-                scheduler: UserNotificationReminderScheduler(),
+                schedule: schedule,
                 store: UserDefaultsSmileOnboardingStore()
             )
         }
@@ -63,92 +62,85 @@ struct SmileMVPOnboardingView: View {
 
 private struct IntroStep: View {
     let systemImage: String
-    let title: String
-    let message: String
-    let detail: String
-    let actionTitle: String
+    let title: LocalizedStringResource
+    let message: LocalizedStringResource
+    let detail: LocalizedStringResource
+    let actionTitle: LocalizedStringResource
     let action: () -> Void
 
     var body: some View {
-        VStack(spacing: 24) {
-            Spacer()
+        // 접근성 글씨 크기에서는 이 문구가 화면보다 길어진다. 고정 VStack이면 SwiftUI가
+        // 남는 자리에 맞추려고 텍스트를 잘라내는데, 잘려나가는 문장이 하필 얼굴을 찍지
+        // 않는다는 약속이다. minHeight로 평소의 가운데 정렬은 지키고, 넘칠 때만 스크롤한다.
+        // 마지막 단계(OnboardingScheduleStep)는 이미 같은 이유로 ScrollView 안에 있다.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 24) {
+                    Spacer(minLength: 0)
 
-            Image(systemName: systemImage)
-                .font(.system(size: 64))
-                .foregroundStyle(SDColor.coral)
-                .accessibilityHidden(true)
+                    Image(systemName: systemImage)
+                        .font(.system(size: 64))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .accessibilityHidden(true)
 
-            Text(title)
-                .font(.title2.bold())
-                .foregroundStyle(SDColor.ink)
+                    Text(title)
+                        .font(.title2.bold())
+                        .foregroundStyle(SDColor.ink)
 
-            Text(message)
-                .font(.body)
-                .foregroundStyle(SDColor.ink)
-                .multilineTextAlignment(.center)
+                    Text(message)
+                        .font(.body)
+                        .foregroundStyle(SDColor.ink)
+                        .multilineTextAlignment(.center)
 
-            Text(detail)
-                .font(.footnote)
-                .foregroundStyle(SDColor.muted)
-                .multilineTextAlignment(.center)
+                    Text(detail)
+                        .font(.footnote)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.center)
 
-            Spacer()
+                    Spacer(minLength: 0)
 
-            Button(actionTitle, action: action)
-                .buttonStyle(SDPrimaryButtonStyle())
+                    Button(actionTitle, action: action)
+                        .buttonStyle(SDPrimaryButtonStyle())
+                }
+                .padding(.horizontal, 32)
+                .padding(.bottom, 24)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
+            }
         }
-        .padding(.horizontal, 32)
-        .padding(.bottom, 24)
     }
 }
 
-/// 권장 시간 3개를 보여주고 사용자가 확정하게 한다.
-private struct ReminderSetupStep: View {
+private struct OnboardingScheduleStep: View {
     let viewModel: SmileOnboardingViewModel
     let onFinished: () -> Void
 
+    @State private var isConfirmingSkip = false
+
     var body: some View {
-        VStack(spacing: 0) {
-            VStack(spacing: 8) {
-                Text("언제 미소를 떠올릴까요?")
-                    .font(.title3.bold())
-                    .foregroundStyle(SDColor.ink)
-                Text("시간과 미소를 바꿀 수 있어요. 나중에 설정에서 언제든 고칠 수 있어요.")
-                    .font(.footnote)
-                    .foregroundStyle(SDColor.muted)
-                    .multilineTextAlignment(.center)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 32)
-            .padding(.bottom, 20)
-
-            ScrollView {
-                VStack(spacing: 12) {
-                    ForEach(viewModel.drafts) { draft in
-                        ReminderDraftRow(draft: draft, viewModel: viewModel)
-                    }
-
-                    Button {
-                        viewModel.addDraft()
-                    } label: {
-                        Label("시간 추가", systemImage: "plus")
-                            .font(.subheadline.weight(.semibold))
-                            .foregroundStyle(SDColor.coral)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 14)
-                    }
-                    .background(.white, in: RoundedRectangle(cornerRadius: 18, style: .continuous))
+        ScrollView {
+            VStack(alignment: .leading, spacing: 20) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(.smileRemindersTitle)
+                        .font(.title2.bold())
+                        .foregroundStyle(SDColor.ink)
+                    Text(.Onboarding.remindersFooter)
+                        .font(.body)
+                        .foregroundStyle(SDColor.muted)
                 }
-                .padding(.horizontal, 20)
-                .padding(.bottom, 16)
-            }
 
-            VStack(spacing: 12) {
-                if let errorMessage = viewModel.errorMessage {
-                    Text(errorMessage)
-                        .font(.footnote)
+                ReminderPatternControls(viewModel: viewModel.schedule)
+                    .sdCard()
+
+                if let error = viewModel.error {
+                    Text(error.message)
+                        .font(.footnote.weight(.semibold))
                         .foregroundStyle(SDColor.alert)
-                        .multilineTextAlignment(.center)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                } else if !viewModel.schedule.isPatternValid {
+                    Text(.invalidPattern)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.alert)
+                        .frame(maxWidth: .infinity, alignment: .leading)
                 }
 
                 Button {
@@ -157,74 +149,145 @@ private struct ReminderSetupStep: View {
                         if viewModel.didComplete { onFinished() }
                     }
                 } label: {
-                    Text(viewModel.drafts.isEmpty ? "알림 없이 시작하기" : "이 시간으로 시작하기")
+                    if viewModel.isSaving {
+                        // 버튼이 노랑이라 흰 스피너는 1.7:1로 사실상 보이지 않는다.
+                        ProgressView().tint(SDColor.ink)
+                    } else {
+                        Text(.Onboarding.startWithTheseTimesAction)
+                    }
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
-                .disabled(viewModel.isSaving)
+                .disabled(viewModel.isSaving || viewModel.schedule.pattern == nil)
 
-                Text("다음 단계에서 알림 권한을 물어봐요. 허용하지 않아도 앱은 사용할 수 있어요.")
-                    .font(.caption)
+                // 알림이 이 앱의 유일한 흐름이라 한 번 더 확인한다. 막지는 않는다.
+                Button(.Onboarding.startWithoutRemindersAction) { isConfirmingSkip = true }
+                    .font(.subheadline.weight(.semibold))
+                    .foregroundStyle(SDColor.ink)
+                    .frame(maxWidth: .infinity)
+
+                Text(.Onboarding.permissionOptionalNote)
+                    .font(.footnote)
                     .foregroundStyle(SDColor.muted)
                     .multilineTextAlignment(.center)
+                    .frame(maxWidth: .infinity)
             }
-            .padding(.horizontal, 24)
-            .padding(.bottom, 20)
+            .padding(24)
+        }
+        // alert를 쓴다. confirmationDialog는 .cancel 역할 버튼의 문구를 제 것으로 바꿔버려
+        // "알림 받을래요"라는 선택지가 사라지고, 되돌릴 방법이 없는 것처럼 보인다.
+        // 한 번 더 묻는 의미는 두 선택지가 나란히 보일 때만 생긴다.
+        .alert(
+            Text(.skipRemindersConfirmTitle),
+            isPresented: $isConfirmingSkip
+        ) {
+            Button(.skipRemindersCancelAction, role: .cancel) {}
+            Button(.skipRemindersConfirmAction, role: .destructive) {
+                Task {
+                    await viewModel.skipReminders()
+                    if viewModel.didComplete { onFinished() }
+                }
+            }
+        } message: {
+            Text(.skipRemindersConfirmMessage)
+        }
+        // 시스템 권한 대화상자는 한 번만 뜬다. 거부했다면 앱에서 다시 물을 수 없으므로
+        // 무엇이 없어졌는지와 어디서 되돌리는지를 여기서 알려준다.
+        .alert(
+            Text(.onboardingPermissionDeniedTitle),
+            isPresented: .constant(viewModel.wasPermissionDenied)
+        ) {
+            Button(.openSystemSettings) {
+                SDSystemSettings.open()
+                viewModel.continueWithoutPermission()
+                if viewModel.didComplete { onFinished() }
+            }
+            Button(.onboardingContinueAnyway, role: .cancel) {
+                viewModel.continueWithoutPermission()
+                if viewModel.didComplete { onFinished() }
+            }
+        } message: {
+            Text(.onboardingPermissionDeniedMessage)
         }
     }
 }
 
-private struct ReminderDraftRow: View {
-    let draft: ReminderDraft
-    let viewModel: SmileOnboardingViewModel
-    @State private var isPickingGuide = false
+struct ReminderPatternControls: View {
+    let viewModel: SmileReminderScheduleViewModel
 
-    private var time: Binding<Date> {
-        Binding(
-            get: {
-                var components = DateComponents()
-                components.hour = draft.hour
-                components.minute = draft.minute
-                return Calendar.current.date(from: components) ?? Date()
-            },
-            set: { newValue in
-                let components = Calendar.current.dateComponents([.hour, .minute], from: newValue)
-                viewModel.updateTime(
-                    draftID: draft.id,
-                    hour: components.hour ?? draft.hour,
-                    minute: components.minute ?? draft.minute
-                )
-            }
-        )
+    private var startTime: Binding<Date> {
+        timeBinding(hour: viewModel.startHour, minute: viewModel.startMinute) {
+            viewModel.updateStart(hour: $0, minute: $1)
+        }
+    }
+
+    private var endTime: Binding<Date> {
+        timeBinding(hour: viewModel.endHour, minute: viewModel.endMinute) {
+            viewModel.updateEnd(hour: $0, minute: $1)
+        }
     }
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            HStack {
-                DatePicker("알림 시간", selection: time, displayedComponents: .hourAndMinute)
-                    .labelsHidden()
+        VStack(spacing: 16) {
+            DatePicker(.Onboarding.startTimeLabel, selection: startTime, displayedComponents: .hourAndMinute)
+                .foregroundStyle(SDColor.ink)
 
-                Spacer()
+            Divider()
 
-                Button {
-                    viewModel.removeDraft(id: draft.id)
-                } label: {
-                    Image(systemName: "minus.circle")
-                        .foregroundStyle(SDColor.muted)
+            DatePicker(.Onboarding.endTimeLabel, selection: endTime, displayedComponents: .hourAndMinute)
+                .foregroundStyle(SDColor.ink)
+
+            Divider()
+
+            Picker(.Onboarding.intervalPickerLabel, selection: Binding(
+                get: { viewModel.intervalMinutes },
+                set: { viewModel.updateInterval($0) }
+            )) {
+                ForEach(SmileReminderPattern.allowedIntervals, id: \.self) { minutes in
+                    Text(SDFormat.reminderInterval(minutes: minutes)).tag(minutes)
                 }
-                .buttonStyle(.plain)
-                .accessibilityLabel("이 시간 지우기")
             }
+            .foregroundStyle(SDColor.ink)
 
-            GuideSelectionRow(guide: viewModel.guide(for: draft)) { isPickingGuide = true }
+            VStack(alignment: .leading, spacing: 6) {
+                HStack(spacing: 8) {
+                    Image(systemName: "bell.fill")
+                        .foregroundStyle(SDColor.ink)
+                        .accessibilityHidden(true)
+                    Text(.Onboarding.dailyReminderCount(viewModel.occurrenceTimes.count))
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+                }
+
+                // 22:00~02:00을 잘못 고른 것으로 읽지 않게, 그렇게 이해했다고 말해준다.
+                if viewModel.crossesMidnight {
+                    Text(.reminderWindowCrossesMidnight)
+                        .font(.caption)
+                        .foregroundStyle(SDColor.muted)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+            }
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .padding(12)
+            .background(SDColor.shell, in: RoundedRectangle(cornerRadius: 14))
         }
-        .sdCard(padding: 14, cornerRadius: 18)
-        .sheet(isPresented: $isPickingGuide) {
-            SmileGuidePickerSheet(
-                guides: viewModel.guides,
-                selectedID: draft.guideID,
-                onSelect: { viewModel.updateGuide(draftID: draft.id, guideID: $0.id) }
-                // 첫 설정에서는 카드 만들기까지 끌고 가지 않는다. 목록에서 고르기만 한다.
-            )
-        }
+    }
+
+    private func timeBinding(
+        hour: Int,
+        minute: Int,
+        update: @escaping (Int, Int) -> Void
+    ) -> Binding<Date> {
+        Binding(
+            get: {
+                var components = DateComponents()
+                components.hour = hour
+                components.minute = minute
+                return Calendar.current.date(from: components) ?? Date()
+            },
+            set: { date in
+                let components = Calendar.current.dateComponents([.hour, .minute], from: date)
+                update(components.hour ?? hour, components.minute ?? minute)
+            }
+        )
     }
 }

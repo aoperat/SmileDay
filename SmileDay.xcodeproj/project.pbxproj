@@ -10,14 +10,30 @@
 		73C8EB5BB682575EC87A171A /* CoachingKit in Frameworks */ = {isa = PBXBuildFile; productRef = 846A32C3BB81E3C29B621792 /* CoachingKit */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		7A0001C0300B120400854524 /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 717555CC300B120400854524 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 717555D3300B120400854524;
+			remoteInfo = SmileDay;
+		};
+/* End PBXContainerItemProxy section */
+
 /* Begin PBXFileReference section */
 		717555D4300B120400854524 /* SmileDay.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = SmileDay.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		7A0001A0300B120400854524 /* SmileDayTests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = SmileDayTests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		717555D6300B120400854524 /* SmileDay */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = SmileDay;
+			sourceTree = "<group>";
+		};
+		7A0001A1300B120400854524 /* SmileDayTests */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			path = SmileDayTests;
 			sourceTree = "<group>";
 		};
 /* End PBXFileSystemSynchronizedRootGroup section */
@@ -31,6 +47,13 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A0001A2300B120400854524 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
@@ -38,6 +61,7 @@
 			isa = PBXGroup;
 			children = (
 				717555D6300B120400854524 /* SmileDay */,
+				7A0001A1300B120400854524 /* SmileDayTests */,
 				717555D5300B120400854524 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -46,6 +70,7 @@
 			isa = PBXGroup;
 			children = (
 				717555D4300B120400854524 /* SmileDay.app */,
+				7A0001A0300B120400854524 /* SmileDayTests.xctest */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -76,6 +101,29 @@
 			productReference = 717555D4300B120400854524 /* SmileDay.app */;
 			productType = "com.apple.product-type.application";
 		};
+		7A0001A3300B120400854524 /* SmileDayTests */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 7A0001B0300B120400854524 /* Build configuration list for PBXNativeTarget "SmileDayTests" */;
+			buildPhases = (
+				7A0001A4300B120400854524 /* Sources */,
+				7A0001A2300B120400854524 /* Frameworks */,
+				7A0001A5300B120400854524 /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+				7A0001C1300B120400854524 /* PBXTargetDependency */,
+			);
+			fileSystemSynchronizedGroups = (
+				7A0001A1300B120400854524 /* SmileDayTests */,
+			);
+			name = SmileDayTests;
+			packageProductDependencies = (
+			);
+			productName = SmileDayTests;
+			productReference = 7A0001A0300B120400854524 /* SmileDayTests.xctest */;
+			productType = "com.apple.product-type.bundle.unit-test";
+		};
 /* End PBXNativeTarget section */
 
 /* Begin PBXProject section */
@@ -89,6 +137,10 @@
 					717555D3300B120400854524 = {
 						CreatedOnToolsVersion = 26.6;
 					};
+					7A0001A3300B120400854524 = {
+						CreatedOnToolsVersion = 26.6;
+						TestTargetID = 717555D3300B120400854524;
+					};
 				};
 			};
 			buildConfigurationList = 717555CF300B120400854524 /* Build configuration list for PBXProject "SmileDay" */;
@@ -96,6 +148,7 @@
 			hasScannedForEncodings = 0;
 			knownRegions = (
 				en,
+				ko,
 				Base,
 			);
 			mainGroup = 717555CB300B120400854524;
@@ -109,12 +162,20 @@
 			projectRoot = "";
 			targets = (
 				717555D3300B120400854524 /* SmileDay */,
+				7A0001A3300B120400854524 /* SmileDayTests */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
 		717555D2300B120400854524 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+		7A0001A5300B120400854524 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
 			files = (
@@ -131,7 +192,22 @@
 			);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
+		7A0001A4300B120400854524 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 /* End PBXSourcesBuildPhase section */
+
+/* Begin PBXTargetDependency section */
+		7A0001C1300B120400854524 /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 717555D3300B120400854524 /* SmileDay */;
+			targetProxy = 7A0001C0300B120400854524 /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
 
 /* Begin XCBuildConfiguration section */
 		717555DD300B120500854524 /* Debug */ = {
@@ -169,7 +245,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = dwarf;
-				DEVELOPMENT_TEAM = RQ4DULS43R;
+				DEVELOPMENT_TEAM = 45BNT5RDHP;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_TESTABILITY = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -187,7 +263,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
 				MTL_FAST_MATH = YES;
@@ -233,7 +309,7 @@
 				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
 				COPY_PHASE_STRIP = NO;
 				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
-				DEVELOPMENT_TEAM = RQ4DULS43R;
+				DEVELOPMENT_TEAM = 45BNT5RDHP;
 				ENABLE_NS_ASSERTIONS = NO;
 				ENABLE_STRICT_OBJC_MSGSEND = YES;
 				ENABLE_USER_SCRIPT_SANDBOXING = YES;
@@ -245,7 +321,7 @@
 				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
 				GCC_WARN_UNUSED_FUNCTION = YES;
 				GCC_WARN_UNUSED_VARIABLE = YES;
-				IPHONEOS_DEPLOYMENT_TARGET = 26.5;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
 				LOCALIZATION_PREFERS_STRING_CATALOGS = YES;
 				MTL_ENABLE_DEBUG_INFO = NO;
 				MTL_FAST_MATH = YES;
@@ -264,19 +340,21 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 45BNT5RDHP;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "카메라로 촬영한 얼굴 표정 데이터는 이 기기에만 저장되며 외부로 전송되지 않습니다.";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_CFBundleDisplayName = SmileDay;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dvelo.SmileDay.rq4duls43r;
+				PRODUCT_BUNDLE_IDENTIFIER = dolparo.smileDay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -284,7 +362,7 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
 			};
 			name = Debug;
 		};
@@ -297,19 +375,21 @@
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 45BNT5RDHP;
 				ENABLE_PREVIEWS = YES;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
 				GENERATE_INFOPLIST_FILE = YES;
-				INFOPLIST_KEY_NSCameraUsageDescription = "카메라로 촬영한 얼굴 표정 데이터는 이 기기에만 저장되며 외부로 전송되지 않습니다.";
+				INFOPLIST_KEY_ITSAppUsesNonExemptEncryption = NO;
+				INFOPLIST_KEY_CFBundleDisplayName = SmileDay;
+				INFOPLIST_KEY_NSCameraUsageDescription = "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent.";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
-				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = UIInterfaceOrientationPortrait;
 				LD_RUNPATH_SEARCH_PATHS = (
 					"$(inherited)",
 					"@executable_path/Frameworks",
 				);
 				MARKETING_VERSION = 1.0;
-				PRODUCT_BUNDLE_IDENTIFIER = dvelo.SmileDay.rq4duls43r;
+				PRODUCT_BUNDLE_IDENTIFIER = dolparo.smileDay;
 				PRODUCT_NAME = "$(TARGET_NAME)";
 				STRING_CATALOG_GENERATE_SYMBOLS = YES;
 				SWIFT_APPROACHABLE_CONCURRENCY = YES;
@@ -317,7 +397,53 @@
 				SWIFT_EMIT_LOC_STRINGS = YES;
 				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
 				SWIFT_VERSION = 5.0;
-				TARGETED_DEVICE_FAMILY = "1,2";
+				TARGETED_DEVICE_FAMILY = 1;
+			};
+			name = Release;
+		};
+		7A0001B1300B120400854524 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 45BNT5RDHP;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dolparo.smileDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmileDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SmileDay";
+			};
+			name = Debug;
+		};
+		7A0001B2300B120400854524 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				BUNDLE_LOADER = "$(TEST_HOST)";
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 45BNT5RDHP;
+				EXCLUDED_SOURCE_FILE_NAMES = "*.md";
+				GENERATE_INFOPLIST_FILE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 17.0;
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = dolparo.smileDayTests;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor;
+				SWIFT_EMIT_LOC_STRINGS = NO;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = 1;
+				TEST_HOST = "$(BUILT_PRODUCTS_DIR)/SmileDay.app/$(BUNDLE_EXECUTABLE_FOLDER_PATH)/SmileDay";
 			};
 			name = Release;
 		};
@@ -338,6 +464,15 @@
 			buildConfigurations = (
 				717555E0300B120500854524 /* Debug */,
 				717555E1300B120500854524 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		7A0001B0300B120400854524 /* Build configuration list for PBXNativeTarget "SmileDayTests" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				7A0001B1300B120400854524 /* Debug */,
+				7A0001B2300B120400854524 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;

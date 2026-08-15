@@ -1,0 +1,64 @@
+import SwiftUI
+
+/// 로컬 저장소를 열 수 없을 때 데이터 삭제나 강제 종료 대신 복구 안내를 보여준다.
+struct AppStartupFailureView: View {
+    var body: some View {
+        ZStack {
+            SDColor.cream.ignoresSafeArea()
+
+            // 복구 방법을 알려주는 화면이라 큰 글씨에서 잘리면 안내 자체가 사라진다.
+            ScrollView {
+                VStack(spacing: 18) {
+                    Image(systemName: "exclamationmark.circle.fill")
+                        .font(.system(size: 48))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .accessibilityHidden(true)
+
+                    VStack(spacing: 8) {
+                        Text(.startupFailedTitle)
+                            .font(.title2.bold())
+                            .foregroundStyle(SDColor.ink)
+
+                        Text(.startupFailedBody)
+                            .font(.body)
+                            .foregroundStyle(SDColor.muted)
+                            .multilineTextAlignment(.center)
+                    }
+                }
+                .padding(28)
+                .sdCard()
+                .padding(.horizontal, 24)
+            }
+        }
+        .preferredColorScheme(.light)
+    }
+}
+
+/// 저장소는 열렸지만 화면 데이터를 읽지 못했을 때 쓰는 재시도 카드.
+struct AppDataLoadFailureView: View {
+    let onRetry: () -> Void
+
+    var body: some View {
+        VStack(spacing: 16) {
+            Image(systemName: "arrow.clockwise.circle.fill")
+                .font(.system(size: 42))
+                .foregroundStyle(SDColor.sunDeep)
+                .accessibilityHidden(true)
+
+            Text(.dataLoadFailedTitle)
+                .font(.headline)
+                .foregroundStyle(SDColor.ink)
+
+            Text(.dataLoadFailedBody)
+                .font(.subheadline)
+                .foregroundStyle(SDColor.muted)
+                .multilineTextAlignment(.center)
+
+            Button(.retryAction, action: onRetry)
+                .buttonStyle(SDInkButtonStyle())
+        }
+        .padding(24)
+        .sdCard()
+        .padding(.horizontal, 24)
+    }
+}

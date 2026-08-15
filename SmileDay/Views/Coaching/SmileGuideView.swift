@@ -9,7 +9,7 @@ struct SmileGuideView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
 
-    let guide: SmileGuide
+    let cue: SmileCue
     let source: SmileMomentSource
     let repository: SmileMomentRepository
     let onCompleted: () -> Void
@@ -40,7 +40,7 @@ struct SmileGuideView: View {
         .onAppear {
             guard viewModel == nil else { return }
             viewModel = SmileGuideViewModel(
-                guide: guide,
+                guide: SmileGuideCatalog.default,
                 source: source,
                 repository: repository,
                 onCompleted: onCompleted
@@ -50,29 +50,41 @@ struct SmileGuideView: View {
 
     @ViewBuilder
     private func content(_ viewModel: SmileGuideViewModel) -> some View {
-        VStack(spacing: 28) {
-            Spacer()
+        // 온보딩과 같은 이유로 스크롤한다. 완료 상태에서 저장이 실패하면 안내 문구와 버튼이
+        // 두 개로 늘어나 접근성 글씨 크기에서는 화면을 넘긴다 — 그때 잘리는 것이 하필
+        // 재시도 버튼이면 저장하지 못한 완료를 되살릴 방법이 사라진다.
+        GeometryReader { proxy in
+            ScrollView {
+                VStack(spacing: 28) {
+                    Spacer(minLength: 0)
 
-            SmileFaceGraphic(isSmiling: isSmiling(viewModel.phase))
-                .frame(width: 132, height: 132)
-                .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: isSmiling(viewModel.phase))
-                .accessibilityHidden(true)
+                    SmileFaceGraphic(isSmiling: isSmiling(viewModel.phase))
+                        .frame(width: 132, height: 132)
+                        .animation(reduceMotion ? nil : .easeInOut(duration: 0.35), value: isSmiling(viewModel.phase))
+                        .accessibilityHidden(true)
 
-            VStack(spacing: 10) {
-                Text(guide.title)
-                    .font(.title2.bold())
-                    .foregroundStyle(SDColor.ink)
+                    VStack(spacing: 10) {
+                        Text(cue.text)
+                            .font(.title3.bold())
+                            .foregroundStyle(SDColor.ink)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 28)
 
-                Text(guide.instruction)
-                    .font(.body)
-                    .foregroundStyle(SDColor.ink)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 32)
+                        Text(.Coaching.guideRelaxHint)
+                            .font(.body)
+                            .foregroundStyle(SDColor.muted)
+                            .multilineTextAlignment(.center)
+                            .padding(.horizontal, 32)
+                    }
+
+                    phaseSection(viewModel)
+
+                    Spacer(minLength: 0)
+                }
+                // 좌상단 닫기 버튼과 겹치지 않게 띄운다.
+                .padding(.top, 56)
+                .frame(maxWidth: .infinity, minHeight: proxy.size.height)
             }
-
-            phaseSection(viewModel)
-
-            Spacer()
         }
     }
 
@@ -81,11 +93,11 @@ struct SmileGuideView: View {
         switch viewModel.phase {
         case .ready:
             VStack(spacing: 12) {
-                Text("\(guide.durationSeconds)초 동안 함께 있어요")
+                Text(.Coaching.guideDurationTitle(SmileGuideCatalog.default.durationSeconds))
                     .font(.footnote)
                     .foregroundStyle(SDColor.muted)
 
-                Button(SharedStrings.guideStartAction) {
+                Button(.guideStartAction) {
                     Task { await viewModel.start() }
                 }
                 .buttonStyle(SDPrimaryButtonStyle())
@@ -93,29 +105,43 @@ struct SmileGuideView: View {
             }
 
         case .running(let remainingSeconds):
-            Text("\(remainingSeconds)")
+            Text(remainingSeconds, format: .number)
                 .font(.system(size: 72, weight: .bold, design: .rounded).monospacedDigit())
                 .foregroundStyle(SDColor.ink)
                 // Reduce Motion에서는 숫자만 바뀌고 커지는 전환을 생략한다.
                 .contentTransition(reduceMotion ? .identity : .numericText())
                 .animation(reduceMotion ? nil : .snappy, value: remainingSeconds)
-                .accessibilityLabel("\(remainingSeconds)초 남았어요")
+                .accessibilityLabel(Text(.Coaching.guideRemainingSeconds(remainingSeconds)))
 
         case .completed:
             VStack(spacing: 14) {
                 if viewModel.saveFailed {
-                    Text(SharedStrings.guideSaveFailed)
+                    Text(.guideSaveFailed)
                         .font(.headline)
                         .foregroundStyle(SDColor.alert)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                 } else {
-                    Text(SharedStrings.guideCompleted)
+                    Text(.guideCompleted)
                         .font(.title3.bold())
                         .foregroundStyle(SDColor.ink)
                 }
 
-                Button("닫기") { dismiss() }
+                // 안내한 행동을 실제로 할 수 있어야 한다. 5초는 이미 지났으므로 다시 세지 않고
+                // 같은 완료를 재저장한다.
+                if viewModel.saveFailed {
+                    Button(.guideRetrySaveAction) {
+                        viewModel.retrySave()
+                        // 성공했을 때만 완료 감촉을 준다. 처음 완료의 onAppear는 다시 불리지 않는다.
+                        if !viewModel.saveFailed {
+                            UIImpactFeedbackGenerator(style: .soft).impactOccurred()
+                        }
+                    }
+                    .buttonStyle(SDPrimaryButtonStyle())
+                    .padding(.horizontal, 40)
+                }
+
+                Button(.Coaching.guideCloseAction) { dismiss() }
                     .buttonStyle(SDInkButtonStyle())
                     .padding(.horizontal, 40)
             }

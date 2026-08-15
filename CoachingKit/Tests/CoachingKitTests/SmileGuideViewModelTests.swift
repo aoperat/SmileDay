@@ -137,7 +137,7 @@ final class SmileGuideViewModelTests: XCTestCase {
         let repository = try makeRepository()
         let completedAt = Date(timeIntervalSince1970: 1_800_000_000)
         let viewModel = SmileGuideViewModel(
-            guide: SmileGuideCatalog.guide(id: "morning-greeting"),
+            guide: SmileGuide(id: "morning-greeting"),
             source: .notification,
             repository: repository,
             clock: ImmediateClock(),
@@ -157,7 +157,7 @@ final class SmileGuideViewModelTests: XCTestCase {
     func test_manualEntry_savesManualSource() async throws {
         let repository = try makeRepository()
         let viewModel = SmileGuideViewModel(
-            guide: SmileGuideCatalog.guide(id: "anytime-pause"),
+            guide: SmileGuide(id: "anytime-pause"),
             source: .manual,
             repository: repository,
             clock: ImmediateClock()

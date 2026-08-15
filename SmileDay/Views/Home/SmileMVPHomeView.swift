@@ -1,26 +1,24 @@
 import SwiftUI
 import SwiftData
+import UIKit
 import CoachingKit
 
-/// 알림 중심 MVP의 홈. 점수, 기준선, 얼굴 분석, 기분 기록이 없다.
 struct SmileMVPHomeView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.scenePhase) private var scenePhase
     @Environment(NotificationRouter.self) private var notificationRouter
 
     @State private var viewModel: SmileHomeViewModel?
-    @State private var libraryViewModel: SmileLibraryViewModel?
-    @State private var selectedGuide: SmileGuide?
-    @State private var launch: GuideLaunch?
+    @State private var launch: SmileLaunch?
     @State private var isShowingSettings = false
-    @State private var isPickingGuide = false
-    @State private var isAddingCard = false
+    @State private var isShowingHistory = false
+    @State private var isShowingLiveMonitor = false
+    @State private var loadFailed = false
 
-    /// 가이드 화면을 여는 요청 하나. 알림으로 들어왔는지 홈에서 눌렀는지를 함께 들고 간다.
-    private struct GuideLaunch: Identifiable {
+    private struct SmileLaunch: Identifiable {
         let id = UUID()
-        let guide: SmileGuide
         let source: SmileMomentSource
+        let cue: SmileCue
     }
 
     var body: some View {
@@ -28,26 +26,28 @@ struct SmileMVPHomeView: View {
             ZStack {
                 SDColor.cream.ignoresSafeArea()
 
-                if let viewModel {
+                if loadFailed {
+                    AppDataLoadFailureView(onRetry: refresh)
+                } else if let viewModel {
                     ScrollView {
                         VStack(spacing: 16) {
                             TodayCard(
                                 count: viewModel.todayCompletionCount,
-                                selectedGuide: selectedGuide ?? SmileGuideCatalog.default,
-                                onPickGuide: { isPickingGuide = true },
-                                onStart: {
-                                    launch = GuideLaunch(
-                                        guide: selectedGuide ?? SmileGuideCatalog.default,
-                                        source: .manual
-                                    )
-                                }
+                                onStart: { openSmile(source: .manual) }
                             )
 
-                            NextReminderCard(reminder: viewModel.nextReminder)
+                            LiveMonitorCard(onOpen: { isShowingLiveMonitor = true })
+
+                            NextReminderCard(
+                                state: viewModel.reminderDelivery,
+                                onOpenAppSettings: { isShowingSettings = true },
+                                onOpenSystemSettings: SDSystemSettings.open
+                            )
 
                             RecentSevenDaysCard(
                                 days: viewModel.recentSevenDays,
-                                weekActiveDayCount: viewModel.weekActiveDayCount
+                                totalCount: viewModel.recentSevenDayTotal,
+                                onOpen: { isShowingHistory = true }
                             )
                         }
                         .padding(.horizontal, 20)
@@ -55,7 +55,7 @@ struct SmileMVPHomeView: View {
                     }
                 }
             }
-            .navigationTitle("스마일데이")
+            .navigationTitle(Text(.Home.homeNavigationTitle))
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarTrailing) {
@@ -63,220 +63,334 @@ struct SmileMVPHomeView: View {
                         isShowingSettings = true
                     } label: {
                         Image(systemName: "gearshape")
+                            .foregroundStyle(SDColor.sunDeep)
                     }
-                    .accessibilityLabel("설정")
+                    .accessibilityLabel(Text(.Home.settingsAccessibilityLabel))
                 }
             }
             .navigationDestination(isPresented: $isShowingSettings) {
-                SmileMVPSettingsView()
+                // 아래 onChange는 뒤로 가기를 누른 순간 돈다 — 설정의 반영이 아직 지연
+                // 중이면 그때 읽은 값은 옛 일정이다. 반영이 끝난 뒤 한 번 더 읽는다.
+                SmileMVPSettingsView(onScheduleApplied: refresh)
+            }
+            .navigationDestination(isPresented: $isShowingHistory) {
+                SmileHistoryView()
             }
         }
-        .tint(SDColor.coralDeep)
+        .tint(SDColor.sunDeep)
+        .toolbarColorScheme(.light, for: .navigationBar)
+        .toolbarBackground(SDColor.cream, for: .navigationBar)
+        .toolbarBackground(.visible, for: .navigationBar)
         .onAppear {
             if viewModel == nil {
-                let library = SmileGuideLibrary(
-                    modelContext: modelContext,
-                    hiddenStore: UserDefaultsHiddenSmileGuideStore()
-                )
                 viewModel = SmileHomeViewModel(
                     momentRepository: SmileMomentRepository(modelContext: modelContext),
-                    reminderRepository: ReminderRepository(modelContext: modelContext),
-                    library: library
-                )
-                libraryViewModel = SmileLibraryViewModel(
-                    library: library,
-                    reminderRepository: ReminderRepository(modelContext: modelContext),
+                    scheduleRepository: SmileReminderScheduleRepository(modelContext: modelContext),
                     scheduler: UserNotificationReminderScheduler()
                 )
             }
-            try? viewModel?.refresh()
-            try? libraryViewModel?.refresh()
-            // 첫 진입에는 지금 시간대에 어울리는 카드를 골라둔다.
-            if selectedGuide == nil { selectedGuide = viewModel?.suggestedGuide }
+            refresh()
         }
-        // 앱으로 돌아올 때 오늘 횟수와 다음 알림을 다시 계산한다.
         .onChange(of: scenePhase) { _, newPhase in
             guard newPhase == .active else { return }
-            try? viewModel?.refresh()
+            refresh()
         }
-        // 알림 탭은 cold launch와 foreground 모두 여기로 들어온다.
-        // 사용자가 만든 카드도 열려야 하므로 라이브러리로 해석한다.
+        // 설정 화면은 같은 앱 안에서 밀고 당기므로 scenePhase가 바뀌지 않는다. 갱신하지
+        // 않으면 알림을 꺼두고 돌아와도 "다음 알림"이 옛 값 그대로 남는다.
+        .onChange(of: isShowingSettings) { _, isShowing in
+            guard !isShowing else { return }
+            refresh()
+        }
         .onChange(of: notificationRouter.pendingSmileGuide, initial: true) { _, payload in
-            guard let payload else { return }
-            let library = SmileGuideLibrary(
-                modelContext: modelContext,
-                hiddenStore: UserDefaultsHiddenSmileGuideStore()
-            )
-            launch = GuideLaunch(guide: library.guide(id: payload.guideID), source: .notification)
+            guard payload != nil else { return }
+            openSmile(source: .notification)
             notificationRouter.pendingSmileGuide = nil
         }
-        .sheet(isPresented: $isPickingGuide) {
-            SmileGuidePickerSheet(
-                guides: viewModel?.guides ?? [],
-                selectedID: selectedGuide?.id ?? "",
-                onSelect: { selectedGuide = $0 },
-                onAddCard: {
-                    isPickingGuide = false
-                    isAddingCard = true
-                }
-            )
-        }
-        .sheet(isPresented: $isAddingCard) {
-            if let libraryViewModel {
-                AddSmileCardView(viewModel: libraryViewModel) { added in
-                    selectedGuide = added
-                    try? viewModel?.refresh()
-                }
-            }
+        // 앱이 떠 있는 채로 알림 배너의 "웃었어요"를 누르면 scenePhase가 안 바뀌어
+        // 오늘 횟수가 옛 값에 머문다. 그 경우에만 여기서 다시 읽는다.
+        .onChange(of: notificationRouter.recordedWithoutGuideCount) { _, _ in
+            refresh()
         }
         .fullScreenCover(item: $launch) { launch in
             SmileGuideView(
-                guide: launch.guide,
+                cue: launch.cue,
                 source: launch.source,
                 repository: SmileMomentRepository(modelContext: modelContext),
-                onCompleted: { try? viewModel?.refresh() }
+                onCompleted: refresh
             )
         }
+        .fullScreenCover(isPresented: $isShowingLiveMonitor) {
+            LiveSmileMonitorView()
+        }
         .onChange(of: launch == nil) { _, isClosed in
-            // 완료 직후 바로 닫아도 홈 숫자가 갱신되도록 닫힐 때 한 번 더 읽는다.
             guard isClosed else { return }
-            try? viewModel?.refresh()
+            refresh()
+        }
+    }
+
+    private func openSmile(source: SmileMomentSource) {
+        let selector = SmileCueSelector(store: UserDefaultsSmileCueCursorStore())
+        launch = SmileLaunch(source: source, cue: selector.next())
+    }
+
+    private func refresh() {
+        Task {
+            do {
+                try await viewModel?.refresh()
+                loadFailed = false
+            } catch {
+                loadFailed = true
+            }
         }
     }
 }
 
 private struct TodayCard: View {
     let count: Int
-    let selectedGuide: SmileGuide
-    let onPickGuide: () -> Void
     let onStart: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 16) {
-            VStack(alignment: .leading, spacing: 4) {
-                Text(SharedStrings.todayCountTitle)
+        VStack(alignment: .leading, spacing: 18) {
+            VStack(alignment: .leading, spacing: 5) {
+                Text(.todayCountTitle)
                     .font(.footnote.weight(.semibold))
                     .foregroundStyle(SDColor.muted)
 
-                if count == 0 {
-                    Text(SharedStrings.noSmileYetToday)
-                        .font(.title3.bold())
-                        .foregroundStyle(SDColor.ink)
-                } else {
-                    Text("\(count)번")
-                        .font(.system(size: 34, weight: .bold, design: .rounded).monospacedDigit())
-                        .foregroundStyle(SDColor.ink)
-                }
+                Text(.Home.smileCount(count))
+                    .font(.system(size: 40, weight: .bold, design: .rounded).monospacedDigit())
+                    .foregroundStyle(SDColor.ink)
+
+                Text(count == 0 ? .noSmileYetToday : .Home.momentsAddingUp)
+                    .font(.subheadline)
+                    .foregroundStyle(SDColor.muted)
             }
             .accessibilityElement(children: .combine)
-            .accessibilityLabel("오늘 미소 \(count)번")
+            .accessibilityLabel(Text(.Home.todaySmileCountAccessibility(count)))
 
-            GuideSelectionRow(guide: selectedGuide, onTap: onPickGuide)
-
-            Button(SharedStrings.smileNowAction, action: onStart)
+            Button(.smileNowAction, action: onStart)
                 .buttonStyle(SDPrimaryButtonStyle())
         }
         .sdCard()
     }
 }
 
-private struct NextReminderCard: View {
-    let reminder: UpcomingReminder?
+/// 보조 행동. 기본 CTA인 `지금 한 번 웃기`보다 약하게 둔다.
+///
+/// TrueDepth가 없는 기기에서도 카드는 그대로 보인다 — 열어봐야 알 수 있는 사실로
+/// 홈의 다른 기능을 가리지 않는다. 사용할 수 없으면 모니터 화면이 그렇게 안내한다.
+private struct LiveMonitorCard: View {
+    let onOpen: () -> Void
 
     var body: some View {
-        HStack(spacing: 12) {
-            Image(systemName: "bell.fill")
+        Button(action: onOpen) {
+            HStack(spacing: 12) {
+                Image(systemName: "waveform")
+                    .font(.system(size: 13, weight: .semibold))
+                    .foregroundStyle(SDColor.ink)
+                    .frame(width: 32, height: 32)
+                    .background(SDColor.sun, in: RoundedRectangle(cornerRadius: 10))
+                    .accessibilityHidden(true)
+
+                VStack(alignment: .leading, spacing: 2) {
+                    Text(.Coaching.liveMonitorTitle)
+                        .font(.subheadline.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
+
+                    Text(.Coaching.liveMonitorEntrySummary)
+                        .font(.caption)
+                        .foregroundStyle(SDColor.muted)
+                        .multilineTextAlignment(.leading)
+                        .fixedSize(horizontal: false, vertical: true)
+                }
+
+                Spacer(minLength: 4)
+
+                Image(systemName: "chevron.right")
+                    .font(.caption.weight(.semibold))
+                    .foregroundStyle(SDColor.muted)
+                    .accessibilityHidden(true)
+            }
+        }
+        .buttonStyle(.plain)
+        .sdCard(padding: 14, cornerRadius: 20)
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text(.Coaching.liveMonitorEntrySummary))
+    }
+}
+
+/// 다음 알림 시각, 또는 알림이 오지 못하는 이유와 고치는 방법.
+///
+/// 예약된 일정만 보고 시각을 적으면, iOS 권한이 꺼진 사용자에게 오지 않을 알림을 약속하게
+/// 된다. 그래서 `ReminderDeliveryState`가 판단한 결과만 그린다.
+private struct NextReminderCard: View {
+    let state: ReminderDeliveryState
+    let onOpenAppSettings: () -> Void
+    let onOpenSystemSettings: () -> Void
+
+    var body: some View {
+        // 알림이 오지 못하는 상태에서는 카드 전체가 버튼이다. 작은 글씨를 정확히 누르게
+        // 하는 것보다, 눈에 걸린 곳을 그냥 누르면 고치러 가는 편이 맞다.
+        Group {
+            if state.needsAttention {
+                Button(action: action) { card }
+                    .buttonStyle(.plain)
+                    .accessibilityHint(Text(.reminderTurnOnAction))
+            } else {
+                card
+            }
+        }
+    }
+
+    private var card: some View {
+        HStack(alignment: state.needsAttention ? .top : .center, spacing: 12) {
+            Image(systemName: state.needsAttention ? "bell.slash.fill" : "bell.fill")
                 .font(.system(size: 13, weight: .semibold))
-                // 밝은 살구색 칩 위의 흰 글리프는 1.90:1이라 ink를 쓴다.
                 .foregroundStyle(SDColor.ink)
-                .frame(width: 30, height: 30)
-                .background(SDColor.apricot, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+                .frame(width: 32, height: 32)
+                .background(state.needsAttention ? SDColor.shell : SDColor.apricot, in: RoundedRectangle(cornerRadius: 10))
                 .accessibilityHidden(true)
 
             VStack(alignment: .leading, spacing: 2) {
-                Text(SharedStrings.nextReminderTitle)
+                Text(title)
                     .font(.caption)
                     .foregroundStyle(SDColor.muted)
 
-                if let reminder {
-                    Text("\(timeText(reminder.date)) · \(reminder.guide.title)")
+                if case .scheduled(let reminder) = state {
+                    Text(reminder.date, format: .dateTime.hour().minute())
                         .font(.subheadline.weight(.semibold))
                         .foregroundStyle(SDColor.ink)
                 } else {
-                    Text(SharedStrings.noReminderYet)
+                    Text(detail)
                         .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(SDColor.muted)
+                        .foregroundStyle(SDColor.ink)
+                        .fixedSize(horizontal: false, vertical: true)
+
+                    Text(.reminderTurnOnAction)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.sunDeep)
+                        .padding(.top, 6)
                 }
             }
 
-            Spacer()
+            Spacer(minLength: 0)
+
+            if state.needsAttention {
+                Image(systemName: "chevron.right")
+                    .font(.footnote.weight(.semibold))
+                    .foregroundStyle(SDColor.muted)
+                    .accessibilityHidden(true)
+            }
         }
         .sdCard(padding: 14, cornerRadius: 20)
         .accessibilityElement(children: .combine)
     }
 
-    private func timeText(_ date: Date) -> String {
-        date.formatted(.dateTime.locale(SDFormat.koreanLocale).hour().minute())
+    private var title: LocalizedStringResource {
+        switch state {
+        case .scheduled: .nextReminderTitle
+        case .blockedByPermission: .reminderBlockedTitle
+        case .permissionNotRequested: .reminderNotRequestedTitle
+        case .off: .reminderOffTitle
+        }
+    }
+
+    /// `.scheduled`는 위에서 시각을 그리므로 여기까지 오지 않는다.
+    private var detail: String {
+        switch state {
+        case .scheduled: ""
+        case .blockedByPermission: String(localized: .reminderBlockedDetail)
+        case .permissionNotRequested: String(localized: .reminderNotRequestedDetail)
+        case .off: String(localized: .reminderOffDetail)
+        }
+    }
+
+    /// 권한이 거부된 상태는 앱 안에서 되돌릴 수 없다 — iOS는 한 번만 묻는다. 그때만
+    /// 설정 앱으로 보내고, 나머지는 앱 안의 설정 화면에서 해결된다.
+    private var action: () -> Void {
+        switch state {
+        case .blockedByPermission: onOpenSystemSettings
+        case .scheduled, .permissionNotRequested, .off: onOpenAppSettings
+        }
     }
 }
 
 private struct RecentSevenDaysCard: View {
     let days: [SmileDayCount]
-    let weekActiveDayCount: Int
+    let totalCount: Int
+    let onOpen: () -> Void
 
     var body: some View {
-        VStack(alignment: .leading, spacing: 14) {
-            HStack {
-                Text(SharedStrings.recentSevenDaysTitle)
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.muted)
+        Button(action: onOpen) {
+            VStack(alignment: .leading, spacing: 14) {
+                HStack {
+                    Text(.recentSevenDaysTitle)
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
 
-                Spacer()
+                    Spacer()
 
-                Text("\(SharedStrings.weekActiveDaysTitle) \(weekActiveDayCount)일")
-                    .font(.footnote.weight(.semibold))
-                    .foregroundStyle(SDColor.ink)
-            }
+                    Text(.Home.recentTotalCount(totalCount))
+                        .font(.footnote.weight(.semibold))
+                        .foregroundStyle(SDColor.ink)
 
-            HStack(spacing: 6) {
-                ForEach(days) { day in
-                    DayDot(day: day)
+                    Image(systemName: "chevron.right")
+                        .font(.caption.weight(.semibold))
+                        .foregroundStyle(SDColor.muted)
+                        .accessibilityHidden(true)
+                }
+
+                HStack(spacing: 6) {
+                    ForEach(days) { day in
+                        DayDot(day: day)
+                    }
                 }
             }
+            .contentShape(Rectangle())
         }
+        .buttonStyle(.plain)
         .sdCard()
+        .accessibilityElement(children: .combine)
+        .accessibilityHint(Text(.Home.historyHint))
     }
 }
 
 private struct DayDot: View {
+    @Environment(\.calendar) private var calendar
+    @Environment(\.locale) private var locale
+
     let day: SmileDayCount
 
     var body: some View {
         VStack(spacing: 5) {
-            // 도트는 웃은 날인지만 나타낸다. 횟수는 12pt라 도트 위 흰 글자로는
-            // 본문 대비(4.5:1)를 못 맞춰서 아래에 ink로 따로 적는다.
+            // 노랑은 흰 카드 위에서 1.5:1이라 채운 점만으로는 형태가 읽히지 않는다.
+            // 테두리가 윤곽을 만든다 — `sunDeep`은 흰 배경에서 5.4:1이다.
+            // 빈 점에는 테두리를 두지 않는다. 그 차이가 "웃은 날"의 표시다.
             Circle()
-                .fill(day.hasSmile ? AnyShapeStyle(SDColor.primaryGradient) : AnyShapeStyle(SDColor.shell.opacity(0.6)))
+                .fill(day.hasSmile ? AnyShapeStyle(SDColor.primaryGradient) : AnyShapeStyle(SDColor.shell))
+                .overlay {
+                    if day.hasSmile {
+                        Circle().strokeBorder(SDColor.sunDeep, lineWidth: 2)
+                    }
+                }
                 .frame(height: 32)
 
             Text(day.count > 0 ? "\(day.count)" : "·")
                 .font(.caption.bold().monospacedDigit())
                 .foregroundStyle(day.count > 0 ? SDColor.ink : SDColor.muted)
 
-            Text(weekdayText)
+            Text(day.date, format: .dateTime.weekday(.narrow))
                 .font(.caption2)
                 .foregroundStyle(SDColor.muted)
         }
         .frame(maxWidth: .infinity)
         .accessibilityElement(children: .ignore)
-        .accessibilityLabel("\(dateText) \(day.count)번")
+        .accessibilityLabel(accessibilityLabel)
     }
 
-    private var weekdayText: String {
-        day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).weekday(.narrow))
-    }
-
-    private var dateText: String {
-        day.date.formatted(.dateTime.locale(SDFormat.koreanLocale).month().day())
+    /// `Text(_:format:)`만 환경의 캘린더·로캘을 상속한다. String이 필요한 접근성 라벨은
+    /// 같은 값을 명시적으로 넘겨 화면의 날짜와 같은 달력으로 읽히게 한다.
+    private var accessibilityLabel: String {
+        let date = day.date.formatted(Date.FormatStyle(locale: locale, calendar: calendar).month().day())
+        return String(localized: .Home.dayAccessibility(date, day.count))
     }
 }

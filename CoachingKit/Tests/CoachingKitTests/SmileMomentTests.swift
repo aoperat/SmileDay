@@ -16,6 +16,13 @@ final class SmileMomentTests: XCTestCase {
         }
     }
 
+    /// 이 문자열들은 기기의 저장소에 이미 들어가 있다. 바꾸면 지난 기록의 출처가 `.manual`로 읽힌다.
+    func test_sourceRawValues_areFrozen() {
+        XCTAssertEqual(SmileMomentSource.manual.rawValue, "manual")
+        XCTAssertEqual(SmileMomentSource.notification.rawValue, "notification")
+        XCTAssertEqual(SmileMomentSource.notificationAction.rawValue, "notification-action")
+    }
+
     /// 미래 버전이나 손상된 값이 들어와도 읽기가 실패하지 않아야 한다.
     func test_source_fallsBackToManual_whenRawValueUnknown() {
         let moment = SmileMoment(date: Date(), guideID: "anytime-soft", source: .notification)
@@ -33,8 +40,7 @@ final class SmileMomentTests: XCTestCase {
         XCTAssertEqual(moment.sourceRawValue, "notification")
     }
 
-    /// 카드 이름은 저장하지 않는다. 기록은 ID만 들고 있고 이름 해석은 `SmileGuideLibrary`가 한다.
-    /// 그래야 사용자가 만든 카드로 남긴 기록도 이름을 찾을 수 있다.
+    /// 기록은 ID만 들고 있다. 지난 버전이 남긴 ID여도 손대지 않고 그대로 보관한다.
     func test_storesGuideIDVerbatim() {
         let moment = SmileMoment(date: Date(), guideID: "removed-guide", source: .manual)
 

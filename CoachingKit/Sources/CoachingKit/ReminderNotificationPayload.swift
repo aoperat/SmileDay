@@ -2,12 +2,13 @@ import Foundation
 
 /// 리마인더 알림 userInfo에 싣는 딥링크 정보. 스케줄러가 쓰고 라우터가 읽는다.
 ///
-/// 알림 하나가 어떤 가이드를 열지만 담는다. 문구 자체는 싣지 않는다 — 카탈로그가 바뀌어도
-/// 이미 예약된 알림이 사라진 문구를 붙들지 않게 하려는 것이다.
+/// 현재 홈은 이 값을 "유효한 미소 알림을 탭했다"는 신호로만 쓴다 —
+/// `reminderID`와 `guideID`를 읽어 화면을 가르지 않는다. 두 필드가 남아 있는 이유는
+/// 기기에 이미 예약된 알림의 userInfo가 이 key들을 담고 있어, 파싱이 계속 성공해야 하기 때문이다.
 public struct ReminderNotificationPayload: Equatable, Sendable {
     /// 어떤 리마인더에서 왔는지. 출처를 알 수 없는 구버전 알림은 빈 문자열이다.
     public let reminderID: String
-    /// 카탈로그에서 사라진 ID일 수도 있다. 원문을 그대로 두고 쓰는 쪽에서 대체한다.
+    /// 예약 당시의 가이드 ID. 지금 화면을 고르는 데 쓰지 않는다.
     public let guideID: String
 
     private enum Key {
@@ -26,9 +27,6 @@ public struct ReminderNotificationPayload: Equatable, Sendable {
     public var userInfo: [String: Any] {
         [Key.reminderID: reminderID, Key.guideID: guideID]
     }
-
-    // 카드 해석은 `SmileGuideLibrary.guide(id:)`가 한다. 여기서 카탈로그를 직접 부르면
-    // 사용자가 만든 카드로 예약한 알림을 탭했을 때 기본 카드가 열린다.
 
     /// 새 payload면 그대로, 구버전(bucket/promptText) 알림이면 기본 가이드로 연결한다.
     /// 둘 다 아니면 nil이라 앱은 홈에 머문다.

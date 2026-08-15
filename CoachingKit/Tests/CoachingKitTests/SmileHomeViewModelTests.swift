@@ -2,211 +2,179 @@ import XCTest
 import SwiftData
 @testable import CoachingKit
 
+@MainActor
 final class SmileHomeViewModelTests: XCTestCase {
-    private let calendar: Calendar = {
-        var calendar = Calendar(identifier: .gregorian)
-        calendar.timeZone = TimeZone(identifier: "Asia/Seoul")!
-        calendar.locale = Locale(identifier: "ko_KR")
-        calendar.firstWeekday = 1
-        return calendar
-    }()
+    /// 홈은 예약만 하지 않고 권한 상태도 읽는다. 알림이 실제로 도착할 수 있는지는
+    /// 둘을 같이 봐야 알 수 있기 때문이다.
+    private final class StubScheduler: ReminderScheduling {
+        var status: ReminderAuthorizationStatus
 
-    private func date(_ year: Int, _ month: Int, _ day: Int, _ hour: Int = 12, _ minute: Int = 0) -> Date {
-        var components = DateComponents()
-        components.year = year
-        components.month = month
-        components.day = day
-        components.hour = hour
-        components.minute = minute
-        return calendar.date(from: components)!
+        init(status: ReminderAuthorizationStatus = .authorized) {
+            self.status = status
+        }
+
+        func requestAuthorization() async -> Bool { status == .authorized }
+        func currentAuthorizationStatus() async -> ReminderAuthorizationStatus { status }
+        func scheduleDailyPattern(groupID: String, times: [ReminderTime], messages: [ReminderMessage]) async throws {}
+        func cancelGroup(id: String) {}
+        func cancel(id: String) {}
     }
 
-    private func makeViewModel(now: Date) throws -> (SmileHomeViewModel, SmileMomentRepository, ReminderRepository) {
+    private let calendar: Calendar = {
+        var value = Calendar(identifier: .gregorian)
+        value.timeZone = TimeZone(identifier: "Asia/Seoul")!
+        return value
+    }()
+
+    private func date(_ day: Int, _ hour: Int, _ minute: Int = 0) -> Date {
+        calendar.date(from: DateComponents(year: 2026, month: 7, day: day, hour: hour, minute: minute))!
+    }
+
+    private func makeViewModel(
+        now: Date,
+        authorization: ReminderAuthorizationStatus = .authorized
+    ) throws -> (
+        SmileHomeViewModel,
+        SmileMomentRepository,
+        SmileReminderScheduleRepository
+    ) {
         let schema = PersistenceSchema.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let context = ModelContext(container)
-        let momentRepository = SmileMomentRepository(modelContext: context)
-        let reminderRepository = ReminderRepository(modelContext: context)
-        let viewModel = SmileHomeViewModel(
-            momentRepository: momentRepository,
-            reminderRepository: reminderRepository,
-            library: SmileGuideLibrary(modelContext: context, hiddenStore: InMemoryHiddenSmileGuideStore()),
-            calendar: calendar,
-            now: { now }
+        let moments = SmileMomentRepository(modelContext: context)
+        let schedules = SmileReminderScheduleRepository(modelContext: context)
+        return (
+            SmileHomeViewModel(
+                momentRepository: moments,
+                scheduleRepository: schedules,
+                scheduler: StubScheduler(status: authorization),
+                calendar: calendar,
+                now: { now }
+            ),
+            moments,
+            schedules
         )
-        return (viewModel, momentRepository, reminderRepository)
     }
 
-    // MARK: - 오늘 횟수
+    func test_refresh_countsTodayAndRecentSevenDayTotal() async throws {
+        let (viewModel, moments, _) = try makeViewModel(now: date(29, 12))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(29, 9))
+        try moments.save(guideID: "anytime-soft", source: .notification, date: date(29, 11))
+        try moments.save(guideID: "anytime-soft", source: .manual, date: date(27, 9))
 
-    func test_refresh_countsEveryCompletionToday() throws {
-        let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "morning-greeting", source: .notification, date: date(2026, 7, 28, 13))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 27, 9))
-
-        try viewModel.refresh()
+        try await viewModel.refresh()
 
         XCTAssertEqual(viewModel.todayCompletionCount, 2)
-    }
-
-    func test_refresh_todayCountIsZero_whenNothingSaved() throws {
-        let (viewModel, _, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-
-        try viewModel.refresh()
-
-        XCTAssertEqual(viewModel.todayCompletionCount, 0)
-    }
-
-    /// 자정 직후에는 어제 기록이 오늘로 넘어오지 않는다.
-    func test_refresh_afterMidnight_startsTodayCountFromZero() throws {
-        let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 29, 0, 5))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 23, 55))
-
-        try viewModel.refresh()
-
-        XCTAssertEqual(viewModel.todayCompletionCount, 0)
-    }
-
-    // MARK: - 이번 주 일수와 최근 7일
-
-    func test_refresh_weekActiveDayCount_countsDistinctDays() throws {
-        let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 26, 9))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 18))
-
-        try viewModel.refresh()
-
-        XCTAssertEqual(viewModel.weekActiveDayCount, 2)
-    }
-
-    func test_refresh_recentSevenDays_endsOnToday_andFillsGaps() throws {
-        let (viewModel, moments, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 28, 9))
-        try moments.save(guideID: "anytime-soft", source: .manual, date: date(2026, 7, 25, 9))
-
-        try viewModel.refresh()
-
+        XCTAssertEqual(viewModel.recentSevenDayTotal, 3)
         XCTAssertEqual(viewModel.recentSevenDays.count, 7)
-        XCTAssertEqual(viewModel.recentSevenDays.map(\.count), [0, 0, 0, 1, 0, 0, 1])
-        XCTAssertEqual(calendar.component(.day, from: viewModel.recentSevenDays.last!.date), 28)
     }
 
-    // MARK: - 다음 알림
+    func test_refresh_findsNextOccurrenceToday() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 10))
+        try schedules.save(pattern: .recommended, isEnabled: true)
 
-    func test_refresh_nextReminder_picksNearestLaterToday() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        try reminders.add(hour: 9, minute: 0, guideID: "anytime-soft")
-        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
-        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
+        try await viewModel.refresh()
 
-        try viewModel.refresh()
-
-        XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 13))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "morning-greeting")
+        XCTAssertEqual(viewModel.nextReminder?.date, date(29, 12))
     }
 
-    /// 오늘 남은 알림이 없으면 다음 날 첫 알림.
-    func test_refresh_nextReminder_rollsOverToTomorrow() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 22))
-        try reminders.add(hour: 9, minute: 0, guideID: "anytime-soft")
-        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
+    func test_refresh_rollsNextOccurrenceToTomorrow() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 22))
+        try schedules.save(pattern: .recommended, isEnabled: true)
 
-        try viewModel.refresh()
+        try await viewModel.refresh()
 
-        XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 29, 9))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-soft")
+        XCTAssertEqual(viewModel.nextReminder?.date, date(30, 9))
     }
 
-    /// 방금 울린 알림은 다시 "다음"이 되지 않는다.
-    func test_refresh_nextReminder_skipsReminderAtExactlyNow() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 13, 0))
-        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
-        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
+    // MARK: - 자정을 넘는 시간창의 다음 알림
 
-        try viewModel.refresh()
+    /// 22:00~02:00 창은 `occurrences()`가 22, 23, 00, 01, 02 순으로 준다 — 시계 순이 아니다.
+    /// 그 순서를 그대로 믿고 "지금 이후 첫 값"을 찾으면 자정 이후 시각이 오늘로 잡혀
+    /// 밤 11시에 "다음 알림 00:00"이 이미 지난 시각으로 뜬다.
+    func test_refresh_findsNextOccurrenceInAWindowCrossingMidnight() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 23, 10))
+        try schedules.save(
+            pattern: try SmileReminderPattern(
+                startTime: try ReminderTime(hour: 22, minute: 0),
+                endTime: try ReminderTime(hour: 2, minute: 0),
+                intervalMinutes: 60
+            ),
+            isEnabled: true
+        )
 
-        XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 18))
+        try await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.nextReminder?.date, date(30, 0))
     }
 
-    func test_refresh_nextReminder_ignoresDisabledReminders() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        let disabled = try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
-        try reminders.setEnabled(disabled, false)
-        try reminders.add(hour: 18, minute: 0, guideID: "anytime-pause")
+    /// 창이 다음 날 새벽에 끝난 뒤에는 그날 밤 시작 시각이 다음 알림이다.
+    func test_refresh_rollsToTheEveningStart_afterAnOvernightWindowEnds() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 3))
+        try schedules.save(
+            pattern: try SmileReminderPattern(
+                startTime: try ReminderTime(hour: 22, minute: 0),
+                endTime: try ReminderTime(hour: 2, minute: 0),
+                intervalMinutes: 60
+            ),
+            isEnabled: true
+        )
 
-        try viewModel.refresh()
+        try await viewModel.refresh()
 
-        XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 18))
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-pause")
+        XCTAssertEqual(viewModel.nextReminder?.date, date(29, 22))
     }
 
-    func test_refresh_nextReminder_isNil_whenNoReminders() throws {
-        let (viewModel, _, _) = try makeViewModel(now: date(2026, 7, 28, 10))
+    func test_refresh_hasNoNextReminder_whenScheduleDisabledOrMissing() async throws {
+        let (missing, _, _) = try makeViewModel(now: date(29, 10))
+        try await missing.refresh()
+        XCTAssertNil(missing.nextReminder)
 
-        try viewModel.refresh()
-
-        XCTAssertNil(viewModel.nextReminder)
+        let (disabled, _, schedules) = try makeViewModel(now: date(29, 10))
+        try schedules.save(pattern: .recommended, isEnabled: false)
+        try await disabled.refresh()
+        XCTAssertNil(disabled.nextReminder)
     }
 
-    func test_refresh_nextReminder_isNil_whenAllRemindersDisabled() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        let reminder = try reminders.add(hour: 13, minute: 0)
-        try reminders.setEnabled(reminder, false)
+    // MARK: - 알림이 도착할 수 있는 상태인지
 
-        try viewModel.refresh()
+    func test_refresh_reportsScheduled_whenPermissionAndScheduleAreBothReady() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 10), authorization: .authorized)
+        try schedules.save(pattern: .recommended, isEnabled: true)
 
-        XCTAssertNil(viewModel.nextReminder)
+        try await viewModel.refresh()
+
+        XCTAssertEqual(viewModel.reminderDelivery, .scheduled(UpcomingReminder(date: date(29, 12))))
     }
 
-    /// 같은 시각에 두 개가 있어도 매번 같은 하나를 고른다.
-    func test_refresh_nextReminder_isStable_whenTwoRemindersShareTime() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        try reminders.add(hour: 13, minute: 0, guideID: "morning-greeting")
-        try reminders.add(hour: 13, minute: 0, guideID: "anytime-pause")
+    /// 예약은 그대로 남아 다음 시각도 계산되지만, 그 시각에 아무것도 오지 않는다.
+    /// 홈이 시각만 보고 약속하면 안 되는 이유가 이 경우다.
+    func test_refresh_reportsBlocked_whenPermissionIsDeniedButScheduleLooksReady() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 10), authorization: .denied)
+        try schedules.save(pattern: .recommended, isEnabled: true)
 
-        try viewModel.refresh()
-        let firstPick = viewModel.nextReminder
-        try viewModel.refresh()
+        try await viewModel.refresh()
 
-        XCTAssertEqual(viewModel.nextReminder?.date, date(2026, 7, 28, 13))
-        XCTAssertEqual(viewModel.nextReminder, firstPick)
+        XCTAssertNotNil(viewModel.nextReminder)
+        XCTAssertEqual(viewModel.reminderDelivery, .blockedByPermission)
     }
 
-    /// guideID가 없던 시절 알림도 기본 가이드로 표시된다.
-    func test_refresh_nextReminder_legacyReminderShowsDefaultGuide() throws {
-        let (viewModel, _, reminders) = try makeViewModel(now: date(2026, 7, 28, 10))
-        try reminders.add(hour: 13, minute: 0)
+    func test_refresh_reportsNotRequested_whenPermissionWasNeverAsked() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 10), authorization: .notDetermined)
+        try schedules.save(pattern: .recommended, isEnabled: true)
 
-        try viewModel.refresh()
+        try await viewModel.refresh()
 
-        XCTAssertEqual(viewModel.nextReminder?.guide.id, "anytime-soft")
+        XCTAssertEqual(viewModel.reminderDelivery, .permissionNotRequested)
     }
 
-    // MARK: - 노출 범위
+    func test_refresh_reportsOff_whenTheUserTurnedRemindersOff() async throws {
+        let (viewModel, _, schedules) = try makeViewModel(now: date(29, 10), authorization: .authorized)
+        try schedules.save(pattern: .recommended, isEnabled: false)
 
-    func test_refresh_guidesComeFromLibrary() throws {
-        let (viewModel, _, _) = try makeViewModel(now: date(2026, 7, 28, 10))
+        try await viewModel.refresh()
 
-        try viewModel.refresh()
-
-        XCTAssertEqual(viewModel.guides.count, 14)
-    }
-
-    /// 홈은 지금 시간대에 어울리는 카드를 기본 선택으로 제안한다.
-    func test_refresh_suggestedGuideMatchesCurrentSlot() throws {
-        let (morning, _, _) = try makeViewModel(now: date(2026, 7, 28, 9))
-        try morning.refresh()
-        XCTAssertEqual(morning.suggestedGuide?.slot, .morning)
-
-        let (afternoon, _, _) = try makeViewModel(now: date(2026, 7, 28, 13))
-        try afternoon.refresh()
-        XCTAssertEqual(afternoon.suggestedGuide?.slot, .afternoon)
-
-        let (evening, _, _) = try makeViewModel(now: date(2026, 7, 28, 20))
-        try evening.refresh()
-        XCTAssertEqual(evening.suggestedGuide?.slot, .evening)
+        XCTAssertEqual(viewModel.reminderDelivery, .off)
     }
 }

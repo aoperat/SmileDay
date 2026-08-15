@@ -1,0 +1,426 @@
+{
+  "sourceLanguage" : "en",
+  "strings" : {
+    "smileCue.cared-for" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "What face would you want someone who loves you to see?" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "나를 아끼는 사람에게 어떤 표정을 보여주고 싶나요?" } }
+      }
+    },
+    "smileCue.welcome" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Picture running into someone you're glad to see." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "반가운 사람을 만났을 때의 표정을 떠올려보세요." } }
+      }
+    },
+    "smileCue.self-kindness" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Send today's you something warm." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "오늘의 나에게 따뜻한 표정을 보내볼까요?" } }
+      }
+    },
+    "smileCue.gratitude" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Think of someone you're grateful for." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "고마운 사람을 떠올리며 가볍게 미소 지어보세요." } }
+      }
+    },
+    "smileCue.greeting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Like you're greeting someone you like." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "기분 좋은 인사를 건네듯 표정을 지어보세요." } }
+      }
+    },
+    "smileCue.enough" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "It doesn't have to be big. Easy is enough." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "크게 웃지 않아도 괜찮아요. 편안한 미소면 충분해요." } }
+      }
+    },
+    "smileCue.nothing-needed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Nothing has to come to mind. Just let your face loosen." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "떠오르는 장면이 없어도 괜찮아요. 잠깐 얼굴의 힘만 빼보세요." } }
+      }
+    },
+    "smileCue.gentle-invitation" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "If you're up for it, let the corners rise a little." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 괜찮다면 입꼬리를 살짝 올려볼까요?" } }
+      }
+    },
+    "liveMonitorCameraRequiredTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 허용이 있어야 쓸 수 있어요" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 허용이 있어야 쓸 수 있어요" } }
+      }
+    },
+    "liveMonitorCameraRequiredDetail" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "실시간 미소 확인은 전면 카메라로 입꼬리 움직임만 읽어요. 사진과 영상은 저장하지도 전송하지도 않아요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "실시간 미소 확인은 전면 카메라로 입꼬리 움직임만 읽어요. 사진과 영상은 저장하지도 전송하지도 않아요." } }
+      }
+    },
+    "liveMonitorOpenCameraSettings" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 허용 설정하기" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 허용 설정하기" } }
+      }
+    },
+    "liveMonitorTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Live smile check" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "실시간 미소 확인" } }
+      }
+    },
+    "liveMonitorEntrySummary" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Just the signal — no camera view unless you turn it on." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 화면 없이 미소 신호만 보여드려요. 원하면 화면을 켤 수도 있어요." } }
+      }
+    },
+    "liveMonitorPrivacyBadge" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 사용 중 · 영상과 측정값은 저장하지 않아요" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 사용 중 · 영상과 측정값은 저장하지 않아요" } }
+      }
+    },
+    "liveMonitorLevelLabel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "지금 미소 신호" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "지금 미소 신호" } }
+      }
+    },
+    "liveMonitorStartAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "시작하기" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "시작하기" } }
+      }
+    },
+    "liveMonitorRecalibrateAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "다시 보정" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "다시 보정" } }
+      }
+    },
+    "liveMonitorCloseAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "종료" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "종료" } }
+      }
+    },
+    "liveMonitorShowPreview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 화면 보기" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 화면 보기" } }
+      }
+    },
+    "liveMonitorHidePreview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 화면 숨기기" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 화면 숨기기" } }
+      }
+    },
+    "liveMonitorIntroCamera" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "전면 카메라가 켜지고, iOS 초록색 표시가 나타나요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "전면 카메라가 켜지고, iOS 초록색 표시가 나타나요." } }
+      }
+    },
+    "liveMonitorIntroPreview" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 화면은 기본으로 꺼져 있고, 버튼으로 켜고 끌 수 있어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 화면은 기본으로 꺼져 있고, 버튼으로 켜고 끌 수 있어요." } }
+      }
+    },
+    "liveMonitorIntroGraph" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "끝나면 그동안의 그래프를 보여드려요. 얼굴 사진은 남기지 않아요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "끝나면 그동안의 그래프를 보여드려요. 얼굴 사진은 남기지 않아요." } }
+      }
+    },
+    "liveMonitorIntroNoStorage" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "그래프는 화면을 닫으면 사라져요. 저장하거나 전송하지 않아요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "그래프는 화면을 닫으면 사라져요. 저장하거나 전송하지 않아요." } }
+      }
+    },
+    "liveMonitorIntroBattery" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "화면을 켜두는 동안 배터리가 평소보다 빨리 줄어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "화면을 켜두는 동안 배터리가 평소보다 빨리 줄어요." } }
+      }
+    },
+    "liveMonitorCalibrating" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "편한 표정으로 잠시 바라봐주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "편한 표정으로 잠시 바라봐주세요." } }
+      }
+    },
+    "liveMonitorFaceNotFound" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "얼굴이 카메라에 들어오도록 기기를 조정해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "얼굴이 카메라에 들어오도록 기기를 조정해주세요." } }
+      }
+    },
+    "liveMonitorNotFacingCamera" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 쪽을 편하게 바라봐주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 쪽을 편하게 바라봐주세요." } }
+      }
+    },
+    "liveMonitorTooDark" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "조금 더 밝은 곳에서 사용해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "조금 더 밝은 곳에서 사용해주세요." } }
+      }
+    },
+    "liveMonitorUnsupported" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "이 기기에서는 실시간 미소 확인을 사용할 수 없어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 기기에서는 실시간 미소 확인을 사용할 수 없어요." } }
+      }
+    },
+    "liveMonitorPermissionDenied" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라 권한이 필요해요. 설정에서 허용해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라 권한이 필요해요. 설정에서 허용해주세요." } }
+      }
+    },
+    "liveMonitorSessionFailed" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라를 시작하지 못했어요. 잠시 후 다시 시도해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라를 시작하지 못했어요. 잠시 후 다시 시도해주세요." } }
+      }
+    },
+    "liveMonitorInterrupted" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "측정을 멈췄어요. 다시 시작할 수 있어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "측정을 멈췄어요. 다시 시작할 수 있어요." } }
+      }
+    },
+    "liveMonitorLevelResting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "편하게 있다가 천천히 미소 지어보세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "편하게 있다가 천천히 미소 지어보세요." } }
+      }
+    },
+    "liveMonitorLevelStarting" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "미소 신호가 올라오고 있어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미소 신호가 올라오고 있어요." } }
+      }
+    },
+    "liveMonitorLevelHolding" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "미소가 이어지고 있어요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미소가 이어지고 있어요." } }
+      }
+    },
+    "liveMonitorLevelClear" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "미소 신호가 또렷하게 잡혀요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미소 신호가 또렷하게 잡혀요." } }
+      }
+    },
+    "liveMonitorLevelMeaning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "This isn't a verdict on your smile. It's what the camera reads at your mouth corners." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 표시는 웃음의 좋고 나쁨이 아니라, 지금 카메라가 감지한 입꼬리 움직임을 보여줘요." } }
+      }
+    },
+    "liveMonitorPreparing" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "측정 준비 중" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "측정 준비 중" } }
+      }
+    },
+    "liveMonitorLevelSteps" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "%lld단계 중 %lld단계" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%lld단계 중 %lld단계" } }
+      }
+    },
+    "liveMonitorNudgeSectionTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "실시간 확인 알림" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "실시간 확인 알림" } }
+      }
+    },
+    "liveMonitorNudgeToggle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "웃지 않으면 알리기" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "웃지 않으면 알리기" } }
+      }
+    },
+    "liveMonitorNudgeIntervalLabel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알림 간격" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알림 간격" } }
+      }
+    },
+    "liveMonitorNudgeHapticToggle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "진동" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "진동" } }
+      }
+    },
+    "liveMonitorNudgeFooter" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "실시간 미소 확인 중, 이 시간만큼 편안한 표정이 이어지면 알려드려요. 얼굴이 보이지 않는 동안은 시간을 세지 않아요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "실시간 미소 확인 중, 이 시간만큼 편안한 표정이 이어지면 알려드려요. 얼굴이 보이지 않는 동안은 시간을 세지 않아요." } }
+      }
+    },
+    "liveSummaryTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "이번 실시간 확인" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이번 실시간 확인" } }
+      }
+    },
+    "liveSummaryRatioLabel" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Smiling, while your face was visible" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "얼굴이 보인 동안 미소" } }
+      }
+    },
+    "liveSummaryLegendSmiling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "미소" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "미소" } }
+      }
+    },
+    "liveSummaryLegendNotSmiling" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "안 웃음" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "안 웃음" } }
+      }
+    },
+    "liveSummaryLegendUnknown" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "알 수 없음" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "알 수 없음" } }
+      }
+    },
+    "liveSummaryCloseAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Close" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
+      }
+    },
+    "liveSummaryLowConfidence" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "인식된 시간이 짧아 이 숫자는 참고만 해주세요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "인식된 시간이 짧아 이 숫자는 참고만 해주세요." } }
+      }
+    },
+    "liveSummaryNoMeasurement" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Nothing measured." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "측정된 시간이 없어요." } }
+      }
+    },
+    "liveSummaryEndedByLeavingApp" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "화면을 벗어나서 카메라를 껐어요. 그때까지 측정한 내용이에요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "화면을 벗어나서 카메라를 껐어요. 그때까지 측정한 내용이에요." } }
+      }
+    },
+    "liveSummaryEndedByInterruption" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "카메라가 멈춰서 측정을 마쳤어요. 그때까지 측정한 내용이에요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "카메라가 멈춰서 측정을 마쳤어요. 그때까지 측정한 내용이에요." } }
+      }
+    },
+    "liveSummaryMeaning" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "이 비율은 웃음의 좋고 나쁨이 아니라, 카메라가 입꼬리 움직임을 감지한 시간의 비율이에요." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "이 비율은 웃음의 좋고 나쁨이 아니라, 카메라가 입꼬리 움직임을 감지한 시간의 비율이에요." } }
+      }
+    },
+    "guideRelaxHint" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Let your jaw and shoulders go soft." } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "턱과 어깨 힘을 빼고 편안하게 미소 지어보세요." } }
+      }
+    },
+    "guideDurationTitle" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "We'll sit here for %lld seconds" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%lld초 동안 함께 있어요" } }
+      }
+    },
+    "guideRemainingSeconds" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "%lld초 남았어요" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "%lld초 남았어요" } }
+      }
+    },
+    "guideCloseAction" : {
+      "extractionState" : "manual",
+      "localizations" : {
+        "en" : { "stringUnit" : { "state" : "needs_review", "value" : "Close" } },
+        "ko" : { "stringUnit" : { "state" : "translated", "value" : "닫기" } }
+      }
+    }
+  },
+  "version" : "1.1"
+}

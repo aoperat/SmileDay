@@ -5,50 +5,145 @@ import SwiftData
 @MainActor
 final class SmileOnboardingStateTests: XCTestCase {
     private final class MockScheduler: ReminderScheduling {
-        private(set) var authorizationRequests = 0
-        private(set) var scheduled: [(id: String, hour: Int, minute: Int, guideID: String, days: Int)] = []
-        private(set) var cancelled: [String] = []
+        enum SchedulingError: Error {
+            case failed
+        }
+
         var status: ReminderAuthorizationStatus = .authorized
+        var shouldFailScheduling = false
+        private(set) var authorizationRequests = 0
+        private(set) var dailySchedules: [(String, [ReminderTime], [ReminderMessage])] = []
+        private(set) var cancelledGroups: [String] = []
+        private(set) var cancelledLegacy: [String] = []
 
         func requestAuthorization() async -> Bool {
             authorizationRequests += 1
             return status == .authorized
         }
 
-        func currentAuthorizationStatus() async -> ReminderAuthorizationStatus {
-            status
+        func currentAuthorizationStatus() async -> ReminderAuthorizationStatus { status }
+        func cancel(id: String) { cancelledLegacy.append(id) }
+        func scheduleDailyPattern(
+            groupID: String,
+            times: [ReminderTime],
+            messages: [ReminderMessage]
+        ) async throws {
+            if shouldFailScheduling {
+                throw SchedulingError.failed
+            }
+            dailySchedules.append((groupID, times, messages))
         }
-
-        func scheduleRollingWindow(id: String, hour: Int, minute: Int, guide: SmileGuide, days: Int) async {
-            scheduled.append((id, hour, minute, guide.id, days))
-        }
-
-        func cancel(id: String) {
-            cancelled.append(id)
+        func cancelGroup(id: String) {
+            cancelledGroups.append(id)
         }
     }
 
-    private func makeViewModel() throws -> (SmileOnboardingViewModel, ReminderRepository, MockScheduler, InMemorySmileOnboardingStore) {
+    private func makeViewModel() throws -> (
+        SmileOnboardingViewModel,
+        SmileReminderScheduleRepository,
+        MockScheduler,
+        InMemorySmileOnboardingStore
+    ) {
         let schema = PersistenceSchema.schema
         let configuration = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let container = try ModelContainer(for: schema, configurations: [configuration])
         let context = ModelContext(container)
-        let repository = ReminderRepository(modelContext: context)
+        let repository = SmileReminderScheduleRepository(modelContext: context)
         let scheduler = MockScheduler()
         let store = InMemorySmileOnboardingStore()
-        let viewModel = SmileOnboardingViewModel(
-            reminderRepository: repository,
-            library: SmileGuideLibrary(modelContext: context, hiddenStore: InMemoryHiddenSmileGuideStore()),
+        let schedule = SmileReminderScheduleViewModel(
+            scheduleRepository: repository,
+            legacyReminderRepository: LegacyReminderRepository(modelContext: context),
             scheduler: scheduler,
-            store: store
+            messageStore: InMemoryReminderMessageStore()
         )
-        return (viewModel, repository, scheduler, store)
+        return (SmileOnboardingViewModel(schedule: schedule, store: store), repository, scheduler, store)
     }
 
-    // MARK: - 저장소
+    func test_confirm_savesRecommendedPatternAndSchedulesFiveTimes() async throws {
+        let (viewModel, repository, scheduler, store) = try makeViewModel()
 
-    func test_inMemoryStore_startsIncomplete() {
-        XCTAssertFalse(InMemorySmileOnboardingStore().hasCompletedOnboarding)
+        await viewModel.confirm()
+
+        XCTAssertEqual(try repository.fetchCurrent()?.pattern, .recommended)
+        XCTAssertEqual(scheduler.dailySchedules.first?.1.count, 5)
+        XCTAssertEqual(scheduler.authorizationRequests, 1)
+        XCTAssertTrue(store.hasCompletedOnboarding)
+        XCTAssertTrue(viewModel.didComplete)
+    }
+
+    /// 예전에는 거부당해도 그대로 온보딩을 끝냈다. 그러면 사용자는 알림이 켜진 줄 알고
+    /// 홈으로 나가고, 이 앱에 남는 흐름이 없는 채로 며칠이 지난다. iOS는 권한을 한 번만
+    /// 물으므로 여기서 짚지 않으면 다시 물을 기회도 없다.
+    func test_confirm_stopsToExplain_whenPermissionDenied() async throws {
+        let (viewModel, repository, scheduler, store) = try makeViewModel()
+        scheduler.status = .denied
+
+        await viewModel.confirm()
+
+        // 일정은 저장돼 있다 — 권한만 켜면 바로 동작해야 하기 때문이다.
+        XCTAssertNotNil(try repository.fetchCurrent())
+        XCTAssertTrue(viewModel.wasPermissionDenied)
+        XCTAssertFalse(store.hasCompletedOnboarding)
+        XCTAssertFalse(viewModel.didComplete)
+    }
+
+    /// 설명을 읽고도 그대로 가겠다면 막지 않는다.
+    func test_continueWithoutPermission_completesAfterTheExplanation() async throws {
+        let (viewModel, _, scheduler, store) = try makeViewModel()
+        scheduler.status = .denied
+        await viewModel.confirm()
+
+        viewModel.continueWithoutPermission()
+
+        XCTAssertTrue(store.hasCompletedOnboarding)
+        XCTAssertTrue(viewModel.didComplete)
+    }
+
+    func test_confirm_doesNotFlagDenial_whenPermissionGranted() async throws {
+        let (viewModel, _, _, store) = try makeViewModel()
+
+        await viewModel.confirm()
+
+        XCTAssertFalse(viewModel.wasPermissionDenied)
+        XCTAssertTrue(store.hasCompletedOnboarding)
+    }
+
+    func test_skipReminders_savesDisabledSchedule() async throws {
+        let (viewModel, repository, scheduler, store) = try makeViewModel()
+
+        await viewModel.skipReminders()
+
+        XCTAssertFalse(try XCTUnwrap(repository.fetchCurrent()).isEnabled)
+        XCTAssertTrue(scheduler.dailySchedules.isEmpty)
+        XCTAssertTrue(store.hasCompletedOnboarding)
+    }
+
+    /// 시작과 끝이 같은 창만 거부한다 — 끝이 더 이르면 자정을 넘는 창이다.
+    func test_invalidRange_doesNotComplete() async throws {
+        let (viewModel, repository, _, store) = try makeViewModel()
+        viewModel.schedule.updateStart(hour: 21, minute: 0)
+        viewModel.schedule.updateEnd(hour: 21, minute: 0)
+
+        await viewModel.confirm()
+
+        XCTAssertNil(try repository.fetchCurrent())
+        XCTAssertFalse(store.hasCompletedOnboarding)
+        XCTAssertFalse(viewModel.didComplete)
+        XCTAssertFalse(viewModel.schedule.isPatternValid)
+        XCTAssertNil(viewModel.error)
+    }
+
+    func test_scheduleFailure_doesNotCompleteOrPersistSchedule() async throws {
+        let (viewModel, repository, scheduler, store) = try makeViewModel()
+        scheduler.shouldFailScheduling = true
+
+        await viewModel.confirm()
+
+        XCTAssertNil(try repository.fetchCurrent())
+        XCTAssertFalse(store.hasCompletedOnboarding)
+        XCTAssertFalse(viewModel.didComplete)
+        XCTAssertEqual(viewModel.error, .schedulingFailed)
     }
 
     func test_userDefaultsStore_roundTripsFlag() throws {
@@ -56,142 +151,9 @@ final class SmileOnboardingStateTests: XCTestCase {
         defaults.removePersistentDomain(forName: "SmileOnboardingStateTests")
         let store = UserDefaultsSmileOnboardingStore(defaults: defaults)
 
-        XCTAssertFalse(store.hasCompletedOnboarding)
         store.hasCompletedOnboarding = true
+
         XCTAssertTrue(UserDefaultsSmileOnboardingStore(defaults: defaults).hasCompletedOnboarding)
-
         defaults.removePersistentDomain(forName: "SmileOnboardingStateTests")
-    }
-
-    // MARK: - 권장 기본값
-
-    func test_recommendedDrafts_areThreeTimesWithDistinctGuides() throws {
-        let (viewModel, _, _, _) = try makeViewModel()
-
-        XCTAssertEqual(viewModel.drafts.count, 3)
-        XCTAssertEqual(viewModel.drafts.map(\.hour), [9, 13, 18])
-        XCTAssertEqual(viewModel.drafts.map(\.guideID), ["morning-greeting", "noon-before-lunch", "evening-after-work"])
-    }
-
-    func test_guides_offerTheVisibleLibrary() throws {
-        let (viewModel, _, _, _) = try makeViewModel()
-
-        XCTAssertEqual(viewModel.guides.count, 14)
-    }
-
-    // MARK: - 사용자 수정
-
-    func test_updateTime_changesOnlyThatDraft() throws {
-        let (viewModel, _, _, _) = try makeViewModel()
-        let target = try XCTUnwrap(viewModel.drafts.first)
-
-        viewModel.updateTime(draftID: target.id, hour: 7, minute: 30)
-
-        XCTAssertEqual(viewModel.drafts.first?.hour, 7)
-        XCTAssertEqual(viewModel.drafts.first?.minute, 30)
-        XCTAssertEqual(viewModel.drafts[1].hour, 13)
-    }
-
-    func test_updateGuide_changesOnlyThatDraft() throws {
-        let (viewModel, _, _, _) = try makeViewModel()
-        let target = try XCTUnwrap(viewModel.drafts.first)
-
-        viewModel.updateGuide(draftID: target.id, guideID: "anytime-pause")
-
-        XCTAssertEqual(viewModel.drafts.first?.guideID, "anytime-pause")
-        XCTAssertEqual(viewModel.drafts[1].guideID, "noon-before-lunch")
-    }
-
-    func test_addAndRemoveDraft() throws {
-        let (viewModel, _, _, _) = try makeViewModel()
-
-        viewModel.addDraft(hour: 21, minute: 0, guideID: "anytime-soft")
-        XCTAssertEqual(viewModel.drafts.count, 4)
-
-        let removed = try XCTUnwrap(viewModel.drafts.last)
-        viewModel.removeDraft(id: removed.id)
-        XCTAssertEqual(viewModel.drafts.count, 3)
-    }
-
-    // MARK: - 확정
-
-    func test_confirm_requestsAuthorizationSavesAndSchedules() async throws {
-        let (viewModel, repository, scheduler, store) = try makeViewModel()
-
-        await viewModel.confirm()
-
-        XCTAssertEqual(scheduler.authorizationRequests, 1)
-        XCTAssertEqual(try repository.fetchAll().count, 3)
-        XCTAssertEqual(scheduler.scheduled.map(\.guideID), ["morning-greeting", "noon-before-lunch", "evening-after-work"])
-        XCTAssertEqual(scheduler.scheduled.map(\.hour), [9, 13, 18])
-        XCTAssertTrue(scheduler.scheduled.allSatisfy { $0.days == reminderRollingWindowDays })
-        XCTAssertTrue(store.hasCompletedOnboarding)
-        XCTAssertTrue(viewModel.didComplete)
-        XCTAssertNil(viewModel.errorMessage)
-    }
-
-    func test_confirm_savesUserEditedTimesAndGuides() async throws {
-        let (viewModel, repository, scheduler, _) = try makeViewModel()
-        let first = try XCTUnwrap(viewModel.drafts.first)
-        viewModel.updateTime(draftID: first.id, hour: 7, minute: 15)
-        viewModel.updateGuide(draftID: first.id, guideID: "anytime-pause")
-
-        await viewModel.confirm()
-
-        let saved = try repository.fetchAll()
-        XCTAssertEqual(saved.first?.hour, 7)
-        XCTAssertEqual(saved.first?.minute, 15)
-        XCTAssertEqual(saved.first?.guideID, "anytime-pause")
-        XCTAssertEqual(scheduler.scheduled.first?.guideID, "anytime-pause")
-    }
-
-    /// 권한을 거부해도 리마인더는 저장되고 앱에 들어갈 수 있어야 한다.
-    func test_confirm_completesEvenWhenAuthorizationDenied() async throws {
-        let (viewModel, repository, scheduler, store) = try makeViewModel()
-        scheduler.status = .denied
-
-        await viewModel.confirm()
-
-        XCTAssertEqual(viewModel.authorizationStatus, .denied)
-        XCTAssertTrue(store.hasCompletedOnboarding)
-        XCTAssertTrue(viewModel.didComplete)
-        XCTAssertEqual(try repository.fetchAll().count, 3)
-    }
-
-    /// 알림을 하나도 두지 않아도 진입할 수 있다.
-    func test_confirm_withNoDrafts_completesWithoutReminders() async throws {
-        let (viewModel, repository, scheduler, store) = try makeViewModel()
-        for draft in viewModel.drafts {
-            viewModel.removeDraft(id: draft.id)
-        }
-
-        await viewModel.confirm()
-
-        XCTAssertTrue(try repository.fetchAll().isEmpty)
-        XCTAssertTrue(scheduler.scheduled.isEmpty)
-        XCTAssertTrue(store.hasCompletedOnboarding)
-    }
-
-    func test_confirm_isIgnored_whileAlreadySaving() async throws {
-        let (viewModel, repository, _, _) = try makeViewModel()
-
-        async let first: Void = viewModel.confirm()
-        async let second: Void = viewModel.confirm()
-        _ = await (first, second)
-
-        XCTAssertEqual(try repository.fetchAll().count, 3, "확정 버튼 연타로 알림이 두 벌 저장되면 안 된다")
-    }
-
-    // MARK: - 알림 없이 시작
-
-    func test_skipReminders_completesWithoutSavingAnything() throws {
-        let (viewModel, repository, scheduler, store) = try makeViewModel()
-
-        viewModel.skipReminders()
-
-        XCTAssertTrue(store.hasCompletedOnboarding)
-        XCTAssertTrue(viewModel.didComplete)
-        XCTAssertTrue(try repository.fetchAll().isEmpty)
-        XCTAssertTrue(scheduler.scheduled.isEmpty)
     }
 }

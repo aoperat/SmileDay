@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 import CoachingKit
 
 /// 모닝 글로우 디자인 토큰.
@@ -6,22 +7,18 @@ import CoachingKit
 /// 원시 hex 값은 `CoachingKit.SDPalette`에 있다. 앱 타깃에는 테스트 번들이 없어
 /// 대비 회귀를 잡을 수 없으므로, 값은 그쪽에 두고 여기서는 감싸기만 한다.
 enum SDColor {
-    static let coral = Color(hex: SDPalette.coral)
-    static let coralDeep = Color(hex: SDPalette.coralDeep)
-    static let coralWarm = Color(hex: SDPalette.coralWarm)
-    static let apricot = Color(hex: SDPalette.apricot)
     static let sun = Color(hex: SDPalette.sun)
-    static let mint = Color(hex: SDPalette.mint)
-    static let lilac = Color(hex: SDPalette.lilac)
+    static let apricot = Color(hex: SDPalette.apricot)
+    static let sunDeep = Color(hex: SDPalette.sunDeep)
     static let cream = Color(hex: SDPalette.cream)
     static let ink = Color(hex: SDPalette.ink)
     static let muted = Color(hex: SDPalette.muted)
     static let shell = Color(hex: SDPalette.shell)
     static let alert = Color(hex: SDPalette.alert)
 
-    /// 흰 글자를 얹으므로 밝은 쪽 끝(coralWarm, 흰 글자 대비 2.54:1)을 쓰지 않는다.
+    /// 주조색 그라디언트. **여기에 얹는 글자는 `ink`다** — 흰 글자는 노랑 위에서 1.7:1이다.
     static var primaryGradient: LinearGradient {
-        LinearGradient(colors: [coralDeep, coral], startPoint: .leading, endPoint: .trailing)
+        LinearGradient(colors: [apricot, sun], startPoint: .leading, endPoint: .trailing)
     }
 }
 
@@ -32,6 +29,17 @@ extension Color {
             green: Double((hex >> 8) & 0xFF) / 255,
             blue: Double(hex & 0xFF) / 255
         )
+    }
+
+    /// 두 디자인 토큰 사이의 중간 색. `Color.mix(with:by:)`는 iOS 18부터라 직접 섞는다.
+    init(blending start: UInt32, with end: UInt32, ratio: Double) {
+        let t = min(max(ratio, 0), 1)
+        func channel(_ shift: UInt32) -> Double {
+            let from = Double((start >> shift) & 0xFF)
+            let to = Double((end >> shift) & 0xFF)
+            return (from + (to - from) * t) / 255
+        }
+        self.init(red: channel(16), green: channel(8), blue: channel(0))
     }
 }
 
@@ -49,13 +57,6 @@ struct SmileArc: Shape {
         )
         return path
     }
-
-    /// 곡선 위 위치(t: 0~1)의 좌표. 도트 배치용.
-    static func point(t: CGFloat, in rect: CGRect, depth: CGFloat = 1.0) -> CGPoint {
-        let x = rect.minX + rect.width * t
-        let y = rect.minY + rect.height * 2 * depth * 2 * t * (1 - t)
-        return CGPoint(x: x, y: y)
-    }
 }
 
 struct SDCardModifier: ViewModifier {
@@ -66,7 +67,7 @@ struct SDCardModifier: ViewModifier {
         content
             .padding(padding)
             .background(.white, in: RoundedRectangle(cornerRadius: cornerRadius, style: .continuous))
-            .shadow(color: SDColor.coral.opacity(0.14), radius: 13, y: 5)
+            .shadow(color: SDColor.apricot.opacity(0.16), radius: 13, y: 5)
     }
 }
 
@@ -76,21 +77,22 @@ extension View {
     }
 }
 
-/// 코랄 그라디언트 필 버튼.
+/// 주조색(노랑) 그라디언트 필 버튼.
 struct SDPrimaryButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .font(.subheadline.bold())
-            .foregroundStyle(.white)
+            // 흰 글자가 아니다. 노랑 위 흰 글자는 1.7:1이고, ink는 7.7:1이다.
+            .foregroundStyle(SDColor.ink)
             .frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(SDColor.primaryGradient, in: Capsule())
-            .shadow(color: SDColor.coral.opacity(0.5), radius: 10, y: 5)
+            .shadow(color: SDColor.apricot.opacity(0.5), radius: 10, y: 5)
             .opacity(configuration.isPressed ? 0.85 : 1)
     }
 }
 
-/// 진한 잉크색 필 버튼 (측정 종료 등).
+/// 진한 잉크색 필 버튼 (완료 후 닫기 등).
 struct SDInkButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
@@ -103,7 +105,7 @@ struct SDInkButtonStyle: ButtonStyle {
     }
 }
 
-/// 카메라 화면 좌상단 닫기 버튼.
+/// 전체 화면 좌상단 닫기 버튼.
 struct SDCloseButton: View {
     let action: () -> Void
 
@@ -116,47 +118,44 @@ struct SDCloseButton: View {
                 .background(.white.opacity(0.9), in: Circle())
                 .shadow(color: SDColor.ink.opacity(0.15), radius: 6, y: 2)
         }
-        .accessibilityLabel("나가기")
+        .accessibilityLabel(Text(.closeAccessibilityLabel))
     }
 }
 
 enum SDFormat {
-    /// 앱 카피가 전부 한국어라 날짜 표기도 기기 로캘과 무관하게 한국어로 고정한다.
-    static let koreanLocale = Locale(identifier: "ko_KR")
+    /// 흘러간 시간. "45초" / "3분" / "3분 20초" / "45 sec" / "3 min" / "3 min, 20 sec".
+    ///
+    /// 세션 길이와 알림 간격이 같은 규칙을 쓴다. 예전에는 설정 화면과 요약 화면에 글자만 다른
+    /// 같은 함수가 따로 있었다 — 한쪽에서 "1분 0초"를 고쳐도 다른 쪽은 그대로였다.
+    ///
+    /// 단위와 복수는 로케일이 그린다. `Duration`은 0인 단위를 감추므로 60초는 "1분 0초"가
+    /// 아니라 "1분"이고, 0초는 "0초"다 — 예전 손 계산과 ko_KR에서 글자까지 같다(실측).
+    static func duration(seconds: Int) -> String {
+        Duration.seconds(seconds).formatted(.units(allowed: [.minutes, .seconds], width: .abbreviated))
+    }
+
+    /// 알림 반복 주기. "30분마다" / "3시간마다" / "every 30 minutes" / "every 3 hours".
+    ///
+    /// 길이는 로케일이 그리고(단위 이름·복수·간격), "마다"만 카탈로그 키가 든다.
+    /// 예전에는 `분 / 60`으로 시간을 셌는데, 30분이 "0시간마다"가 되지 않게 분기를 손으로 두고
+    /// 있었다. `Duration`은 0인 단위를 감추므로 그 분기가 필요 없다 — 30분은 "30분",
+    /// 3시간은 "3시간"으로 예전과 글자까지 같다(ko_KR 실측).
+    static func reminderInterval(minutes: Int) -> String {
+        let duration = Duration.seconds(minutes * 60)
+        let length = duration.formatted(.units(allowed: [.hours, .minutes], width: .wide))
+        return String(localized: .reminderEvery(length))
+    }
 }
 
-/// 지금 고른 상황 카드를 보여주고 선택 시트를 여는 줄. 홈·설정·온보딩이 같은 모양을 쓴다.
-struct GuideSelectionRow: View {
-    let guide: SmileGuide
-    let onTap: () -> Void
-
-    var body: some View {
-        Button(action: onTap) {
-            HStack(spacing: 8) {
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(guide.title)
-                        .font(.subheadline.weight(.semibold))
-                        .foregroundStyle(SDColor.ink)
-                        .multilineTextAlignment(.leading)
-                    Text(guide.instruction)
-                        .font(.caption)
-                        .foregroundStyle(SDColor.muted)
-                        .multilineTextAlignment(.leading)
-                        .lineLimit(2)
-                }
-
-                Spacer(minLength: 8)
-
-                Image(systemName: "chevron.right")
-                    .font(.caption.weight(.semibold))
-                    .foregroundStyle(SDColor.muted)
-            }
-            .padding(12)
-            .background(SDColor.shell.opacity(0.45), in: RoundedRectangle(cornerRadius: 14, style: .continuous))
-            .contentShape(Rectangle())
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("상황 카드: \(guide.title)")
-        .accessibilityHint(SharedStrings.pickGuideAction)
+/// iOS 설정 앱에서 이 앱의 화면을 연다.
+///
+/// 알림 권한과 카메라 권한은 둘 다 iOS가 한 번만 묻고, 거부되면 앱 안에서는 되돌릴 수 없다.
+/// 그래서 네 화면이 각자 이 안내를 띄우는데, 예전에는 URL을 만들고 여는 세 줄이 다섯 자리에
+/// 복사돼 있었다. 주소를 만들지 못하면 아무 일도 하지 않는다 — 열 곳이 없는데 열었다고
+/// 말하지 않는다.
+enum SDSystemSettings {
+    static func open() {
+        guard let url = URL(string: UIApplication.openSettingsURLString) else { return }
+        UIApplication.shared.open(url)
     }
 }

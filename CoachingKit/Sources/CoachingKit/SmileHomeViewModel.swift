@@ -4,11 +4,9 @@ import Observation
 /// 다음에 울릴 알림 하나.
 public struct UpcomingReminder: Equatable, Sendable {
     public let date: Date
-    public let guide: SmileGuide
 
-    public init(date: Date, guide: SmileGuide) {
+    public init(date: Date) {
         self.date = date
-        self.guide = guide
     }
 }
 
@@ -16,75 +14,84 @@ public struct UpcomingReminder: Equatable, Sendable {
 ///
 /// 점수, 어제 대비, 기분, 스트릭 손실을 다루지 않는다. 오늘 몇 번 웃었는지와
 /// 다음 알림이 언제인지만 보여준다. 쉬어간 날은 0회일 뿐 실패가 아니다.
+@MainActor
 @Observable
 public final class SmileHomeViewModel {
     public private(set) var todayCompletionCount = 0
-    public private(set) var weekActiveDayCount = 0
+    public private(set) var recentSevenDayTotal = 0
     /// 오늘로 끝나는 7일. 기록이 없는 날도 0회로 포함한다.
     public private(set) var recentSevenDays: [SmileDayCount] = []
     public private(set) var nextReminder: UpcomingReminder?
-
-    /// 목록에 보이는 상황 카드. 사용자가 만든 카드도 포함한다.
-    public private(set) var guides: [SmileGuide] = []
-    /// 지금 시간대에 어울리는 첫 카드. 홈이 기본 선택으로 쓴다.
-    public private(set) var suggestedGuide: SmileGuide?
+    /// 알림이 실제로 도착할 수 있는 상태인지. 일정만으로는 알 수 없어 권한까지 같이 본다.
+    public private(set) var reminderDelivery: ReminderDeliveryState = .off
 
     private let momentRepository: SmileMomentRepository
-    private let reminderRepository: ReminderRepository
-    private let library: SmileGuideLibrary
+    private let scheduleRepository: SmileReminderScheduleRepository
+    private let scheduler: ReminderScheduling
     private let calendar: Calendar
     private let now: () -> Date
 
     public init(
         momentRepository: SmileMomentRepository,
-        reminderRepository: ReminderRepository,
-        library: SmileGuideLibrary,
+        scheduleRepository: SmileReminderScheduleRepository,
+        scheduler: ReminderScheduling,
         calendar: Calendar = .current,
         now: @escaping () -> Date = Date.init
     ) {
         self.momentRepository = momentRepository
-        self.reminderRepository = reminderRepository
-        self.library = library
+        self.scheduleRepository = scheduleRepository
+        self.scheduler = scheduler
         self.calendar = calendar
         self.now = now
     }
 
-    public func refresh() throws {
+    public func refresh() async throws {
         let today = now()
         todayCompletionCount = try momentRepository.count(onDayOf: today, calendar: calendar)
-        weekActiveDayCount = try momentRepository.weekActiveDayCount(endingOn: today, calendar: calendar)
         recentSevenDays = try momentRepository.recentSevenDays(endingOn: today, calendar: calendar)
+        recentSevenDayTotal = recentSevenDays.reduce(0) { $0 + $1.count }
         nextReminder = try findNextReminder(after: today)
 
-        guides = try library.visibleGuides()
-        let slot = DaySlot(hour: calendar.component(.hour, from: today))
-        suggestedGuide = guides.first { $0.slot == slot } ?? guides.first
+        let isScheduleEnabled = try scheduleRepository.fetchCurrent()?.isEnabled ?? false
+        reminderDelivery = ReminderDeliveryState(
+            authorization: await scheduler.currentAuthorizationStatus(),
+            isScheduleEnabled: isScheduleEnabled,
+            nextReminder: nextReminder
+        )
     }
 
-    /// 활성 알림마다 다음 발생 시각을 구해 가장 이른 것을 고른다.
-    /// 오늘 남은 알림이 없으면 자연스럽게 내일 첫 알림이 된다.
+    /// 단일 반복 패턴에서 다음 발생 시각을 구한다.
+    ///
+    /// 각 시각은 매일 반복하는 알림이라, 다음에 울릴 것은 "오늘 남은 시각 중 가장 이른 것,
+    /// 없으면 내일 가장 이른 시각"이다. `occurrences()`는 창을 지나는 순서로 오므로
+    /// (자정을 넘는 창이면 22:00 다음에 00:00이 온다) 여기서는 시계 순으로 정렬해서 본다.
     private func findNextReminder(after reference: Date) throws -> UpcomingReminder? {
-        let enabled = try reminderRepository.fetchAll().filter(\.isEnabled)
-
-        let candidates: [(date: Date, tieBreaker: String, guide: SmileGuide)] = enabled.compactMap { reminder in
-            guard let date = nextOccurrence(hour: reminder.hour, minute: reminder.minute, after: reference) else { return nil }
-            return (date, reminder.notificationID, library.guide(id: reminder.guideID))
+        guard let schedule = try scheduleRepository.fetchCurrent(),
+              schedule.isEnabled,
+              let pattern = schedule.pattern else {
+            return nil
         }
 
-        // 같은 시각에 두 개가 있어도 항상 같은 하나를 고르도록 ID로 마지막 순서를 정한다.
-        let earliest = candidates.min { lhs, rhs in
-            lhs.date == rhs.date ? lhs.tieBreaker < rhs.tieBreaker : lhs.date < rhs.date
+        let byClock = pattern.occurrences()
+            .sorted { $0.minutesSinceMidnight < $1.minutesSinceMidnight }
+
+        let todayCandidates = byClock.compactMap { occurrence(on: reference, time: $0) }
+        if let nextToday = todayCandidates.first(where: { $0 > reference }) {
+            return UpcomingReminder(date: nextToday)
         }
-        return earliest.map { UpcomingReminder(date: $0.date, guide: $0.guide) }
+
+        guard let tomorrow = calendar.date(byAdding: .day, value: 1, to: reference),
+              let earliest = byClock.first,
+              let next = occurrence(on: tomorrow, time: earliest) else {
+            return nil
+        }
+        return UpcomingReminder(date: next)
     }
 
-    private func nextOccurrence(hour: Int, minute: Int, after reference: Date) -> Date? {
-        var components = calendar.dateComponents([.year, .month, .day], from: reference)
-        components.hour = hour
-        components.minute = minute
-        guard let todayOccurrence = calendar.date(from: components) else { return nil }
-
-        if todayOccurrence > reference { return todayOccurrence }
-        return calendar.date(byAdding: .day, value: 1, to: todayOccurrence)
+    private func occurrence(on day: Date, time: ReminderTime) -> Date? {
+        var components = calendar.dateComponents([.year, .month, .day], from: day)
+        components.hour = time.hour
+        components.minute = time.minute
+        return calendar.date(from: components)
     }
 }
