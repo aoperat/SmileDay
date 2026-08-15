@@ -46,4 +46,4 @@ Two screens, deliberately separate:
 ## Dependencies
 - CoachingKit: `SmileCue`, `SmileGuideViewModel`, `SmileMomentRepository`, `LiveSmileMonitorViewModel`, `LiveSmileMonitoring`.
 - `Services/ARKitLiveSmileMonitor` for the ARKit boundary.
-- Shared `Theme.swift` and `SharedStrings.swift`.
+- Shared `Theme.swift`; copy comes from `Resources/Coaching.xcstrings` (and `Localizable` for the nudge notification).

@@ -11,7 +11,6 @@ SwiftUI screens for the frequency-first flow. `RootView` gates splash → remind
 |------|-------------|
 | `RootView.swift` | App entry gate: splash while loading → reminder onboarding when needed → home |
 | `Theme.swift` | Design tokens: `SDColor` palette + gradients, `Color(hex:)`, `SmileArc` shape, `.sdCard()` modifier, `SDPrimaryButtonStyle`/`SDInkButtonStyle`, `SDCloseButton`, `SDFormat` (pinned `ko_KR` locale) |
-| `SharedStrings.swift` | Reused Korean copy for the frequency-first flow |
 
 ## Subdirectories
 | Directory | Purpose |
@@ -30,7 +29,7 @@ SwiftUI screens for the frequency-first flow. `RootView` gates splash → remind
 - View-model acquisition pattern: `@State private var viewModel: SomeViewModel?`, lazily constructed in `.onAppear` from `@Environment(\.modelContext)`-backed CoachingKit repositories, then `try? vm.refresh()`. VMs are per-view, not shared.
 - Only `NotificationRouter` comes through the SwiftUI environment (`@Environment(NotificationRouter.self)`); results flow back up via closures (`onCompleted`, `onFinished`, ...).
 - Home presents `SmileGuideView` as a full-screen cover for both manual starts and notification taps, and `LiveSmileMonitorView` as a separate cover for the optional live mode. Notification taps must keep going to the guide, never to the camera.
-- All copy is inline Korean string literals; keep it that way unless a string is reused (then `SharedStrings`).
+- No copy in Swift. Every user-facing string is a key in `SmileDay/Resources/*.xcstrings` referenced via generated symbols (`Text(.foo)`, `.Home.foo`). See CLAUDE.md → Conventions.
 - The only camera view in the app is `LiveSmileCameraPreview`, and only the live monitor may show it — off by default, behind a user toggle. No other screen renders camera output, and no screen holds a still image from it: the live monitor produces no photos, so the summary shows the timeline band and the ratio only.
 - Any screen that turns the camera on must stop it on close, background, and scene inactive, and must restore `isIdleTimerDisabled` on every exit path.
 
