@@ -374,7 +374,7 @@ private struct DayDot: View {
                 }
                 .frame(height: 32)
 
-            Text(day.count > 0 ? "\(day.count)" : "·")
+            Text(verbatim: day.count > 0 ? "\(day.count)" : "·")
                 .font(.caption.bold().monospacedDigit())
                 .foregroundStyle(day.count > 0 ? SDColor.ink : SDColor.muted)
 

@@ -2,17 +2,55 @@
   "sourceLanguage" : "en",
   "strings" : {
     "CFBundleDisplayName" : {
+      "comment" : "Bundle display name",
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmileDay"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스마일데이"
+          }
+        }
+      }
+    },
+    "CFBundleName" : {
+      "comment" : "Bundle name",
       "extractionState" : "extracted_with_value",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "SmileDay" } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "스마일데이" } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "SmileDay"
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "스마일데이"
+          }
+        }
       }
     },
     "NSCameraUsageDescription" : {
-      "extractionState" : "extracted_with_value",
+      "comment" : "Privacy - Camera Usage Description",
       "localizations" : {
-        "en" : { "stringUnit" : { "state" : "translated", "value" : "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent." } },
-        "ko" : { "stringUnit" : { "state" : "translated", "value" : "실시간 미소 신호를 보여주기 위해 전면 카메라를 사용합니다. 카메라 화면은 사용자가 켤 때만 표시하며, 사진과 영상을 저장하거나 전송하지 않습니다." } }
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "The front camera reads how your mouth corners move, to show a live smile signal. The camera view appears only when you turn it on. No photos or video are saved or sent."
+          }
+        },
+        "ko" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "실시간 미소 신호를 보여주기 위해 전면 카메라를 사용합니다. 카메라 화면은 사용자가 켤 때만 표시하며, 사진과 영상을 저장하거나 전송하지 않습니다."
+          }
+        }
       }
     }
   },

@@ -142,7 +142,7 @@ private struct ReminderMessageEditor: View {
                         .frame(minHeight: 100)
                         .foregroundStyle(SDColor.ink)
 
-                    Text("\(text.count)/100")
+                    Text(verbatim: "\(text.count)/100")
                         .font(.caption)
                         .foregroundStyle(text.count > 100 ? SDColor.alert : SDColor.muted)
                         .frame(maxWidth: .infinity, alignment: .trailing)
